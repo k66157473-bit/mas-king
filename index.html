@@ -303,12 +303,20 @@
   訪問者数: <span id="d1-counter" style="font-weight: bold; color: #0070f3;">...</span>
 </div>
 
+
 <script>
   const WORKERS_URL = 'https://bold-lake-8147.k66157473.workers.dev/';
 
   // サーバーからアクセス数を取得して画面を書き換える関数
   async function fetchCounter() {
     const counterElement = document.getElementById('d1-counter');
+    
+    // 【安全対策】もしHTML側に要素が見つからなければ、何もせず処理を終了する
+    if (!counterElement) {
+      console.warn('ID "d1-counter" の要素が見つかりません。');
+      return;
+    }
+
     try {
       const res = await fetch(WORKERS_URL);
       if (!res.ok) throw new Error('Network response was not ok');
@@ -321,13 +329,15 @@
       }
     } catch (err) {
       console.error('カウンターの取得に失敗しました:', err);
-    counterElement.innerText = err.message;
+      // 安全にエラーメッセージを表示（counterElementが存在することを確認済みなので安心）
+      counterElement.innerText = err.message;
     }
   }
 
   // ページが読み込まれたら実行
   window.addEventListener('DOMContentLoaded', fetchCounter);
 </script>
+
         🕒 <span id="live-local-clock">時刻取得中...</span>
       </div>
     </div>
