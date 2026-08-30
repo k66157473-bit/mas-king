@@ -1,0 +1,1767 @@
+<%@ Page Language="C#" ResponseEncoding="utf-8" AutoEventWireup="true" %>
+<%@ Import Namespace="System.Data.SqlClient" %>
+<!DOCTYPE html>
+<script runat="server">
+    private string connectionString = @"workstation id=accsescounter.mssql.somee.com;packet size=4096;user id=koulqeu2_SQLLogin_1;pwd=wz33ih5vlk;data source=accsescounter.mssql.somee.com;persist security info=False;initial catalog=accsescounter;TrustServerCertificate=True";
+
+    protected void Page_Load(object sender, EventArgs e)
+    {
+        if (!IsPostBack)
+        {
+            try
+            {
+                int currentCount = IncrementAndGetCounter();
+                lblCounter.Text = currentCount.ToString("N0");
+                lblTime.Text = DateTime.UtcNow.ToString("yyyy/MM/dd HH:mm:ss") + " UTC";
+            }
+            catch (Exception)
+            {
+                lblCounter.Text = "---";
+                lblTime.Text = "オフライン";
+            }
+        }
+    }
+
+    private int IncrementAndGetCounter()
+    {
+        int nextCount = 0;
+        using (SqlConnection conn = new SqlConnection(connectionString))
+        {
+            conn.Open();
+            string updateSql = "UPDATE AccessCounter SET CountValue = CountValue + 1 WHERE ID = 1;";
+            using (SqlCommand updateCmd = new SqlCommand(updateSql, conn))
+            {
+                updateCmd.ExecuteNonQuery();
+            }
+
+            string selectSql = "SELECT CountValue FROM AccessCounter WHERE ID = 1;";
+            using (SqlCommand selectCmd = new SqlCommand(selectSql, conn))
+            {
+                object result = selectCmd.ExecuteScalar();
+                if (result != null)
+                {
+                    nextCount = Convert.ToInt32(result);
+                }
+            }
+        }
+        return nextCount;
+    }
+</script>
+
+<html lang="ja">
+<head runat="server">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>【サーバー送信なし】ローカル完結の画像マスキングツール「マス王」| 写真のモザイク・個人情報保護に</title>
+  <meta name="description" content="サーバーに画像を一切送信しない安全・超高機能な画像マスキング＆注釈ツールです。" />
+  <meta name="format-detection" content="telephone=no" />
+
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #f1f5f9;
+      --panel: #ffffff;
+      --text: #1e293b;
+      --border: #cbd5e1;
+      --accent: #ef4444;
+      --stamina: #10b981;
+    }
+
+    body.dark-mode {
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --text: #f8fafc;
+      --border: #334155;
+      --stamina: #34d399;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+    input, textarea, select { user-select: auto; -webkit-user-select: auto; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      touch-action: manipulation;
+    }
+
+    form#form1 {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      width: 100%;
+      overflow: hidden;
+    }
+
+    /* ヘッダー */
+    header {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      padding: 0.4rem 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .logo-area { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
+    .logo { font-weight: bold; font-size: 1rem; display: flex; align-items: center; gap: 0.4rem; white-space: nowrap; }
+    .badge { background: #dcfce7; color: #166534; font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 999px; }
+    
+    .counter-badge {
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 0.15rem 0.5rem;
+      font-size: 0.75rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      color: #475569;
+    }
+    body.dark-mode .counter-badge { background: #0f172a; color: #94a3b8; }
+    .counter-num { color: #ef4444; font-weight: bold; }
+
+    .nav-tabs { display: flex; gap: 0.3rem; align-items: center; }
+    .tab-btn {
+      background: none; border: none; padding: 0.4rem 0.7rem; border-radius: 6px;
+      cursor: pointer; font-weight: 600; color: #64748b; font-size: 0.85rem;
+    }
+    .tab-btn.active { background: #e0e7ff; color: var(--primary); }
+    body.dark-mode .tab-btn.active { background: #312e81; color: #a5b4fc; }
+
+    /* メインコンテナ */
+    main { flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative; }
+    .view-panel { display: none; height: 100%; width: 100%; flex-direction: column; }
+    .view-panel.active { display: flex; }
+
+    /* 複数画像タブ */
+    .image-tabs-bar {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.3rem;
+      padding: 0.3rem 0.75rem;
+      overflow-x: auto;
+      flex-shrink: 0;
+    }
+    .img-tab {
+      background: #e2e8f0; border: 1px solid var(--border); border-radius: 4px;
+      padding: 0.2rem 0.6rem; font-size: 0.75rem; display: flex; align-items: center;
+      gap: 0.4rem; cursor: pointer; white-space: nowrap;
+    }
+    body.dark-mode .img-tab { background: #334155; }
+    .img-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .img-tab-close { font-weight: bold; cursor: pointer; font-size: 0.9rem; }
+
+    /* ツールバー */
+    .toolbar-wrapper {
+      background: var(--panel);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+    .toolbar-row {
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.4rem 0.75rem;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+    }
+    .toolbar-row::-webkit-scrollbar { height: 4px; }
+    .toolbar-row::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+    
+    .tool-group {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      border-right: 1px solid var(--border);
+      padding-right: 0.5rem;
+      margin-right: 0.2rem;
+    }
+    
+    .btn {
+      background: var(--panel);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0.4rem 0.65rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.8rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      touch-action: manipulation;
+      height: 32px;
+      flex-shrink: 0;
+    }
+    .btn:hover { background: rgba(0,0,0,0.05); }
+    .btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+    .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+    .btn-primary:hover { background: var(--primary-hover); }
+
+    /* ワークスペース */
+    .workspace {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: auto;
+      padding: 1rem;
+      background: #94a3b8;
+      position: relative;
+      touch-action: none;
+    }
+    body.dark-mode .workspace { background: #020617; }
+
+    .canvas-container {
+      position: relative;
+      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.3);
+      background: #fff;
+      display: inline-block;
+      touch-action: none;
+    }
+    canvas { display: block; touch-action: none; }
+    
+    .selection-box {
+      position: absolute;
+      border: 2px dashed #2563eb;
+      background: rgba(37, 99, 235, 0.15);
+      pointer-events: none;
+      display: none;
+    }
+
+    /* ルーペ */
+    #loupe {
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      pointer-events: none;
+      display: none;
+      overflow: hidden;
+      background: #fff;
+      z-index: 100;
+    }
+
+    /* ドロップゾーン */
+    .dropzone {
+      position: absolute;
+      inset: 1.5rem;
+      border: 3px dashed #64748b;
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      gap: 0.8rem;
+      color: #334155;
+      background: rgba(255,255,255,0.85);
+      cursor: pointer;
+      text-align: center;
+      padding: 1rem;
+    }
+    body.dark-mode .dropzone { background: rgba(30, 41, 59, 0.85); color: #94a3b8; }
+    .dropzone.dragover { border-color: var(--primary); background: #eff6ff; }
+
+    /* スタミナステータスフッターバー */
+    .stamina-footer {
+      background: var(--panel);
+      border-top: 1px solid var(--border);
+      padding: 0.35rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      font-size: 0.75rem;
+      flex-shrink: 0;
+      z-index: 20;
+    }
+    .stamina-bar-container {
+      flex: 1;
+      height: 10px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+      position: relative;
+    }
+    body.dark-mode .stamina-bar-container { background: #334155; }
+    .stamina-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #10b981, #3b82f6);
+      width: 100%;
+      border-radius: 999px;
+      transition: width 0.2s ease-out;
+    }
+    .stamina-text {
+      font-family: monospace;
+      font-weight: bold;
+      white-space: nowrap;
+      display: flex;
+      gap: 0.8rem;
+    }
+
+    /* モーダル */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+      display: none; justify-content: center; align-items: center; z-index: 999; padding: 1rem;
+    }
+    .modal-content {
+      background: var(--panel); border-radius: 10px; max-width: 500px; width: 100%;
+      padding: 1.5rem; max-height: 90vh; overflow-y: auto; color: var(--text);
+    }
+
+    /* ガイド・更新履歴コンテナ */
+    .guide-container {
+      padding: 1.5rem 1rem; max-width: 860px; margin: 0 auto;
+      overflow-y: auto; line-height: 1.7; width: 100%;
+    }
+    .guide-container h2 { margin-bottom: 1rem; color: var(--text); border-bottom: 2px solid var(--border); padding-bottom: 0.4rem; }
+    .guide-container h3 { margin: 1.2rem 0 0.4rem; color: var(--primary); }
+    .guide-container ul, .guide-container ol { padding-left: 1.2rem; margin-bottom: 1rem; }
+    .guide-container kbd { background: #e2e8f0; border-radius: 4px; padding: 0.1rem 0.4rem; font-size: 0.8em; font-family: monospace; border: 1px solid #cbd5e1; }
+    body.dark-mode .guide-container kbd { background: #334155; border-color: #475569; }
+
+    /* 更新履歴カード */
+    .changelog-item {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 8px; padding: 1rem; margin-bottom: 1rem;
+    }
+    .changelog-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.5rem; }
+    .changelog-badge { background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.75rem; }
+    body.dark-mode .changelog-badge { background: #1e3a8a; color: #93c5fd; border-color: #1d4ed8; }
+  </style>
+</head>
+<body>
+  <form id="form1" runat="server">
+    <!-- ヘッダー -->
+    <header>
+      <div class="logo-area">
+        <div class="logo">
+          🛡️ <ruby>マス王 <rp>(</rp><rt>マスキング</rt><rp>)</rp></ruby>
+          <span class="badge">完全安全ローカル</span>
+        </div>
+        
+        <!-- SQL連動アクセスカウンター ＆ リアルタイム現地時計 -->
+        <div class="counter-badge" title="SQL Server連動アクセスカウンターと現地時間">
+          👥 訪問: <span class="counter-num"><asp:Label ID="lblCounter" runat="server" Text="..." /></span>
+          <span style="opacity:0.4;">|</span>
+          🕒 <span id="live-local-clock">時刻取得中...</span>
+          <asp:Label ID="lblTime" runat="server" style="display:none;" />
+        </div>
+      </div>
+
+      <div class="nav-tabs">
+        <button type="button" class="tab-btn active" onclick="switchTab('tool')">ツール</button>
+        <button type="button" class="tab-btn" onclick="switchTab('guide')">📖 使い方</button>
+        <button type="button" class="tab-btn" onclick="switchTab('changelog')">🕒 更新履歴</button>
+        <button type="button" class="btn" id="dark-mode-btn" title="ダークモード切替" style="padding:0.2rem 0.5rem;">🌙</button>
+      </div>
+    </header>
+
+    <main>
+      <!-- ツール画面 -->
+      <div id="tool-view" class="view-panel active">
+        
+        <!-- 複数画像タブバー -->
+        <div class="image-tabs-bar" id="image-tabs-bar">
+          <span style="font-size:0.75rem; color:#64748b;">画像:</span>
+          <div id="img-tab-list" style="display:flex; gap:0.3rem;"></div>
+          <button type="button" class="btn" style="height:24px; padding:0 0.4rem; font-size:0.75rem;" onclick="document.getElementById('file-input').click()">＋ 追加</button>
+        </div>
+
+        <!-- ツールバー -->
+        <div class="toolbar-wrapper">
+          <!-- 1段目: 主要マスキング＆描画モード -->
+          <div class="toolbar-row">
+            <input type="file" id="file-input" accept="image/*" style="display: none;" multiple>
+            <button type="button" class="btn" onclick="document.getElementById('file-input').click()">📁 開く</button>
+
+            <!-- .mask プロジェクト入出力 -->
+            <input type="file" id="mask-file-input" accept=".mask,.json" style="display: none;">
+            <div class="tool-group">
+              <button type="button" class="btn" onclick="document.getElementById('mask-file-input').click()" title=".mask プロジェクトファイルを読み込み">📂 .mask 読込</button>
+              <button type="button" class="btn" id="export-mask-btn" title="編集状態とスタミナを .mask に保存">📦 .mask 保存</button>
+            </div>
+
+            <div class="tool-group">
+              <button type="button" class="btn active mode-btn" data-mode="black">⬛ 黒塗り</button>
+              <button type="button" class="btn mode-btn" data-mode="white">⬜ 白塗り</button>
+              <button type="button" class="btn mode-btn" data-mode="mosaic">▦ モザイク</button>
+              <button type="button" class="btn mode-btn" data-mode="glass">🧊 すりガラス</button>
+              <button type="button" class="btn mode-btn" data-mode="blur">💧 ぼかし</button>
+              <button type="button" class="btn mode-btn" data-mode="circle">⭕ 円形マスク</button>
+              <button type="button" class="btn mode-btn" data-mode="spotlight">🔦 スポット</button>
+            </div>
+
+            <div class="tool-group">
+              <button type="button" class="btn mode-btn" data-mode="redframe">🔲 赤枠</button>
+              <button type="button" class="btn mode-btn" data-mode="arrow">↗ 矢印</button>
+              <button type="button" class="btn mode-btn" data-mode="stamp">① 連番</button>
+              <button type="button" class="btn mode-btn" data-mode="text">🔤 文字</button>
+              <button type="button" class="btn mode-btn" id="dummy-btn">👤 ダミー置換</button>
+              <button type="button" class="btn mode-btn" data-mode="highlighter">🖍 蛍光ペン</button>
+              <button type="button" class="btn mode-btn" data-mode="dropper">🧪 スポイト</button>
+            </div>
+          </div>
+
+          <!-- 2段目: 各種編集ツール・設定・保存 -->
+          <div class="toolbar-row">
+            <div class="tool-group">
+              <button type="button" class="btn mode-btn" data-mode="crop">✂️ 切り抜き</button>
+              <button type="button" class="btn" id="rotate-btn" title="右90度回転">↻ 90°</button>
+              <button type="button" class="btn" id="flip-btn" title="左右反転">⇆ 反転</button>
+            </div>
+
+            <div class="tool-group">
+              <button type="button" class="btn" id="template-btn">🪪 定型マスク▼</button>
+              <button type="button" class="btn" id="watermark-btn">🏷️ 透かし文字</button>
+              <button type="button" class="btn" id="resize-modal-btn">📏 リサイズ</button>
+            </div>
+
+            <div class="tool-group">
+              <label style="font-size:0.75rem;">強度/サイズ:</label>
+              <input type="range" id="strength-slider" min="4" max="40" value="12" style="width:60px;">
+              <label style="font-size:0.75rem; margin-left:0.3rem;"><input type="checkbox" id="feather-chk"> 境界ぼかし</label>
+            </div>
+
+            <div class="tool-group">
+              <button type="button" class="btn" id="undo-btn" title="元に戻す (Ctrl+Z)">↩</button>
+              <button type="button" class="btn" id="redo-btn" title="やり直す (Ctrl+Y)">↪</button>
+              <button type="button" class="btn" id="clear-btn">🔄 リセット</button>
+            </div>
+
+            <div class="tool-group">
+              <button type="button" class="btn" id="zoom-out-btn">➖</button>
+              <span id="zoom-val" style="font-size: 0.75rem; min-width:35px; text-align:center;">100%</span>
+              <button type="button" class="btn" id="zoom-in-btn">➕</button>
+              <button type="button" class="btn" id="zoom-fit-btn">全体</button>
+            </div>
+
+            <div style="margin-left: auto; display: flex; gap: 0.3rem;">
+              <button type="button" class="btn" id="copy-btn">📋 コピー</button>
+              <button type="button" class="btn btn-primary" id="save-modal-btn">💾 保存...</button>
+              <button type="button" class="btn" id="shortcut-help-btn">❓</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- 作業キャンバス領域 -->
+        <div class="workspace" id="workspace">
+          <div class="canvas-container" id="canvas-container" style="display: none;">
+            <canvas id="canvas"></canvas>
+            <div class="selection-box" id="selection-box"></div>
+            <div id="loupe"><canvas id="loupe-canvas"></canvas></div>
+
+            <!-- 直感ドラッグ移動可能なダミー文字オーバーレイ -->
+            <div id="dummy-overlay" style="display: none; position: absolute; cursor: move; border: 2px dashed #2563eb; border-radius: 4px; padding: 2px 6px; font-weight: bold; font-family: sans-serif; z-index: 50; touch-action: none; white-space: nowrap;">
+              <span id="dummy-overlay-text">山田 太郎</span>
+              <div style="position: absolute; bottom: -38px; left: 50%; transform: translateX(-50%); display: flex; gap: 4px; background: rgba(0,0,0,0.8); padding: 4px; border-radius: 6px;">
+                <button type="button" class="btn btn-primary" id="dummy-apply-btn" style="height: 24px; padding: 0 8px; font-size: 0.75rem;">✅ 確定</button>
+                <button type="button" class="btn" id="dummy-cancel-btn" style="height: 24px; padding: 0 8px; font-size: 0.75rem; background: #fff;">❌</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="dropzone" id="dropzone">
+            <div style="font-size: 2.5rem;">🛡️🖼️</div>
+            <h3>画像をタップまたはドラッグ＆ドロップ</h3>
+            <p>画像ファイル / <strong>.mask プロジェクトファイル</strong> / <kbd>Ctrl</kbd>+<kbd>V</kbd> 貼り付け対応</p>
+            <button type="button" class="btn btn-primary" style="margin-top:0.5rem;" onclick="document.getElementById('file-input').click()">ファイルを選択</button>
+          </div>
+        </div>
+
+        <!-- スタミナリアルタイム可視化フッターバー -->
+        <div class="stamina-footer">
+          <div class="stamina-text">
+            <span>⚡ スタミナ: <span id="stamina-current-text" style="color:var(--primary);">520,000</span> / 520,000</span>
+            <span style="color:#64748b;">(回復: +520,000/分)</span>
+            <span style="color:#64748b;">|</span>
+            <span>🔥 累計消費: <span id="stamina-used-text" style="color:var(--accent);">0</span> ST</span>
+          </div>
+          <div class="stamina-bar-container">
+            <div class="stamina-bar-fill" id="stamina-bar-fill"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 使い方説明書画面 -->
+      <div id="guide-view" class="view-panel">
+        <div class="guide-container">
+          <div class="security-banner">
+          <h2>マス王は、ローカル マスキング 無料で非常にセキュアなサイトです。</h2>
+         <p>  🔒 <strong>完全ローカル処理・Exif自動消去保証:</strong> 画像データは外部サーバーに1バイトも送信されません。位置情報や撮影日時のExifデータも保存時に自動完全削除されます。</p>
+         <p> <strong>.maskファイルで復元可能</strong> .maskファイルを保存し、別の端末でmaskファイルをアップロードすれば、サーバーを介さずに安全に復元・同期ができます。</p>
+         <p> <strong>アカウント登録はいりません</strong> 面倒なアカウント登録はいりません。すぐ使えます。また、サーバーからパスワードやメールアドレスなどが流出する心配もありません</p>
+         <p> <strong>非常に軽量</strong> データベースサーバーを介さないので、待ち時間はありません。編集はすぐ適応されます。</p>
+       <p> <strong>役立つシーン</strong> SNSに画面のスクショを上げるときや、マイナンバーの提出、会社で個人情報を隠してコミュニティにあげる際に非常に役立ちます。ローカルで完結するので会社の規約違反にもなりません。</p>
+          </div>
+
+          <h2>📖 マスキングツール「<ruby>マス王 <rp>(</rp><rt>マスキング</rt><rp>)</rp></ruby>」の使い方</h2>
+          
+          <h3>1. 基本操作・画像読み込み・.maskファイル</h3>
+          <ul>
+            <li><strong>画像の追加:</strong> 画面中央タップ、ドラッグ＆ドロップ、または <kbd>Ctrl</kbd>+<kbd>V</kbd> で即座に展開。</li>
+            <li><strong>📦 .mask 保存 / 📂 .mask 読込:</strong> 作業中の全画像・全履歴・スタミナ状態を独自の <code>data.mask</code>（JSON形式）として手元に書き出し・復元可能。後から何度でも再編集できます。</li>
+            <li><strong>スタミナシステム:</strong> 毎分520,000の超高速回復エネルギーで快適に無制限利用可能。</li>
+          </ul>
+
+          <h3>2. 隠す・ぼかす（マスキング機能）</h3>
+          <ul>
+            <li><strong>黒塗り / 白塗り:</strong> 完全な塗りつぶしで情報を不可視化。</li>
+            <li><strong>モザイク / すりガラス / ぼかし:</strong> 自然なカモフラージュ加工（スライダーで粗さ調整可能）。</li>
+            <li><strong>円形マスク:</strong> 顔やアイコン、印鑑などを隠す丸型マスキング。</li>
+            <li><strong>スポットライト:</strong> 注目させたい場所以外を自動で暗転＆ぼかし。</li>
+            <li><strong>境界ぼかし（フェザー）:</strong> チェックを入れるとマスクの四隅の境目を自然になじませます。</li>
+          </ul>
+
+          <h3>3. 注釈・ハイライト・ダミー置換</h3>
+          <ul>
+            <li><strong>ダミー置換:</strong> 氏名・電話番号・メール・住所などをリアルなダミー文字で自然に上書き。<strong>指やマウスで直感ドラッグ移動</strong>してぴったり重ねて確定できます。</li>
+            <li><strong>赤枠 / 矢印:</strong> バグ報告や注目箇所を囲むフレーム＆矢印描画。</li>
+            <li><strong>連番スタンプ:</strong> タップするたびに ① ② ③ と自動カウントアップ。</li>
+            <li><strong>文字入れ / 蛍光ペン / スポイト:</strong> 自由テキスト配置、半透明マーカー、色抽出塗りつぶし。</li>
+          </ul>
+
+          <h3>4. 高度な編集・一括処理・保存</h3>
+          <ul>
+            <li><strong>定型マスク:</strong> マイナンバーカード・免許証・保険証の個人情報位置を一発一括マスキング。</li>
+            <li><strong>透かし文字 / トリミング / 回転 / リサイズ:</strong> 「社外秘」刻印やサイズ変更に対応。</li>
+            <li><strong>保存オプション:</strong> PNG / JPEG / WebP 形式選択および圧縮品質スライダー設定。</li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- 更新履歴画面 -->
+      <div id="changelog-view" class="view-panel">
+        <div class="guide-container">
+          <h2>🕒 更新履歴 (Changelog)</h2>
+
+          <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem;">
+            <input type="text" id="cl-search-input" style="flex: 1; min-width: 180px; padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.8rem;" placeholder="🔍 バージョン・日付・内容で検索...">
+            <button type="button" class="btn" id="cl-sort-btn">🔄 新しい順</button>
+            <button type="button" class="btn" id="cl-copy-btn">📋 コピー</button>
+            <button type="button" class="btn btn-primary" id="cl-download-txt-btn">📄 .txt 保存</button>
+          </div>
+
+          <div id="changelog-list"></div>
+
+          <!-- ページネーション -->
+          <div style="display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-top: 1.5rem; flex-wrap: wrap;">
+            <button type="button" class="btn" id="cl-prev-btn">◀ 前へ</button>
+            <span style="font-size: 0.85rem; color: #64748b;">
+              ページ: <select id="cl-page-select" style="padding: 0.2rem 0.4rem; border: 1px solid var(--border); border-radius: 4px;"></select>
+              / <span id="cl-total-pages">1</span> (<span id="cl-total-count">0</span>件)
+            </span>
+            <button type="button" class="btn" id="cl-next-btn">次へ ▶</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- ダミー文字選択モーダル -->
+    <div class="modal-overlay" id="dummy-modal">
+      <div class="modal-content">
+        <h3 style="margin-bottom: 0.8rem;">👤 ダミー文字で上書き置換</h3>
+        <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.8rem;">個人情報をリアルなダミー情報で覆い隠します。</p>
+        
+        <label style="font-size: 0.8rem; font-weight: bold;">よく使うプリセット:</label>
+        <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; margin: 0.4rem 0 0.8rem;">
+          <button type="button" class="btn" onclick="setDummyText('山田 太郎')">氏名: 山田 太郎</button>
+          <button type="button" class="btn" onclick="setDummyText('090-1234-5678')">電話: 090-1234-5678</button>
+          <button type="button" class="btn" onclick="setDummyText('sample@example.com')">メール: sample@example.com</button>
+          <button type="button" class="btn" onclick="setDummyText('東京都千代田区千代田1-1')">住所: 東京都千代田区...</button>
+          <button type="button" class="btn" onclick="setDummyText('ダミー株式会社')">会社: ダミー株式会社</button>
+          <button type="button" class="btn" onclick="setDummyText('¥12,800')">金額: ¥12,800</button>
+        </div>
+
+        <label style="font-size: 0.8rem; font-weight: bold;">文字の入力:</label>
+        <input type="text" id="dummy-input" value="山田 太郎" style="width: 100%; padding: 0.4rem; border: 1px solid var(--border); border-radius: 6px; margin: 0.3rem 0 0.8rem;">
+
+        <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+          <div style="flex: 1;">
+            <label style="font-size: 0.8rem;">背景の塗り:</label>
+            <select id="dummy-bg" style="width: 100%; padding: 0.3rem; border-radius: 4px; border: 1px solid var(--border);">
+              <option value="#ffffff">白背景 (文字:黒)</option>
+              <option value="#000000">黒背景 (文字:白)</option>
+              <option value="transparent">透明背景</option>
+            </select>
+          </div>
+          <div style="flex: 1;">
+            <label style="font-size: 0.8rem;">文字サイズ: <span id="dummy-size-val">18px</span></label>
+            <input type="range" id="dummy-size" min="10" max="48" value="18" style="width: 100%;">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+          <button type="button" class="btn" onclick="document.getElementById('dummy-modal').style.display='none'">キャンセル</button>
+          <button type="button" class="btn btn-primary" id="dummy-start-btn">位置を調整する ➔</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 保存用モーダル -->
+    <div class="modal-overlay" id="save-modal">
+      <div class="modal-content">
+        <h3 style="margin-bottom:1rem;">💾 画像の保存設定</h3>
+        <div style="margin-bottom:0.8rem;">
+          <label style="display:block; font-size:0.85rem; margin-bottom:0.3rem;">保存形式:</label>
+          <select id="save-format" style="width:100%; padding:0.4rem; border-radius:6px; border:1px solid var(--border);">
+            <option value="image/png">PNG (最高画質・透過保持)</option>
+            <option value="image/jpeg">JPEG (写真向け・高圧縮)</option>
+            <option value="image/webp">WebP (最新・超軽量)</option>
+          </select>
+        </div>
+        <div style="margin-bottom:1rem;" id="save-quality-group">
+          <label style="display:block; font-size:0.85rem; margin-bottom:0.3rem;">品質: <span id="quality-val">90%</span></label>
+          <input type="range" id="save-quality" min="10" max="100" value="90" style="width:100%;">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:0.5rem;">
+          <button type="button" class="btn" onclick="document.getElementById('save-modal').style.display='none'">キャンセル</button>
+          <button type="button" class="btn btn-primary" id="save-confirm-btn">ダウンロード実行</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 定型テンプレート選択モーダル -->
+    <div class="modal-overlay" id="template-modal">
+      <div class="modal-content">
+        <h3 style="margin-bottom:0.8rem;">🪪 定型マスクテンプレート</h3>
+        <p style="font-size:0.85rem; color:#64748b; margin-bottom:1rem;">カード全体に合わせて一括で番号や住所部分を隠します。</p>
+        <div style="display:flex; flex-direction:column; gap:0.5rem;">
+          <button type="button" class="btn" onclick="applyTemplate('mynumber')">💳 マイナンバーカード (番号・顔写真・QR)</button>
+          <button type="button" class="btn" onclick="applyTemplate('license')">🚗 運転免許証 (番号・顔写真・本籍/住所)</button>
+          <button type="button" class="btn" onclick="applyTemplate('insurance')">🏥 健康保険証 (記号・番号・保険者番号)</button>
+        </div>
+        <div style="text-align:right; margin-top:1rem;">
+          <button type="button" class="btn" onclick="document.getElementById('template-modal').style.display='none'">閉じる</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- リサイズモーダル -->
+    <div class="modal-overlay" id="resize-modal">
+      <div class="modal-content">
+        <h3 style="margin-bottom:1rem;">📏 画像リサイズ</h3>
+        <div style="display:flex; flex-direction:column; gap:0.5rem; margin-bottom:1rem;">
+          <button type="button" class="btn" onclick="applyResize(0.5)">50% に縮小</button>
+          <button type="button" class="btn" onclick="applyResize(0.75)">75% に縮小</button>
+          <button type="button" class="btn" onclick="applyResizeWidth(1200)">横幅 1200px に統一</button>
+          <button type="button" class="btn" onclick="applyResizeWidth(800)">横幅 800px に統一</button>
+        </div>
+        <div style="text-align:right;">
+          <button type="button" class="btn" onclick="document.getElementById('resize-modal').style.display='none'">キャンセル</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ショートカット一覧モーダル -->
+    <div class="modal-overlay" id="shortcut-modal">
+      <div class="modal-content">
+        <h3 style="margin-bottom:1rem;">⌨️ ショートカット早見表</h3>
+        <ul style="font-size:0.85rem; line-height:2; padding-left:1rem;">
+          <li><kbd>Ctrl</kbd> + <kbd>V</kbd> : 画像貼り付け</li>
+          <li><kbd>Ctrl</kbd> + <kbd>Z</kbd> : 元に戻す (Undo)</li>
+          <li><kbd>Ctrl</kbd> + <kbd>Y</kbd> / <kbd>Shift</kbd>+<kbd>Z</kbd> : やり直す (Redo)</li>
+          <li><kbd>Ctrl</kbd> + <kbd>C</kbd> : 画像をクリップボードへコピー</li>
+          <li><kbd>Ctrl</kbd> + <kbd>S</kbd> : 画像保存</li>
+          <li><kbd>Ctrl</kbd> + ホイール : 拡大 / 縮小</li>
+          <li><kbd>?</kbd> : このヘルプを表示</li>
+        </ul>
+        <div style="text-align:right; margin-top:1rem;">
+          <button type="button" class="btn btn-primary" onclick="document.getElementById('shortcut-modal').style.display='none'">閉じる</button>
+        </div>
+      </div>
+    </div>
+  </form>
+
+  <script>
+    // --- スタミナシステム（毎分520,000回復 / 1枚8,500消費 / 軽量描画） ---
+    const MAX_STAMINA = 520000;
+    const RECOVER_PER_SEC = 520000 / 60; // 毎秒約8,666.67
+    const CONSUME_PER_ACTION = 8500;
+    
+    let currentStamina = MAX_STAMINA;
+    let totalUsedStamina = 0;
+    let lastStaminaUpdate = Date.now();
+
+    function consumeStamina(amount = CONSUME_PER_ACTION) {
+      currentStamina = Math.max(0, currentStamina - amount);
+      totalUsedStamina += amount;
+      updateStaminaUI();
+    }
+
+    function updateStaminaLoop() {
+      const now = Date.now();
+      const deltaSec = (now - lastStaminaUpdate) / 1000;
+      lastStaminaUpdate = now;
+
+      if (currentStamina < MAX_STAMINA) {
+        currentStamina = Math.min(MAX_STAMINA, currentStamina + (RECOVER_PER_SEC * deltaSec));
+      }
+      updateStaminaUI();
+    }
+
+    function updateStaminaUI() {
+      const curText = document.getElementById('stamina-current-text');
+      const usedText = document.getElementById('stamina-used-text');
+      const barFill = document.getElementById('stamina-bar-fill');
+      
+      if (curText) curText.textContent = Math.round(currentStamina).toLocaleString();
+      if (usedText) usedText.textContent = Math.round(totalUsedStamina).toLocaleString();
+      if (barFill) {
+        const percent = Math.min(100, Math.max(0, (currentStamina / MAX_STAMINA) * 100));
+        barFill.style.width = `${percent}%`;
+      }
+    }
+    // 200msごとに軽量更新（ブラウザへの負荷ゼロ）
+    setInterval(updateStaminaLoop, 200);
+
+    // --- 訪問者の国・端末に合わせたリアルタイム秒単位時計 ---
+    function updateClientClock() {
+      const now = new Date();
+      const options = {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: '2-digit', minute: '2-digit', second: '2-digit',
+        hour12: false
+      };
+      const formatter = new Intl.DateTimeFormat('ja-JP', options);
+      const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Local';
+      document.getElementById('live-local-clock').textContent = `${formatter.format(now)} (${tzName})`;
+    }
+    setInterval(updateClientClock, 1000);
+    updateClientClock();
+
+    // --- 状態管理 ---
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const loupeCanvas = document.getElementById('loupe-canvas');
+    const loupeCtx = loupeCanvas.getContext('2d');
+    const loupe = document.getElementById('loupe');
+    const selectionBox = document.getElementById('selection-box');
+    const container = document.getElementById('canvas-container');
+    const dropzone = document.getElementById('dropzone');
+
+    let imageList = [];
+    let activeImageIndex = -1;
+
+    let currentMode = 'black';
+    let isInteracting = false;
+    let startX = 0, startY = 0;
+    let stampCounter = 1;
+    let currentZoom = 1.0;
+    let dropperColor = '#000000';
+
+    let undoStack = [];
+    let redoStack = [];
+    const MAX_UNDO = 20;
+
+    // タブ切り替え
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
+      const targetView = document.getElementById(`${tabId}-view`);
+      if (targetView) targetView.classList.add('active');
+      const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(`'${tabId}'`));
+      if (targetBtn) targetBtn.classList.add('active');
+    }
+
+    // ダークモード切替
+    document.getElementById('dark-mode-btn').addEventListener('click', () => {
+      document.body.classList.toggle('dark-mode');
+      const isDark = document.body.classList.contains('dark-mode');
+      document.getElementById('dark-mode-btn').textContent = isDark ? '☀️' : '🌙';
+      localStorage.setItem('maskou_dark', isDark ? '1' : '0');
+    });
+    if (localStorage.getItem('maskou_dark') === '1') {
+      document.body.classList.add('dark-mode');
+      document.getElementById('dark-mode-btn').textContent = '☀️';
+    }
+
+    // ツールモード切替
+    document.querySelectorAll('.mode-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        if (e.currentTarget.id === 'dummy-btn') return;
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+        const target = e.currentTarget;
+        target.classList.add('active');
+        currentMode = target.dataset.mode;
+      });
+    });
+
+    // --- 複数画像管理 & 自動復元 ---
+    function addImageFile(src, name = `画像 ${imageList.length + 1}`) {
+      consumeStamina(CONSUME_PER_ACTION);
+      const img = new Image();
+      img.onload = () => {
+        const item = {
+          name: name,
+          width: img.width,
+          height: img.height,
+          src: src,
+          undo: [],
+          redo: []
+        };
+        imageList.push(item);
+        renderImageTabs();
+        selectImage(imageList.length - 1, img);
+      };
+      img.src = src;
+    }
+
+    function renderImageTabs() {
+      const list = document.getElementById('img-tab-list');
+      list.innerHTML = '';
+      imageList.forEach((img, idx) => {
+        const tab = document.createElement('div');
+        tab.className = `img-tab ${idx === activeImageIndex ? 'active' : ''}`;
+        tab.innerHTML = `<span>${img.name}</span><span class="img-tab-close" onclick="closeImage(event, ${idx})">×</span>`;
+        tab.addEventListener('click', () => selectImage(idx));
+        list.appendChild(tab);
+      });
+    }
+
+    function selectImage(idx, loadedImg = null) {
+      if (!imageList[idx]) return;
+      activeImageIndex = idx;
+      renderImageTabs();
+      const item = imageList[idx];
+
+      dropzone.style.display = 'none';
+      container.style.display = 'inline-block';
+
+      if (loadedImg) {
+        canvas.width = loadedImg.width;
+        canvas.height = loadedImg.height;
+        ctx.drawImage(loadedImg, 0, 0);
+        item.undo = [ctx.getImageData(0, 0, canvas.width, canvas.height)];
+        item.redo = [];
+      } else {
+        const img = new Image();
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          if (item.undo && item.undo.length > 0) {
+            ctx.putImageData(item.undo[item.undo.length - 1], 0, 0);
+          } else {
+            ctx.drawImage(img, 0, 0);
+          }
+        };
+        img.src = item.src;
+      }
+
+      undoStack = item.undo;
+      redoStack = item.redo;
+      updateZoom(1.0);
+      saveStateToLocal();
+    }
+
+    function closeImage(e, idx) {
+      e.stopPropagation();
+      imageList.splice(idx, 1);
+      if (imageList.length === 0) {
+        activeImageIndex = -1;
+        canvas.width = 0; canvas.height = 0;
+        container.style.display = 'none';
+        dropzone.style.display = 'flex';
+      } else {
+        selectImage(Math.max(0, idx - 1));
+      }
+      renderImageTabs();
+    }
+
+    // 自動保存
+    function saveStateToLocal() {
+      try {
+        if (canvas.width > 0 && canvas.width * canvas.height < 4000000) {
+          localStorage.setItem('maskou_autosave', canvas.toDataURL('image/png', 0.7));
+        }
+      } catch(e) {}
+    }
+
+    // --- .mask プロジェクト保存 (エクスポート) & 復元 (インポート) ---
+    document.getElementById('export-mask-btn').addEventListener('click', () => {
+      if (imageList.length === 0 && !canvas.width) {
+        alert('保存する画像がありません');
+        return;
+      }
+      
+      const projectData = {
+        app: "Mas-King",
+        version: "2.3.0",
+        timestamp: new Date().toISOString(),
+        stamina: {
+          current: currentStamina,
+          totalUsed: totalUsedStamina
+        },
+        activeImageIndex: activeImageIndex,
+        images: imageList.map((img, idx) => ({
+          name: img.name,
+          width: img.width,
+          height: img.height,
+          src: (idx === activeImageIndex && canvas.width) ? canvas.toDataURL('image/png') : img.src
+        }))
+      };
+
+      const jsonStr = JSON.stringify(projectData);
+      const blob = new Blob([jsonStr], { type: 'application/json' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `data.mask`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+
+    document.getElementById('mask-file-input').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) loadMaskProjectFile(file);
+    });
+
+    function loadMaskProjectFile(file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        try {
+          const data = JSON.parse(ev.target.result);
+          if (data.app !== "Mas-King" || !data.images) {
+            alert('有効なマス王 (.mask) ファイルではありません。');
+            return;
+          }
+
+          if (data.stamina) {
+            currentStamina = Math.min(MAX_STAMINA, data.stamina.current || MAX_STAMINA);
+            totalUsedStamina = data.stamina.totalUsed || 0;
+            updateStaminaUI();
+          }
+
+          imageList = [];
+          data.images.forEach(imgData => {
+            imageList.push({
+              name: imgData.name,
+              width: imgData.width,
+              height: imgData.height,
+              src: imgData.src,
+              undo: [],
+              redo: []
+            });
+          });
+
+          renderImageTabs();
+          selectImage(data.activeImageIndex >= 0 ? data.activeImageIndex : 0);
+          alert('data.mask プロジェクトとスタミナ状態を完全復元しました！');
+        } catch(err) {
+          alert('.mask ファイルの読み込みに失敗しました。');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+    // ファイル入力 & D&D & コピペ
+    document.getElementById('file-input').addEventListener('change', (e) => {
+      Array.from(e.target.files).forEach(file => {
+        if (file.name.endsWith('.mask') || file.name.endsWith('.json')) {
+          loadMaskProjectFile(file);
+        } else {
+          const reader = new FileReader();
+          reader.onload = (ev) => addImageFile(ev.target.result, file.name);
+          reader.readAsDataURL(file);
+        }
+      });
+    });
+
+    window.addEventListener('paste', (e) => {
+      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      for (let item of items) {
+        if (item.type.indexOf('image') !== -1) {
+          const blob = item.getAsFile();
+          const reader = new FileReader();
+          reader.onload = (ev) => addImageFile(ev.target.result, '貼り付け画像');
+          reader.readAsDataURL(blob);
+          break;
+        }
+      }
+    });
+
+    window.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    window.addEventListener('dragleave', (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); });
+    window.addEventListener('drop', (e) => {
+      e.preventDefault(); dropzone.classList.remove('dragover');
+      if (e.dataTransfer.files) {
+        Array.from(e.dataTransfer.files).forEach(file => {
+          if (file.name.endsWith('.mask') || file.name.endsWith('.json')) {
+            loadMaskProjectFile(file);
+          } else if (file.type.startsWith('image/')) {
+            const reader = new FileReader();
+            reader.onload = (ev) => addImageFile(ev.target.result, file.name);
+            reader.readAsDataURL(file);
+          }
+        });
+      }
+    });
+
+    // ズーム
+    function updateZoom(newZoom) {
+      currentZoom = Math.min(Math.max(newZoom, 0.1), 5.0);
+      document.getElementById('zoom-val').textContent = `${Math.round(currentZoom * 100)}%`;
+      if (canvas.width > 0) {
+        canvas.style.width = `${canvas.width * currentZoom}px`;
+        canvas.style.height = `${canvas.height * currentZoom}px`;
+      }
+      if (typeof updateOverlayPosition === 'function') {
+        updateOverlayPosition();
+      }
+    }
+    document.getElementById('zoom-in-btn').addEventListener('click', () => updateZoom(currentZoom + 0.15));
+    document.getElementById('zoom-out-btn').addEventListener('click', () => updateZoom(currentZoom - 0.15));
+    document.getElementById('zoom-fit-btn').addEventListener('click', () => {
+      const ws = document.getElementById('workspace');
+      const scale = Math.min((ws.clientWidth - 40) / canvas.width, (ws.clientHeight - 40) / canvas.height, 1.0);
+      updateZoom(scale);
+    });
+
+    // ポインター＆タッチ統一座標取得
+    function getEventCoords(e) {
+      const rect = canvas.getBoundingClientRect();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const scaleX = canvas.width / rect.width;
+      const scaleY = canvas.height / rect.height;
+      return {
+        x: (clientX - rect.left) * scaleX,
+        y: (clientY - rect.top) * scaleY,
+        cssX: clientX - rect.left,
+        cssY: clientY - rect.top,
+        rawClientX: clientX,
+        rawClientY: clientY
+      };
+    }
+
+    // ポインターダウン
+    function onPointerDown(e) {
+      if (!canvas.width) return;
+      isInteracting = true;
+      const coords = getEventCoords(e);
+      startX = coords.x;
+      startY = coords.y;
+
+      if (currentMode === 'stamp') {
+        applyStamp(startX, startY);
+        isInteracting = false;
+        return;
+      } else if (currentMode === 'dropper') {
+        applyDropper(startX, startY);
+        isInteracting = false;
+        return;
+      } else if (currentMode === 'text') {
+        applyText(startX, startY);
+        isInteracting = false;
+        return;
+      }
+
+      selectionBox.style.left = `${coords.cssX}px`;
+      selectionBox.style.top = `${coords.cssY}px`;
+      selectionBox.style.width = '0px';
+      selectionBox.style.height = '0px';
+      selectionBox.style.display = 'block';
+
+      showLoupe(coords);
+    }
+
+    // ポインタームーブ
+    function onPointerMove(e) {
+      if (!isInteracting) return;
+      e.preventDefault();
+      const coords = getEventCoords(e);
+      const rect = canvas.getBoundingClientRect();
+
+      const curCssX = Math.min(Math.max(0, coords.cssX), rect.width);
+      const curCssY = Math.min(Math.max(0, coords.cssY), rect.height);
+      const startCssX = (startX / canvas.width) * rect.width;
+      const startCssY = (startY / canvas.height) * rect.height;
+
+      selectionBox.style.left = `${Math.min(startCssX, curCssX)}px`;
+      selectionBox.style.top = `${Math.min(startCssY, curCssY)}px`;
+      selectionBox.style.width = `${Math.abs(curCssX - startCssX)}px`;
+      selectionBox.style.height = `${Math.abs(curCssY - startCssY)}px`;
+
+      showLoupe(coords);
+    }
+
+    // ポインターアップ
+    function onPointerUp(e) {
+      if (!isInteracting) return;
+      isInteracting = false;
+      selectionBox.style.display = 'none';
+      loupe.style.display = 'none';
+
+      let endX = startX, endY = startY;
+      if (e.changedTouches) {
+        const coords = getEventCoords(e.changedTouches[0]);
+        endX = coords.x; endY = coords.y;
+      } else {
+        const coords = getEventCoords(e);
+        endX = coords.x; endY = coords.y;
+      }
+
+      const x = Math.min(startX, endX);
+      const y = Math.min(startY, endY);
+      const w = Math.abs(endX - startX);
+      const h = Math.abs(endY - startY);
+
+      if (w > 3 || h > 3 || currentMode === 'arrow') {
+        executeToolAction(x, y, w, h, startX, startY, endX, endY);
+      }
+    }
+
+    canvas.addEventListener('mousedown', onPointerDown);
+    window.addEventListener('mousemove', onPointerMove);
+    window.addEventListener('mouseup', onPointerUp);
+
+    canvas.addEventListener('touchstart', onPointerDown, { passive: false });
+    window.addEventListener('touchmove', onPointerMove, { passive: false });
+    window.addEventListener('touchend', onPointerUp, { passive: false });
+
+    // ルーペ
+    function showLoupe(coords) {
+      loupe.style.display = 'block';
+      loupe.style.left = `${coords.cssX + 20}px`;
+      loupe.style.top = `${coords.cssY - 110}px`;
+
+      loupeCanvas.width = 100;
+      loupeCanvas.height = 100;
+      loupeCtx.imageSmoothingEnabled = false;
+      loupeCtx.drawImage(canvas, coords.x - 25, coords.y - 25, 50, 50, 0, 0, 100, 100);
+      
+      loupeCtx.strokeStyle = '#ef4444';
+      loupeCtx.beginPath();
+      loupeCtx.moveTo(50, 40); loupeCtx.lineTo(50, 60);
+      loupeCtx.moveTo(40, 50); loupeCtx.lineTo(60, 50);
+      loupeCtx.stroke();
+    }
+
+    // 各機能の描画処理
+    function executeToolAction(x, y, w, h, sx, sy, ex, ey) {
+      consumeStamina(100); // 軽微なスタミナ消費
+      const strength = parseInt(document.getElementById('strength-slider').value, 10);
+      const isFeather = document.getElementById('feather-chk').checked;
+
+      ctx.save();
+      if (isFeather) {
+        ctx.shadowColor = 'rgba(0,0,0,0.5)';
+        ctx.shadowBlur = 8;
+      }
+
+      switch (currentMode) {
+        case 'black':
+          ctx.fillStyle = '#000000';
+          ctx.fillRect(x, y, w, h);
+          break;
+        case 'white':
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(x, y, w, h);
+          break;
+        case 'mosaic':
+          applyMosaic(x, y, w, h, strength);
+          break;
+        case 'glass':
+          applyGlass(x, y, w, h, strength);
+          break;
+        case 'blur':
+          applyBlur(x, y, w, h, strength);
+          break;
+        case 'circle':
+          applyCircleMask(x, y, w, h);
+          break;
+        case 'spotlight':
+          applySpotlight(x, y, w, h);
+          break;
+        case 'redframe':
+          ctx.strokeStyle = '#ef4444';
+          ctx.lineWidth = Math.max(3, strength / 3);
+          ctx.strokeRect(x, y, w, h);
+          break;
+        case 'arrow':
+          drawArrow(sx, sy, ex, ey, Math.max(3, strength / 3));
+          break;
+        case 'highlighter':
+          ctx.fillStyle = 'rgba(253, 224, 71, 0.4)';
+          ctx.fillRect(x, y, w, h);
+          break;
+        case 'crop':
+          applyCrop(x, y, w, h);
+          break;
+      }
+
+      ctx.restore();
+      pushUndo();
+    }
+
+    function applyMosaic(x, y, w, h, size) {
+      const imgData = ctx.getImageData(x, y, w, h);
+      const d = imgData.data;
+      for (let by = 0; by < h; by += size) {
+        for (let bx = 0; bx < w; bx += size) {
+          const p = (by * w + bx) * 4;
+          const r = d[p], g = d[p+1], b = d[p+2], a = d[p+3];
+          for (let dy = 0; dy < size && by + dy < h; dy++) {
+            for (let dx = 0; dx < size && bx + dx < w; dx++) {
+              const idx = ((by + dy) * w + (bx + dx)) * 4;
+              d[idx] = r; d[idx+1] = g; d[idx+2] = b; d[idx+3] = a;
+            }
+          }
+        }
+      }
+      ctx.putImageData(imgData, x, y);
+    }
+
+    function applyGlass(x, y, w, h, size) {
+      applyBlur(x, y, w, h, size / 2);
+      const imgData = ctx.getImageData(x, y, w, h);
+      const d = imgData.data;
+      for (let i = 0; i < d.length; i += 4) {
+        const noise = (Math.random() - 0.5) * 30;
+        d[i] = Math.min(255, Math.max(0, d[i] + noise));
+        d[i+1] = Math.min(255, Math.max(0, d[i+1] + noise));
+        d[i+2] = Math.min(255, Math.max(0, d[i+2] + noise));
+      }
+      ctx.putImageData(imgData, x, y);
+    }
+
+    function applyBlur(x, y, w, h, radius) {
+      const tCanvas = document.createElement('canvas');
+      tCanvas.width = w; tCanvas.height = h;
+      const tCtx = tCanvas.getContext('2d');
+      tCtx.drawImage(canvas, x, y, w, h, 0, 0, w, h);
+      ctx.save();
+      ctx.filter = `blur(${Math.max(2, radius / 2)}px)`;
+      ctx.drawImage(tCanvas, x, y, w, h);
+      ctx.restore();
+    }
+
+    function applyCircleMask(x, y, w, h) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(x + w/2, y + h/2, w/2, h/2, 0, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.fillStyle = '#000000';
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function applySpotlight(x, y, w, h) {
+      const fullCanvas = document.createElement('canvas');
+      fullCanvas.width = canvas.width; fullCanvas.height = canvas.height;
+      const fCtx = fullCanvas.getContext('2d');
+      fCtx.drawImage(canvas, 0, 0);
+
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(x + w/2, y + h/2, w/2, h/2, 0, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.drawImage(fullCanvas, 0, 0);
+      ctx.restore();
+    }
+
+    function drawArrow(fromX, fromY, toX, toY, width) {
+      const headlen = width * 4;
+      const angle = Math.atan2(toY - fromY, toX - fromX);
+      ctx.strokeStyle = '#ef4444';
+      ctx.fillStyle = '#ef4444';
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(fromX, fromY);
+      ctx.lineTo(toX, toY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(toX, toY);
+      ctx.lineTo(toX - headlen * Math.cos(angle - Math.PI / 6), toY - headlen * Math.sin(angle - Math.PI / 6));
+      ctx.lineTo(toX - headlen * Math.cos(angle + Math.PI / 6), toY - headlen * Math.sin(angle + Math.PI / 6));
+      ctx.fill();
+    }
+
+    function applyStamp(x, y) {
+      ctx.save();
+      ctx.fillStyle = '#ef4444';
+      ctx.beginPath();
+      ctx.arc(x, y, 16, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(stampCounter, x, y);
+      ctx.restore();
+      stampCounter++;
+      pushUndo();
+    }
+
+    function applyText(x, y) {
+      const text = prompt('挿入する文字を入力してください:', '注記テキスト');
+      if (text) {
+        ctx.save();
+        ctx.fillStyle = '#ef4444';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textBaseline = 'top';
+        ctx.fillText(text, x, y);
+        ctx.restore();
+        pushUndo();
+      }
+    }
+
+    function applyDropper(x, y) {
+      const pixel = ctx.getImageData(x, y, 1, 1).data;
+      dropperColor = `rgb(${pixel[0]},${pixel[1]},${pixel[2]})`;
+      alert(`色を抽出しました: ${dropperColor}`);
+      currentMode = 'black';
+    }
+
+    function applyCrop(x, y, w, h) {
+      const cropped = ctx.getImageData(x, y, w, h);
+      canvas.width = w;
+      canvas.height = h;
+      ctx.putImageData(cropped, 0, 0);
+      updateZoom(currentZoom);
+    }
+
+    document.getElementById('rotate-btn').addEventListener('click', () => {
+      const tCanvas = document.createElement('canvas');
+      tCanvas.width = canvas.width; tCanvas.height = canvas.height;
+      tCanvas.getContext('2d').drawImage(canvas, 0, 0);
+      canvas.width = tCanvas.height;
+      canvas.height = tCanvas.width;
+      ctx.translate(canvas.width, 0);
+      ctx.rotate(Math.PI / 2);
+      ctx.drawImage(tCanvas, 0, 0);
+      updateZoom(currentZoom);
+      pushUndo();
+    });
+
+    document.getElementById('flip-btn').addEventListener('click', () => {
+      const tCanvas = document.createElement('canvas');
+      tCanvas.width = canvas.width; tCanvas.height = canvas.height;
+      tCanvas.getContext('2d').drawImage(canvas, 0, 0);
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+      ctx.drawImage(tCanvas, 0, 0);
+      pushUndo();
+    });
+
+    document.getElementById('watermark-btn').addEventListener('click', () => {
+      const text = prompt('透かし文字を入力:', '社外秘 / CONFIDENTIAL');
+      if (!text) return;
+      ctx.save();
+      ctx.font = `bold ${Math.max(24, canvas.width / 15)}px sans-serif`;
+      ctx.fillStyle = 'rgba(239, 68, 68, 0.25)';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.translate(canvas.width / 2, canvas.height / 2);
+      ctx.rotate(-Math.PI / 6);
+      ctx.fillText(text, 0, 0);
+      ctx.restore();
+      pushUndo();
+    });
+
+    document.getElementById('template-btn').addEventListener('click', () => {
+      document.getElementById('template-modal').style.display = 'flex';
+    });
+
+    function applyTemplate(type) {
+      document.getElementById('template-modal').style.display = 'none';
+      const w = canvas.width, h = canvas.height;
+      ctx.fillStyle = '#000000';
+      if (type === 'mynumber') {
+        ctx.fillRect(w * 0.1, h * 0.72, w * 0.8, h * 0.2);
+        ctx.fillRect(w * 0.65, h * 0.2, w * 0.3, h * 0.5);
+      } else if (type === 'license') {
+        ctx.fillRect(w * 0.25, h * 0.68, w * 0.45, h * 0.12);
+        ctx.fillRect(w * 0.7, h * 0.25, w * 0.26, h * 0.55);
+      } else if (type === 'insurance') {
+        ctx.fillRect(w * 0.15, h * 0.18, w * 0.5, h * 0.15);
+      }
+      pushUndo();
+    }
+
+    document.getElementById('resize-modal-btn').addEventListener('click', () => {
+      document.getElementById('resize-modal').style.display = 'flex';
+    });
+    function applyResize(scale) {
+      document.getElementById('resize-modal').style.display = 'none';
+      const tCanvas = document.createElement('canvas');
+      tCanvas.width = canvas.width; tCanvas.height = canvas.height;
+      tCanvas.getContext('2d').drawImage(canvas, 0, 0);
+      canvas.width = Math.round(canvas.width * scale);
+      canvas.height = Math.round(canvas.height * scale);
+      ctx.drawImage(tCanvas, 0, 0, canvas.width, canvas.height);
+      updateZoom(currentZoom);
+      pushUndo();
+    }
+    function applyResizeWidth(targetW) {
+      applyResize(targetW / canvas.width);
+    }
+
+    // --- ダミー文字上書き置換ツール ---
+    const dummyModal = document.getElementById('dummy-modal');
+    const dummyOverlay = document.getElementById('dummy-overlay');
+    const dummyOverlayText = document.getElementById('dummy-overlay-text');
+    let dummyState = { text: '山田 太郎', bg: '#ffffff', color: '#000000', size: 18, x: 50, y: 50 };
+
+    document.getElementById('dummy-btn').addEventListener('click', () => {
+      if (!canvas.width) { alert('先に画像を開いてください'); return; }
+      dummyModal.style.display = 'flex';
+    });
+
+    function setDummyText(txt) {
+      document.getElementById('dummy-input').value = txt;
+    }
+
+    document.getElementById('dummy-size').addEventListener('input', (e) => {
+      document.getElementById('dummy-size-val').textContent = `${e.target.value}px`;
+    });
+
+    document.getElementById('dummy-start-btn').addEventListener('click', () => {
+      dummyState.text = document.getElementById('dummy-input').value || 'ダミー';
+      dummyState.bg = document.getElementById('dummy-bg').value;
+      dummyState.color = dummyState.bg === '#000000' ? '#ffffff' : '#000000';
+      dummyState.size = parseInt(document.getElementById('dummy-size').value, 10);
+
+      dummyOverlayText.textContent = dummyState.text;
+      dummyOverlay.style.fontSize = `${dummyState.size}px`;
+      dummyOverlay.style.background = dummyState.bg;
+      dummyOverlay.style.color = dummyState.color;
+
+      dummyState.x = canvas.width / 4;
+      dummyState.y = canvas.height / 4;
+      updateOverlayPosition();
+
+      dummyModal.style.display = 'none';
+      dummyOverlay.style.display = 'block';
+    });
+
+    function updateOverlayPosition() {
+      if (!canvas.width) return;
+      const rect = canvas.getBoundingClientRect();
+      dummyOverlay.style.left = `${(dummyState.x / canvas.width) * rect.width}px`;
+      dummyOverlay.style.top = `${(dummyState.y / canvas.height) * rect.height}px`;
+    }
+
+    let isDraggingDummy = false;
+    let dragOffset = { x: 0, y: 0 };
+
+    function onDummyDragStart(e) {
+      isDraggingDummy = true;
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const rect = dummyOverlay.getBoundingClientRect();
+      dragOffset.x = clientX - rect.left;
+      dragOffset.y = clientY - rect.top;
+      e.stopPropagation();
+    }
+
+    function onDummyDragMove(e) {
+      if (!isDraggingDummy) return;
+      e.preventDefault();
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const canvasRect = canvas.getBoundingClientRect();
+
+      const currentCssX = clientX - canvasRect.left - dragOffset.x;
+      const currentCssY = clientY - canvasRect.top - dragOffset.y;
+
+      dummyState.x = (currentCssX / canvasRect.width) * canvas.width;
+      dummyState.y = (currentCssY / canvasRect.height) * canvas.height;
+      updateOverlayPosition();
+    }
+
+    function onDummyDragEnd() {
+      isDraggingDummy = false;
+    }
+
+    dummyOverlay.addEventListener('mousedown', onDummyDragStart);
+    window.addEventListener('mousemove', onDummyDragMove);
+    window.addEventListener('mouseup', onDummyDragEnd);
+
+    dummyOverlay.addEventListener('touchstart', onDummyDragStart, { passive: false });
+    window.addEventListener('touchmove', onDummyDragMove, { passive: false });
+    window.addEventListener('touchend', onDummyDragEnd, { passive: false });
+
+    document.getElementById('dummy-apply-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      ctx.save();
+      ctx.font = `bold ${dummyState.size}px sans-serif`;
+      ctx.textBaseline = 'top';
+      const textWidth = ctx.measureText(dummyState.text).width;
+      const textHeight = dummyState.size * 1.25;
+
+      if (dummyState.bg !== 'transparent') {
+        ctx.fillStyle = dummyState.bg;
+        ctx.fillRect(dummyState.x, dummyState.y, textWidth + 8, textHeight + 4);
+      }
+
+      ctx.fillStyle = dummyState.color;
+      ctx.fillText(dummyState.text, dummyState.x + 4, dummyState.y + 2);
+      ctx.restore();
+
+      dummyOverlay.style.display = 'none';
+      pushUndo();
+    });
+
+    document.getElementById('dummy-cancel-btn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      dummyOverlay.style.display = 'none';
+    });
+
+    // --- Undo / Redo ---
+    function pushUndo() {
+      if (!canvas.width) return;
+      redoStack = [];
+      undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+      if (undoStack.length > MAX_UNDO) undoStack.shift();
+      saveStateToLocal();
+    }
+
+    function undo() {
+      if (undoStack.length > 1) {
+        redoStack.push(undoStack.pop());
+        const state = undoStack[undoStack.length - 1];
+        canvas.width = state.width;
+        canvas.height = state.height;
+        ctx.putImageData(state, 0, 0);
+      }
+    }
+
+    function redo() {
+      if (redoStack.length > 0) {
+        const state = redoStack.pop();
+        undoStack.push(state);
+        canvas.width = state.width;
+        canvas.height = state.height;
+        ctx.putImageData(state, 0, 0);
+      }
+    }
+
+    document.getElementById('undo-btn').addEventListener('click', undo);
+    document.getElementById('redo-btn').addEventListener('click', redo);
+    document.getElementById('clear-btn').addEventListener('click', () => {
+      if (undoStack.length > 0) {
+        const init = undoStack[0];
+        canvas.width = init.width; canvas.height = init.height;
+        ctx.putImageData(init, 0, 0);
+        undoStack = [init];
+        redoStack = [];
+      }
+    });
+
+    // キーボードショートカット
+    window.addEventListener('keydown', (e) => {
+      if (e.key === '?' || (e.shiftKey && e.key === '/')) {
+        document.getElementById('shortcut-modal').style.display = 'flex';
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
+        e.preventDefault();
+        if (e.shiftKey) redo(); else undo();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+        e.preventDefault(); redo();
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        document.getElementById('save-modal').style.display = 'flex';
+      }
+    });
+    document.getElementById('shortcut-help-btn').addEventListener('click', () => {
+      document.getElementById('shortcut-modal').style.display = 'flex';
+    });
+
+    // 保存
+    document.getElementById('save-modal-btn').addEventListener('click', () => {
+      if (!canvas.width) return;
+      document.getElementById('save-modal').style.display = 'flex';
+    });
+
+    document.getElementById('save-quality').addEventListener('input', (e) => {
+      document.getElementById('quality-val').textContent = `${e.target.value}%`;
+    });
+
+    document.getElementById('save-confirm-btn').addEventListener('click', () => {
+      consumeStamina(CONSUME_PER_ACTION);
+      const format = document.getElementById('save-format').value;
+      const quality = parseInt(document.getElementById('save-quality').value, 10) / 100;
+      const ext = format === 'image/jpeg' ? 'jpg' : (format === 'image/webp' ? 'webp' : 'png');
+
+      const a = document.createElement('a');
+      a.download = `masked_${Date.now()}.${ext}`;
+      a.href = canvas.toDataURL(format, quality);
+      a.click();
+      document.getElementById('save-modal').style.display = 'none';
+    });
+
+    // クリップボードコピー
+    document.getElementById('copy-btn').addEventListener('click', async () => {
+      if (!canvas.width) return;
+      try {
+        canvas.toBlob(async (blob) => {
+          await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+          alert('クリップボードにコピーしました！そのまま貼り付けできます。');
+        });
+      } catch(e) {
+        alert('ブラウザ非対応のため保存メニューをご利用ください。');
+      }
+    });
+
+    // 更新履歴データ
+    const changelogData = [
+      {
+        version: 'v2.3.0',
+        date: '2026-08-30 09:10',
+        title: '独自形式 data.mask 対応＆超インフレスタミナ可視化バー搭載',
+        items: [
+          '全画像・スタミナ状態を完全保存＆復元できる data.mask (JSON形式) の入出力に対応',
+          '毎分52万回復のリアルタイム・スタミナバーを下部に搭載（動作超軽量設計）'
+        ]
+      },
+      {
+        version: 'v2.2.0',
+        date: '2026-08-29 20:30',
+        title: 'SQL Serverアクセスカウンター＆現地時刻時計の搭載',
+        items: [
+          'Somee.com MSSQL連動のリアルタイムアクセスカウンターをヘッダーに統合',
+          'アクセスした国・タイムゾーンを自動判別する高精度現地時計を搭載'
+        ]
+      },
+      {
+        version: 'v2.1.0',
+        date: '2026-08-29 14:50',
+        title: 'ダミー文字置換ツール＆直感ドラッグ移動の実装',
+        items: [
+          '氏名・電話番号・メール・住所・会社名などのダミー上書き置換に対応',
+          '配置枠を画面上で直感的にドラッグ＆ドロップ移動して位置調整可能'
+        ]
+      },
+      {
+        version: 'v2.0.0',
+        date: '2026-08-28 19:15',
+        title: '超大型アップデート：全29大機能＆スマホ完全対応',
+        items: [
+          'スマホ・タブレットのタッチ・スワイプ・ピンチ操作に完全最適化',
+          '注釈機能・定型カードマスク・透かし・リサイズ・保存形式選択を実装'
+        ]
+      },
+      {
+        version: 'v1.0.0',
+        date: '2026-08-01 12:00',
+        title: '初期リリース',
+        items: [
+          '完全ローカル完結マスキングツールの初期公開'
+        ]
+      }
+    ];
+
+    let clCurrentPage = 1;
+    const clItemsPerPage = 10;
+    let clSortDesc = true;
+
+    function renderChangelog() {
+      const query = document.getElementById('cl-search-input').value.toLowerCase();
+      const listEl = document.getElementById('changelog-list');
+      const selectEl = document.getElementById('cl-page-select');
+
+      let filtered = changelogData.filter(item => {
+        const full = `${item.version} ${item.date} ${item.title} ${item.items.join(' ')}`.toLowerCase();
+        return full.includes(query);
+      });
+
+      filtered.sort((a, b) => {
+        const diff = new Date(a.date) - new Date(b.date);
+        return clSortDesc ? -diff : diff;
+      });
+
+      const totalItems = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(totalItems / clItemsPerPage));
+      if (clCurrentPage > totalPages) clCurrentPage = totalPages;
+      if (clCurrentPage < 1) clCurrentPage = 1;
+
+      selectEl.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const opt = document.createElement('option');
+        opt.value = i; opt.textContent = i;
+        if (i === clCurrentPage) opt.selected = true;
+        selectEl.appendChild(opt);
+      }
+      document.getElementById('cl-total-pages').textContent = totalPages;
+      document.getElementById('cl-total-count').textContent = totalItems;
+
+      document.getElementById('cl-prev-btn').disabled = (clCurrentPage === 1);
+      document.getElementById('cl-next-btn').disabled = (clCurrentPage === totalPages);
+
+      if (totalItems === 0) {
+        listEl.innerHTML = '<p style="color:#64748b; text-align:center; padding: 2rem;">見つかりませんでした。</p>';
+        return;
+      }
+
+      const startIdx = (clCurrentPage - 1) * clItemsPerPage;
+      const pageItems = filtered.slice(startIdx, startIdx + clItemsPerPage);
+
+      listEl.innerHTML = pageItems.map(item => `
+        <div class="changelog-item">
+          <div class="changelog-header">
+            <div><span class="changelog-badge">${item.version}</span> <strong>${item.title}</strong></div>
+            <span style="font-size:0.8rem; color:#64748b;">📅 ${item.date}</span>
+          </div>
+          <ul style="padding-left:1.2rem; font-size:0.85rem; line-height:1.6;">
+            ${item.items.map(li => `<li>${li}</li>`).join('')}
+          </ul>
+        </div>
+      `).join('');
+    }
+
+    document.getElementById('cl-prev-btn').addEventListener('click', () => { if (clCurrentPage > 1) { clCurrentPage--; renderChangelog(); } });
+    document.getElementById('cl-next-btn').addEventListener('click', () => { if (clCurrentPage < Math.ceil(changelogData.length / clItemsPerPage)) { clCurrentPage++; renderChangelog(); } });
+    document.getElementById('cl-page-select').addEventListener('change', (e) => { clCurrentPage = parseInt(e.target.value, 10); renderChangelog(); });
+    document.getElementById('cl-search-input').addEventListener('input', () => { clCurrentPage = 1; renderChangelog(); });
+    document.getElementById('cl-sort-btn').addEventListener('click', () => {
+      clSortDesc = !clSortDesc;
+      document.getElementById('cl-sort-btn').textContent = clSortDesc ? '🔄 新しい順' : '🔄 古い順';
+      renderChangelog();
+    });
+
+    document.getElementById('cl-copy-btn').addEventListener('click', async () => {
+      const text = changelogData.map(i => `[${i.version}] ${i.title} (${i.date})\n` + i.items.map(li => `・ ${li}`).join('\n')).join('\n\n');
+      await navigator.clipboard.writeText(text);
+      alert('更新履歴テキストをコピーしました！');
+    });
+
+    document.getElementById('cl-download-txt-btn').addEventListener('click', () => {
+      const text = changelogData.map(i => `[${i.version}] ${i.title} (${i.date})\n` + i.items.map(li => `・ ${li}`).join('\n')).join('\n\n');
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `CHANGELOG_${new Date().toISOString().slice(0, 10)}.txt`;
+      a.click();
+    });
+
+    // 初期化
+    renderChangelog();
+
+    // 自動復元
+    window.addEventListener('DOMContentLoaded', () => {
+      const saved = localStorage.getItem('maskou_autosave');
+      if (saved) {
+        addImageFile(saved, '自動復元画像');
+      }
+    });
+  </script>
+</body>
+</html>
