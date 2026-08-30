@@ -300,47 +300,12 @@
       </div>
 
       <!-- アクセスカウンター ＆ リアルタイム現地時計 -->
-<!-- アクセスカウンターの表示エリア（文字サイズや間隔を整えています） -->
-<div id="counter-box" style="font-family: 'Noto Sans JP', monospace; font-size: 20px; letter-spacing: 1px; margin: 10px 0; color: #333;">
-  訪問者数: <span id="d1-counter" style="font-weight: bold; color: #0070f3;">...</span>
-</div>
+      <div class="counter-badge" title="訪問者カウンターと現地時間">
+        👥 訪問: <span class="counter-num" id="d1-counter">...</span>
+        <span style="opacity:0.4;">|</span>
         🕒 <span id="live-local-clock">時刻取得中...</span>
       </div>
     </div>
-
-<script>
-  const WORKERS_URL = 'https://bold-lake-8147.k66157473.workers.dev/';
-
-  // サーバーからアクセス数を取得して画面を書き換える関数
-  async function fetchCounter() {
-    const counterElement = document.getElementById('d1-counter');
-    
-    // 【安全対策】もしHTML側に要素が見つからなければ、何もせず処理を終了する
-    if (!counterElement) {
-      console.warn('ID "d1-counter" の要素が見つかりません。');
-      return;
-    }
-
-    try {
-      const res = await fetch(WORKERS_URL);
-      if (!res.ok) throw new Error('Network response was not ok');
-      
-      const data = await res.json();
-      if (data.count !== undefined) {
-        counterElement.innerText = data.count;
-      } else {
-        throw new Error('Invalid data format');
-      }
-    } catch (err) {
-      console.error('カウンターの取得に失敗しました:', err);
-      // 安全にエラーメッセージを表示（counterElementが存在することを確認済みなので安心）
-      counterElement.innerText = err.message;
-    }
-  }
-
-  // ページが読み込まれたら実行
-  window.addEventListener('DOMContentLoaded', fetchCounter);
-</script>
 
     <div class="nav-tabs">
       <button type="button" class="tab-btn active" onclick="switchTab('tool')">ツール</button>
@@ -689,7 +654,7 @@
         counterElement.innerText = '---';
       }
     }
-    fetchCounter();
+    window.addEventListener('DOMContentLoaded', fetchCounter);
 
     // --- 訪問者の国・端末に合わせたリアルタイム秒単位時計 (純粋JS) ---
     function updateClientClock() {
@@ -1131,7 +1096,7 @@
       showLoupe(coords);
     }
 
-    // ポインターアップ（PCのマウス・スマホ両対応）
+    // ポインターアップ（PC・スマホ両対応）
     function onPointerUp(e) {
       if (!isInteracting) return;
       isInteracting = false;
@@ -1658,6 +1623,15 @@
 
     // 更新履歴データ
     const changelogData = [
+
+      {
+        version: 'v2.4.0',
+        date: '2026-08-30 19:40',
+        title: '調べて分かったバグをすべて直しました',
+        items: [
+          'パソコンで機能が使用できないバグなどを直しました。文法なども直しました',      
+  ]
+      },
       {
         version: 'v2.3.0',
         date: '2026-08-30 09:10',
