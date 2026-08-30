@@ -668,24 +668,6 @@
   </div>
 
   <script>
-    // --- アクセスカウンター (Somee API非同期取得) ---
-    async function initAccessCounter() {
-      const counterEl = document.getElementById('lblCounter');
-      try {
-        const res = await fetch('https://mas-king.somee.com/counter.aspx');
-        if (res.ok) {
-          const count = await res.text();
-          const num = parseInt(count, 10);
-          counterEl.textContent = isNaN(num) ? count : num.toLocaleString();
-        } else {
-          counterEl.textContent = '---';
-        }
-      } catch (err) {
-        counterEl.textContent = '---';
-      }
-    }
-    initAccessCounter();
-
     // --- 訪問者の国・端末に合わせたリアルタイム秒単位時計 (純粋JS) ---
     function updateClientClock() {
       const now = new Date();
