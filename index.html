@@ -1110,14 +1110,13 @@
       isInteracting = false;
       selectionBox.style.display = 'none';
       loupe.style.display = 'none';
-
       let endX = startX, endY = startY;
       if (e.changedTouches && e.changedTouches.length > 0) {
-        // スマホ（タッチ操作）の場合
+        // スマホ操作のとき
         const coords = getEventCoords(e.changedTouches[0]);
         endX = coords.x; endY = coords.y;
       } else {
-        // PC（マウス操作）の場合：シンプルに e だけを渡せば安全です
+        // PC操作のとき（changedTouches[0]を読まないように修正！）
         const coords = getEventCoords(e);
         endX = coords.x; endY = coords.y;
       }
