@@ -71,7 +71,7 @@
       color: #475569;
     }
     body.dark-mode .counter-badge { background: #0f172a; color: #94a3b8; }
-    .counter-num { color: #ef4444; font-weight: bold; }
+    .counter-num { color: #0070f3; font-weight: bold; }
 
     .nav-tabs { display: flex; gap: 0.3rem; align-items: center; }
     .tab-btn {
@@ -299,47 +299,10 @@
         <span class="badge">完全安全ローカル</span>
       </div>
 
-
-<!-- アクセスカウンターの表示エリア（文字サイズや間隔を整えています） -->
-<div id="counter-box" style="font-family: 'Noto Sans JP', monospace; font-size: 20px; letter-spacing: 1px; margin: 10px 0; color: #333;">
-  訪問者数: <span id="d1-counter" style="font-weight: bold; color: #0070f3;">...</span>
-</div>
-
-
-<script>
-  const WORKERS_URL = 'https://bold-lake-8147.k66157473.workers.dev/';
-
-  // サーバーからアクセス数を取得して画面を書き換える関数
-  async function fetchCounter() {
-    const counterElement = document.getElementById('d1-counter');
-    
-    // 【安全対策】もしHTML側に要素が見つからなければ、何もせず処理を終了する
-    if (!counterElement) {
-      console.warn('ID "d1-counter" の要素が見つかりません。');
-      return;
-    }
-
-    try {
-      const res = await fetch(WORKERS_URL);
-      if (!res.ok) throw new Error('Network response was not ok');
-      
-      const data = await res.json();
-      if (data.count !== undefined) {
-        counterElement.innerText = data.count;
-      } else {
-        throw new Error('Invalid data format');
-      }
-    } catch (err) {
-      console.error('カウンターの取得に失敗しました:', err);
-      // 安全にエラーメッセージを表示（counterElementが存在することを確認済みなので安心）
-      counterElement.innerText = err.message;
-    }
-  }
-
-  // ページが読み込まれたら実行
-  window.addEventListener('DOMContentLoaded', fetchCounter);
-</script>
-
+      <!-- アクセスカウンター ＆ リアルタイム現地時計 -->
+      <div class="counter-badge" title="訪問者カウンターと現地時間">
+        👥 訪問: <span class="counter-num" id="d1-counter">...</span>
+        <span style="opacity:0.4;">|</span>
         🕒 <span id="live-local-clock">時刻取得中...</span>
       </div>
     </div>
@@ -668,6 +631,31 @@
   </div>
 
   <script>
+    // --- Cloudflare Workers D1 アクセスカウンター取得 ---
+    const WORKERS_URL = 'https://bold-lake-8147.k66157473.workers.dev/';
+
+    async function fetchCounter() {
+      const counterElement = document.getElementById('d1-counter');
+      if (!counterElement) return;
+
+      try {
+        const res = await fetch(WORKERS_URL);
+        if (!res.ok) throw new Error('Network response was not ok');
+        
+        const data = await res.json();
+        if (data.count !== undefined) {
+          const num = parseInt(data.count, 10);
+          counterElement.innerText = isNaN(num) ? data.count : num.toLocaleString();
+        } else {
+          throw new Error('Invalid data format');
+        }
+      } catch (err) {
+        console.error('カウンターの取得に失敗しました:', err);
+        counterElement.innerText = '---';
+      }
+    }
+    fetchCounter();
+
     // --- 訪問者の国・端末に合わせたリアルタイム秒単位時計 (純粋JS) ---
     function updateClientClock() {
       const now = new Date();
@@ -678,7 +666,10 @@
       };
       const formatter = new Intl.DateTimeFormat('ja-JP', options);
       const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Local';
-      document.getElementById('live-local-clock').textContent = `${formatter.format(now)} (${tzName})`;
+      const clockEl = document.getElementById('live-local-clock');
+      if (clockEl) {
+        clockEl.textContent = `${formatter.format(now)} (${tzName})`;
+      }
     }
     setInterval(updateClientClock, 1000);
     updateClientClock();
@@ -987,7 +978,8 @@
     });
 
     window.addEventListener('paste', (e) => {
-      const items = (e.clipboardData || e.originalEvent.clipboardData).items;
+      const items = (e.clipboardData || e.originalEvent.clipboardData)?.items;
+      if (!items) return;
       for (let item of items) {
         if (item.type.indexOf('image') !== -1) {
           const blob = item.getAsFile();
@@ -1003,7 +995,7 @@
     window.addEventListener('dragleave', (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); });
     window.addEventListener('drop', (e) => {
       e.preventDefault(); dropzone.classList.remove('dragover');
-      if (e.dataTransfer.files) {
+      if (e.dataTransfer && e.dataTransfer.files) {
         Array.from(e.dataTransfer.files).forEach(file => {
           if (file.name.endsWith('.mask') || file.name.endsWith('.json')) {
             loadMaskProjectFile(file);
@@ -1039,10 +1031,10 @@
     // ポインター＆タッチ統一座標取得
     function getEventCoords(e) {
       const rect = canvas.getBoundingClientRect();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      const scaleX = canvas.width / rect.width;
-      const scaleY = canvas.height / rect.height;
+      const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : (e.clientX !== undefined ? e.clientX : 0);
+      const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : (e.clientY !== undefined ? e.clientY : 0);
+      const scaleX = rect.width > 0 ? canvas.width / rect.width : 1;
+      const scaleY = rect.height > 0 ? canvas.height / rect.height : 1;
       return {
         x: (clientX - rect.left) * scaleX,
         y: (clientY - rect.top) * scaleY,
@@ -1104,23 +1096,21 @@
       showLoupe(coords);
     }
 
-    // ポインターアップ
-    function onPointerUp(e) 
+    // ポインターアップ（PCのマウス・スマホ両対応）
+    function onPointerUp(e) {
       if (!isInteracting) return;
       isInteracting = false;
       selectionBox.style.display = 'none';
       loupe.style.display = 'none';
+
       let endX = startX, endY = startY;
       if (e.changedTouches && e.changedTouches.length > 0) {
-        // スマホ操作のとき
         const coords = getEventCoords(e.changedTouches[0]);
         endX = coords.x; endY = coords.y;
       } else {
-        // PC操作のとき（changedTouches[0]を読まないように修正！）
         const coords = getEventCoords(e);
         endX = coords.x; endY = coords.y;
       }
-
 
       const x = Math.min(startX, endX);
       const y = Math.min(startY, endY);
@@ -1472,8 +1462,8 @@
 
     function onDummyDragStart(e) {
       isDraggingDummy = true;
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
+      const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
       const rect = dummyOverlay.getBoundingClientRect();
       dragOffset.x = clientX - rect.left;
       dragOffset.y = clientY - rect.top;
@@ -1483,8 +1473,8 @@
     function onDummyDragMove(e) {
       if (!isDraggingDummy) return;
       e.preventDefault();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+      const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
+      const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
       const canvasRect = canvas.getBoundingClientRect();
 
       const currentCssX = clientX - canvasRect.left - dragOffset.x;
