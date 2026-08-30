@@ -1105,20 +1105,23 @@
     }
 
     // ポインターアップ
-    function onPointerUp(e) {
+    function onPointerUp(e) 
       if (!isInteracting) return;
       isInteracting = false;
       selectionBox.style.display = 'none';
       loupe.style.display = 'none';
 
       let endX = startX, endY = startY;
-      if (e.changedTouches) {
+      if (e.changedTouches && e.changedTouches.length > 0) {
+        // スマホ（タッチ操作）の場合
         const coords = getEventCoords(e.changedTouches[0]);
         endX = coords.x; endY = coords.y;
       } else {
-        const coords = getEventCoords(e.changedTouches[0] || e);
+        // PC（マウス操作）の場合：シンプルに e だけを渡せば安全です
+        const coords = getEventCoords(e);
         endX = coords.x; endY = coords.y;
       }
+
 
       const x = Math.min(startX, endX);
       const y = Math.min(startY, endY);
