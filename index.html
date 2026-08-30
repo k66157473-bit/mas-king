@@ -321,7 +321,7 @@
       }
     } catch (err) {
       console.error('カウンターの取得に失敗しました:', err);
-      counterElement.innerText = 'Error';
+    counterElement.innerText = err.message;
     }
   }
 
