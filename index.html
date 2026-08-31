@@ -1688,6 +1688,16 @@
     const changelogData = [
 
 
+
+      {
+        version: 'v2.6.0',
+        date: '2026-08-31 09:47',
+        title: 'on/offボタンを動かせる機能を追加しました',
+        items: [
+          ' 位置を自由自在に変えれます',      
+  ]
+   },
+
       {
         version: 'v2.5.0',
         date: '2026-08-31 09:38',
@@ -2054,7 +2064,7 @@
       });
     });
   </script>
-<div class="sparkle-toggle-container">
+<div class="sparkle-toggle-container" id="draggableToggle">
   <label class="sparkle-toggle-label">
     <input type="checkbox" id="sparkleToggle">
     <span class="sparkle-toggle-text">キラキラエフェクト</span>
@@ -2064,15 +2074,16 @@
 <style>
   .sparkle-toggle-container {
     position: fixed;
-    bottom: 10px;
-    left: 10px;
-    z-index: 99999;
+    z-index: 2147483647;
     background: rgba(255, 255, 255, 0.8);
     padding: 5px 10px;
     border-radius: 20px;
     border: 1px solid #ccc;
     font-size: 12px;
     font-family: sans-serif;
+    user-select: none;
+    touch-action: none;
+    cursor: move;
   }
   @media (prefers-color-scheme: dark) {
     .sparkle-toggle-container {
@@ -2084,14 +2095,18 @@
   .sparkle-toggle-label {
     display: flex;
     align-items: center;
-    cursor: pointer;
+    cursor: move;
     gap: 5px;
+  }
+  .sparkle-toggle-label input,
+  .sparkle-toggle-label span {
+    cursor: pointer;
   }
 
   .internet-sparkle {
     position: fixed;
     pointer-events: none;
-    z-index: 99998;
+    z-index: 2147483646;
     line-height: 1;
     user-select: none;
     animation: sparkle-fade 0.8s linear forwards;
@@ -2125,6 +2140,7 @@
   (function() {
     let isEnabled = true;
     const toggle = document.getElementById('sparkleToggle');
+    const container = document.getElementById('draggableToggle');
     
     const savedState = localStorage.getItem('sparkleEnabled');
     if (savedState !== null) {
@@ -2138,6 +2154,87 @@
       isEnabled = e.target.checked;
       localStorage.setItem('sparkleEnabled', isEnabled);
     });
+
+    const savedTop = localStorage.getItem('sparkleToggleTop');
+    const savedLeft = localStorage.getItem('sparkleToggleLeft');
+    
+    if (savedTop !== null && savedLeft !== null) {
+      container.style.top = savedTop;
+      container.style.left = savedLeft;
+    } else {
+      container.style.top = '10px';
+      container.style.right = '10px';
+    }
+
+    let isDragging = false;
+    let startX, startY;
+    let initialX, initialY;
+
+    function onPointerDown(e) {
+      if (e.target === toggle) return;
+      
+      isDragging = true;
+      container.style.transition = 'none';
+      
+      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+      
+      startX = clientX;
+      startY = clientY;
+      
+      const rect = container.getBoundingClientRect();
+      initialX = rect.left;
+      initialY = rect.top;
+      
+      window.addEventListener('mousemove', onPointerMove);
+      window.addEventListener('mouseup', onPointerUp);
+      window.addEventListener('touchmove', onPointerMove, { passive: false });
+      window.addEventListener('touchend', onPointerUp);
+    }
+
+    function onPointerMove(e) {
+      if (!isDragging) return;
+      
+      const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0].clientX);
+      const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0].clientY);
+      
+      if (clientX === undefined || clientY === undefined) return;
+      
+      if (e.cancelable) e.preventDefault();
+      
+      const dx = clientX - startX;
+      const dy = clientY - startY;
+      
+      let newLeft = initialX + dx;
+      let newTop = initialY + dy;
+      
+      const padding = 5;
+      const maxLeft = window.innerWidth - container.offsetWidth - padding;
+      const maxTop = window.innerHeight - container.offsetHeight - padding;
+      
+      newLeft = Math.max(padding, Math.min(newLeft, maxLeft));
+      newTop = Math.max(padding, Math.min(newTop, maxTop));
+      
+      container.style.left = `${newLeft}px`;
+      container.style.top = `${newTop}px`;
+      container.style.right = 'auto';
+    }
+
+    function onPointerUp() {
+      if (!isDragging) return;
+      isDragging = false;
+      
+      localStorage.setItem('sparkleToggleTop', container.style.top);
+      localStorage.setItem('sparkleToggleLeft', container.style.left);
+      
+      window.removeEventListener('mousemove', onPointerMove);
+      window.removeEventListener('mouseup', onPointerUp);
+      window.removeEventListener('touchmove', onPointerMove);
+      window.removeEventListener('touchend', onPointerUp);
+    }
+
+    container.addEventListener('mousedown', onPointerDown);
+    container.addEventListener('touchstart', onPointerDown, { passive: true });
 
     function createSparkle(x, y) {
       if (!isEnabled) return;
@@ -2181,7 +2278,9 @@
     window.addEventListener('touchmove', (e) => {
       if (Math.random() < 0.4) {
         const touch = e.touches[0];
-        createSparkle(touch.clientX, touch.clientY);
+        if (touch) {
+          createSparkle(touch.clientX, touch.clientY);
+        }
       }
     }, { passive: true });
   })();
