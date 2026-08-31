@@ -795,13 +795,12 @@
     let currentStamina = MAX_STAMINA;
     let totalUsedStamina = 0;
     let lastStaminaUpdate = Date.now();
-
-    function consumeStamina(amount = CONSUME_PER_ACTION) {
-      currentStamina = Math.max(0, currentStamina - amount);
-      totalUsedStamina += amount;
-      updateStaminaUI();
-      // 同期保存を排除して描画を高速化
-    }
+// スタミナ消費時の無駄な同期保存をカット
+function consumeStamina(amount = CONSUME_PER_ACTION) {
+  currentStamina = Math.max(0, currentStamina - amount);
+  totalUsedStamina += amount;
+  updateStaminaUI();
+}
 
     function updateStaminaLoop() {
       const now = Date.now();
@@ -1252,10 +1251,11 @@
       return Math.sqrt(dx * dx + dy * dy);
     }
 
-    // ポインターダウン
+// ポインターダウン
     function onPointerDown(e) {
       if (!canvas.width) return;
 
+      // 2本指タッチ時はピンチズームモードへ
       if (e.touches && e.touches.length >= 2) {
         isPinching = true;
         isInteracting = false;
@@ -1264,6 +1264,10 @@
         initialPinchDistance = getTouchDistance(e.touches);
         initialPinchZoom = currentZoom;
         return;
+      }
+
+      if (e.type === 'touchstart') {
+        e.preventDefault(); // スマホの誤スクロールをブロック
       }
 
       isPinching = false;
@@ -1294,7 +1298,6 @@
 
       showLoupe(coords);
     }
-
     // ポインタームーブ
     function onPointerMove(e) {
       if (isPinching && e.touches && e.touches.length >= 2) {
@@ -1361,28 +1364,32 @@
     window.addEventListener('touchmove', onPointerMove, { passive: false });
     window.addEventListener('touchend', onPointerUp, { passive: false });
 
-    // ルーペ（軽量化）
+let loupeThrottle = 0;
     function showLoupe(coords) {
+      const now = performance.now();
+      if (now - loupeThrottle < 20) return; // 20ms未満の連続描画を間引き
+      loupeThrottle = now;
+
       loupe.style.display = 'block';
       const isMobile = window.innerWidth <= 768;
-      const offsetX = isMobile ? -50 : 20;
-      const offsetY = isMobile ? -130 : -110;
+      const offsetX = isMobile ? -45 : 20;
+      const offsetY = isMobile ? -110 : -100;
 
-      loupe.style.left = `${Math.max(10, coords.cssX + offsetX)}px`;
-      loupe.style.top = `${Math.max(10, coords.cssY + offsetY)}px`;
+      loupe.style.left = `${Math.max(5, coords.cssX + offsetX)}px`;
+      loupe.style.top = `${Math.max(5, coords.cssY + offsetY)}px`;
 
-      loupeCanvas.width = 100;
-      loupeCanvas.height = 100;
+      loupeCanvas.width = 90;
+      loupeCanvas.height = 90;
       loupeCtx.imageSmoothingEnabled = false;
-      loupeCtx.drawImage(canvas, Math.round(coords.x - 25), Math.round(coords.y - 25), 50, 50, 0, 0, 100, 100);
+      loupeCtx.drawImage(canvas, Math.round(coords.x - 20), Math.round(coords.y - 20), 40, 40, 0, 0, 90, 90);
       
       loupeCtx.strokeStyle = '#ef4444';
+      loupeCtx.lineWidth = 1.5;
       loupeCtx.beginPath();
-      loupeCtx.moveTo(50, 40); loupeCtx.lineTo(50, 60);
-      loupeCtx.moveTo(40, 50); loupeCtx.lineTo(60, 50);
+      loupeCtx.moveTo(45, 35); loupeCtx.lineTo(45, 55);
+      loupeCtx.moveTo(35, 45); loupeCtx.lineTo(55, 45);
       loupeCtx.stroke();
     }
-
     // 各機能の描画処理（高速化）
     function executeToolAction(x, y, w, h, sx, sy, ex, ey) {
       consumeStamina(100);
@@ -1469,7 +1476,7 @@
       }
     }
 
-    // 高速モザイク処理
+    // 高速・安定モザイク処理（整数インデックス化）
     function applyMosaic(rx, ry, rw, rh, size) {
       if (rw <= 0 || rh <= 0) return;
       const imgData = ctx.getImageData(rx, ry, rw, rh);
@@ -1876,15 +1883,22 @@
       dummyOverlay.style.display = 'none';
     });
 
-    // --- 高速 Undo / Redo（同期書き込みを遅延化して即座に画面へ復帰） ---
-    function pushUndo() {
-      if (!canvas.width) return;
-      redoStack = [];
-      undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-      if (undoStack.length > MAX_UNDO) undoStack.shift();
-      debouncedSaveStateToLocal();
-    }
+let autoSaveDebounceTimer = null;
 
+function debouncedSaveStateToLocal() {
+  if (autoSaveDebounceTimer) clearTimeout(autoSaveDebounceTimer);
+  autoSaveDebounceTimer = setTimeout(() => {
+    saveStateToLocal();
+  }, 1000); // 1秒間操作が止まったときにバックグラウンドで保存
+}
+
+function pushUndo() {
+  if (!canvas.width) return;
+  redoStack = [];
+  undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+  if (undoStack.length > MAX_UNDO) undoStack.shift();
+  debouncedSaveStateToLocal(); // ← 描画直後は重い保存を後回しにする
+}
     function undo() {
       if (undoStack.length > 1) {
         redoStack.push(undoStack.pop());
