@@ -1456,22 +1456,33 @@
       }
     }
 
-    function applyMosaic(x, y, w, h, size) {
-      const imgData = ctx.getImageData(x, y, w, h);
+    
+function applyMosaic(x, y, w, h, size) {
+      const rx = Math.max(0, Math.floor(x));
+      const ry = Math.max(0, Math.floor(y));
+      const rw = Math.min(canvas.width - rx, Math.floor(w));
+      const rh = Math.min(canvas.height - ry, Math.floor(h));
+      if (rw <= 0 || rh <= 0) return;
+
+      const imgData = ctx.getImageData(rx, ry, rw, rh);
       const d = imgData.data;
-      for (let by = 0; by < h; by += size) {
-        for (let bx = 0; bx < w; bx += size) {
-          const p = (by * w + bx) * 4;
+      const bw = imgData.width;
+      const bh = imgData.height;
+      const bSize = Math.max(2, parseInt(size, 10) || 12);
+
+      for (let by = 0; by < bh; by += bSize) {
+        for (let bx = 0; bx < bw; bx += bSize) {
+          const p = (by * bw + bx) * 4;
           const r = d[p], g = d[p+1], b = d[p+2], a = d[p+3];
-          for (let dy = 0; dy < size && by + dy < h; dy++) {
-            for (let dx = 0; dx < size && bx + dx < w; dx++) {
-              const idx = ((by + dy) * w + (bx + dx)) * 4;
+          for (let dy = 0; dy < bSize && by + dy < bh; dy++) {
+            for (let dx = 0; dx < bSize && bx + dx < bw; dx++) {
+              const idx = ((by + dy) * bw + (bx + dx)) * 4;
               d[idx] = r; d[idx+1] = g; d[idx+2] = b; d[idx+3] = a;
             }
           }
         }
       }
-      ctx.putImageData(imgData, x, y);
+      ctx.putImageData(imgData, rx, ry);
     }
 
     function applyGlass(x, y, w, h, size) {
