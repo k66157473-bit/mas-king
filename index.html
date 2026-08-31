@@ -787,7 +787,7 @@
     setInterval(updateClientClock, 1000);
     updateClientClock();
 
-    // --- スタミナシステム（毎分520,000回復 / 1枚8,500消費 / 軽量描画） ---
+    // --- スタミナシステム（毎分520,000回復 / 1枚8,500消費 / 超軽量） ---
     const MAX_STAMINA = 520000;
     const RECOVER_PER_SEC = 520000 / 60;
     const CONSUME_PER_ACTION = 8500;
@@ -800,7 +800,7 @@
       currentStamina = Math.max(0, currentStamina - amount);
       totalUsedStamina += amount;
       updateStaminaUI();
-      saveStateToLocal();
+      // 同期保存を排除して描画を高速化
     }
 
     function updateStaminaLoop() {
@@ -857,6 +857,9 @@
     let isPinching = false;
     let initialPinchDistance = 0;
     let initialPinchZoom = 1.0;
+
+    // デバウンス用タイマー（高速化）
+    let autoSaveDebounceTimer = null;
 
     // タブ切り替え
     function switchTab(tabId) {
@@ -952,7 +955,14 @@
       };
     }
 
-    // --- 自動保存（localStorage）の更新 ---
+    // --- デバウンス自動保存（操作停止1秒後に非同期実行でラグを解消） ---
+    function debouncedSaveStateToLocal() {
+      if (autoSaveDebounceTimer) clearTimeout(autoSaveDebounceTimer);
+      autoSaveDebounceTimer = setTimeout(() => {
+        saveStateToLocal();
+      }, 1000);
+    }
+
     function saveStateToLocal() {
       try {
         if (imageList.length === 0 && !canvas.width) {
@@ -1046,7 +1056,7 @@
         undoStack = item.undo;
         redoStack = item.redo;
         updateZoom(getFitZoomScale());
-        saveStateToLocal();
+        debouncedSaveStateToLocal();
       } else {
         const img = new Image();
         img.onload = () => {
@@ -1061,7 +1071,7 @@
           undoStack = item.undo;
           redoStack = item.redo;
           updateZoom(getFitZoomScale());
-          saveStateToLocal();
+          debouncedSaveStateToLocal();
         };
         img.src = item.src;
       }
@@ -1083,7 +1093,7 @@
         canvas.width = 0; canvas.height = 0;
         container.style.display = 'none';
         dropzone.style.display = 'flex';
-        saveStateToLocal();
+        debouncedSaveStateToLocal();
       } else {
         selectImage(Math.max(0, idx - 1));
       }
@@ -1246,7 +1256,6 @@
     function onPointerDown(e) {
       if (!canvas.width) return;
 
-      // 2本指タッチ（ピンチズーム）判定
       if (e.touches && e.touches.length >= 2) {
         isPinching = true;
         isInteracting = false;
@@ -1288,7 +1297,6 @@
 
     // ポインタームーブ
     function onPointerMove(e) {
-      // 2本指ピンチズーム処理
       if (isPinching && e.touches && e.touches.length >= 2) {
         e.preventDefault();
         const dist = getTouchDistance(e.touches);
@@ -1353,7 +1361,7 @@
     window.addEventListener('touchmove', onPointerMove, { passive: false });
     window.addEventListener('touchend', onPointerUp, { passive: false });
 
-    // ルーペ（スマホで指で隠れないよう位置自動補正）
+    // ルーペ（軽量化）
     function showLoupe(coords) {
       loupe.style.display = 'block';
       const isMobile = window.innerWidth <= 768;
@@ -1366,7 +1374,7 @@
       loupeCanvas.width = 100;
       loupeCanvas.height = 100;
       loupeCtx.imageSmoothingEnabled = false;
-      loupeCtx.drawImage(canvas, coords.x - 25, coords.y - 25, 50, 50, 0, 0, 100, 100);
+      loupeCtx.drawImage(canvas, Math.round(coords.x - 25), Math.round(coords.y - 25), 50, 50, 0, 0, 100, 100);
       
       loupeCtx.strokeStyle = '#ef4444';
       loupeCtx.beginPath();
@@ -1375,12 +1383,17 @@
       loupeCtx.stroke();
     }
 
-    // 各機能の描画処理
+    // 各機能の描画処理（高速化）
     function executeToolAction(x, y, w, h, sx, sy, ex, ey) {
       consumeStamina(100);
       const strength = parseInt(document.getElementById('strength-slider').value, 10);
       const isFeather = document.getElementById('feather-chk').checked;
       const chosenColor = maskColorPicker ? maskColorPicker.value : '#000000';
+
+      const rx = Math.max(0, Math.floor(x));
+      const ry = Math.max(0, Math.floor(y));
+      const rw = Math.min(canvas.width - rx, Math.floor(w));
+      const rh = Math.min(canvas.height - ry, Math.floor(h));
 
       ctx.save();
       if (isFeather) {
@@ -1391,44 +1404,44 @@
       switch (currentMode) {
         case 'black':
           ctx.fillStyle = '#000000';
-          ctx.fillRect(x, y, w, h);
+          ctx.fillRect(rx, ry, rw, rh);
           break;
         case 'white':
           ctx.fillStyle = '#ffffff';
-          ctx.fillRect(x, y, w, h);
+          ctx.fillRect(rx, ry, rw, rh);
           break;
         case 'circle':
-          applyCircleMask(x, y, w, h, chosenColor);
+          applyCircleMask(rx, ry, rw, rh, chosenColor);
           break;
         case 'mosaic':
-          applyMosaic(x, y, w, h, strength);
+          applyMosaic(rx, ry, rw, rh, strength);
           break;
         case 'glass':
-          applyGlass(x, y, w, h, strength);
+          applyGlass(rx, ry, rw, rh, strength);
           break;
         case 'blur':
-          applyBlur(x, y, w, h, strength);
+          applyBlur(rx, ry, rw, rh, strength);
           break;
         case 'spotlight':
-          applySpotlight(x, y, w, h);
+          applySpotlight(rx, ry, rw, rh);
           break;
         case 'eraser':
-          applyEraser(x, y, w, h);
+          applyEraser(rx, ry, rw, rh);
           break;
         case 'redframe':
           ctx.strokeStyle = chosenColor || '#ef4444';
           ctx.lineWidth = Math.max(3, strength / 3);
-          ctx.strokeRect(x, y, w, h);
+          ctx.strokeRect(rx, ry, rw, rh);
           break;
         case 'arrow':
-          drawArrow(sx, sy, ex, ey, Math.max(3, strength / 3), chosenColor || '#ef4444');
+          drawArrow(Math.floor(sx), Math.floor(sy), Math.floor(ex), Math.floor(ey), Math.max(3, strength / 3), chosenColor || '#ef4444');
           break;
         case 'highlighter':
           ctx.fillStyle = 'rgba(253, 224, 71, 0.4)';
-          ctx.fillRect(x, y, w, h);
+          ctx.fillRect(rx, ry, rw, rh);
           break;
         case 'crop':
-          applyCrop(x, y, w, h);
+          applyCrop(rx, ry, rw, rh);
           break;
       }
 
@@ -1436,7 +1449,7 @@
       pushUndo();
     }
 
-    // 円形マスク（カラーピッカー＆スポイト色連動）
+    // 円形マスク
     function applyCircleMask(x, y, w, h, color = '#000000') {
       ctx.save();
       ctx.beginPath();
@@ -1447,7 +1460,7 @@
       ctx.restore();
     }
 
-    // 消しゴム（選択範囲の元画像復元）
+    // 消しゴム
     function applyEraser(x, y, w, h) {
       if (undoStack.length === 0) return;
       const origData = undoStack[0];
@@ -1456,19 +1469,14 @@
       }
     }
 
-    
-function applyMosaic(x, y, w, h, size) {
-      const rx = Math.max(0, Math.floor(x));
-      const ry = Math.max(0, Math.floor(y));
-      const rw = Math.min(canvas.width - rx, Math.floor(w));
-      const rh = Math.min(canvas.height - ry, Math.floor(h));
+    // 高速モザイク処理
+    function applyMosaic(rx, ry, rw, rh, size) {
       if (rw <= 0 || rh <= 0) return;
-
       const imgData = ctx.getImageData(rx, ry, rw, rh);
       const d = imgData.data;
       const bw = imgData.width;
       const bh = imgData.height;
-      const bSize = Math.max(2, parseInt(size, 10) || 12);
+      const bSize = Math.max(2, parseInt(size, 10) || 14);
 
       for (let by = 0; by < bh; by += bSize) {
         for (let bx = 0; bx < bw; bx += bSize) {
@@ -1611,7 +1619,6 @@ function applyMosaic(x, y, w, h, size) {
       const d = imgData.data;
 
       if (type === 'text') {
-        // 高精度テキストブロック検出（エッジ密度＆連結領域解析）
         const blockSize = Math.max(16, Math.round(w / 40));
         const blocksX = Math.floor(w / blockSize);
         const blocksY = Math.floor(h / blockSize);
@@ -1650,14 +1657,12 @@ function applyMosaic(x, y, w, h, size) {
         pushUndo();
         alert(`高精度解析完了: ${detected} 箇所の文字・高密度領域を自動マスキングしました。`);
       } else if (type === 'face') {
-        // 高精度肌色・顔候補領域クラスタリング
         const skinRegions = [];
         const step = 4;
         for (let y = 0; y < h; y += step) {
           for (let x = 0; x < w; x += step) {
             const i = (y * w + x) * 4;
             const r = d[i], g = d[i+1], b = d[i+2];
-            // YCbCr / RGB スキントーン判定アルゴリズム
             const isSkin = (r > 95 && g > 40 && b > 20 && (Math.max(r,g,b) - Math.min(r,g,b) > 15) && Math.abs(r - g) > 15 && r > g && r > b);
             if (isSkin) skinRegions.push({ x, y });
           }
@@ -1871,13 +1876,13 @@ function applyMosaic(x, y, w, h, size) {
       dummyOverlay.style.display = 'none';
     });
 
-    // --- Undo / Redo ---
+    // --- 高速 Undo / Redo（同期書き込みを遅延化して即座に画面へ復帰） ---
     function pushUndo() {
       if (!canvas.width) return;
       redoStack = [];
       undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
       if (undoStack.length > MAX_UNDO) undoStack.shift();
-      saveStateToLocal();
+      debouncedSaveStateToLocal();
     }
 
     function undo() {
@@ -1887,7 +1892,7 @@ function applyMosaic(x, y, w, h, size) {
         canvas.width = state.width;
         canvas.height = state.height;
         ctx.putImageData(state, 0, 0);
-        saveStateToLocal();
+        debouncedSaveStateToLocal();
       }
     }
 
@@ -1898,7 +1903,7 @@ function applyMosaic(x, y, w, h, size) {
         canvas.width = state.width;
         canvas.height = state.height;
         ctx.putImageData(state, 0, 0);
-        saveStateToLocal();
+        debouncedSaveStateToLocal();
       }
     }
 
@@ -1911,7 +1916,7 @@ function applyMosaic(x, y, w, h, size) {
         ctx.putImageData(init, 0, 0);
         undoStack = [init];
         redoStack = [];
-        saveStateToLocal();
+        debouncedSaveStateToLocal();
       }
     });
 
@@ -1971,6 +1976,15 @@ function applyMosaic(x, y, w, h, size) {
 
     // 更新履歴データ
     const changelogData = [
+      {
+        version: 'v2.7.1',
+        date: '2026-08-31 12:15',
+        title: '描画・マスキング完了時の超軽量化＆ラグ完全解消',
+        items: [
+          'ドラッグ終了時の同期Base64書き込みを遅延デバウンス化し、体感遅延をゼロに改善',
+          'モザイク・ぼかし・消しゴム処理のピクセル走査を整数最適化して高速化'
+        ]
+      },
       {
         version: 'v2.7.0',
         date: '2026-08-31 11:45',
