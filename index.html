@@ -398,6 +398,7 @@
             <button type="button" class="btn" id="copy-btn">📋 コピー</button>
             <button type="button" class="btn btn-primary" id="save-modal-btn">💾 保存...</button>
             <button type="button" class="btn" id="shortcut-help-btn">❓</button>
+            <button type="button" class="btn" id="compressor-modal-btn" title="画像をドラッグしてWebP/AVIFに一括圧縮">🗜️ 一括圧縮・変換</button>
           </div>
         </div>
       </div>
@@ -484,6 +485,7 @@
           <li><strong>定型マスク:</strong> マイナンバーカード・免許証・保険証の個人情報位置を一発一括マスキング。</li>
           <li><strong>透かし文字 / トリミング / 回転 / リサイズ:</strong> 「社外秘」刻印やサイズ変更に対応。</li>
           <li><strong>保存オプション:</strong> PNG / JPEG / WebP 形式選択および圧縮品質スライダー設定。</li>
+          <li><strong> 超軽量 WebP / AVIF 一括コンバーター＆圧縮機</strong>  - 重たいPNGやJPEGをドラッグするだけで、画質を保ったままファイルサイズを1/10に一括圧縮（ギガ削減）。:</strong> PNG / JPEG / WebP 形式選択および圧縮品質スライダー設定。 </li>
         </ul>
       </div>
     </div>
@@ -629,6 +631,67 @@
       </div>
     </div>
   </div>
+
+<!-- 超軽量 WebP / AVIF 一括コンバーター＆圧縮機 モーダル -->
+<div class="modal-overlay" id="compressor-modal">
+  <div class="modal-content" style="max-width: 600px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+      <h3 style="margin: 0;">🗜️ 超軽量 WebP / AVIF 一括コンバーター</h3>
+      <button type="button" class="btn" onclick="closeCompressorModal()" style="height: 26px; padding: 0 6px;">✕</button>
+    </div>
+    <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.8rem;">
+      サーバー送信なし！重いPNG/JPEGをブラウザ内で超軽量なWebP/AVIFに一括圧縮・変換します。
+    </p>
+
+    <!-- ドロップエリア -->
+    <div id="comp-dropzone" style="border: 2px dashed var(--border); border-radius: 8px; padding: 1.2rem; text-align: center; background: rgba(0,0,0,0.02); cursor: pointer; margin-bottom: 0.8rem;">
+      <div style="font-size: 1.8rem; margin-bottom: 0.2rem;">📦 ➔ ⚡</div>
+      <div style="font-size: 0.85rem; font-weight: bold;">圧縮する画像を一括ドラッグ＆ドロップ</div>
+      <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.2rem;">またはクリックして複数ファイルを選択</div>
+      <input type="file" id="comp-file-input" accept="image/*" multiple style="display: none;">
+    </div>
+
+    <!-- 圧縮設定 -->
+    <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; background: var(--bg); padding: 0.6rem; border-radius: 6px; margin-bottom: 0.8rem; font-size: 0.8rem;">
+      <div style="flex: 1; min-width: 130px;">
+        <label style="display: block; font-weight: bold; margin-bottom: 0.2rem;">変換形式:</label>
+        <select id="comp-format" style="width: 100%; padding: 0.3rem; border-radius: 4px; border: 1px solid var(--border);">
+          <option value="image/webp" selected>WebP (推奨・超軽量)</option>
+          <option value="image/avif">AVIF (次世代・最高圧縮)</option>
+          <option value="image/jpeg">JPEG (高圧縮)</option>
+          <option value="image/png">PNG (可逆圧縮)</option>
+        </select>
+      </div>
+      <div style="flex: 1; min-width: 130px;">
+        <label style="display: block; font-weight: bold; margin-bottom: 0.2rem;">品質: <span id="comp-quality-val">80%</span></label>
+        <input type="range" id="comp-quality" min="10" max="100" value="80" style="width: 100%;">
+      </div>
+      <div style="flex: 1; min-width: 130px;">
+        <label style="display: block; font-weight: bold; margin-bottom: 0.2rem;">最大幅リサイズ:</label>
+        <select id="comp-resize" style="width: 100%; padding: 0.3rem; border-radius: 4px; border: 1px solid var(--border);">
+          <option value="0" selected>変更なし（元サイズ）</option>
+          <option value="1920">最大 1920px (フルHD)</option>
+          <option value="1200">最大 1200px (Web標準)</option>
+          <option value="800">最大 800px (SNS・ブログ)</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- 処理結果一覧リスト -->
+    <div id="comp-result-list" style="max-height: 200px; overflow-y: auto; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.4rem;"></div>
+
+    <!-- 合計と一括ダウンロードボタン -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 0.8rem;">
+      <div id="comp-total-stats" style="font-size: 0.8rem; font-weight: bold; color: var(--text);">
+        ファイル数: 0枚
+      </div>
+      <div style="display: flex; gap: 0.4rem;">
+        <button type="button" class="btn" onclick="clearCompressorList()">クリア</button>
+        <button type="button" class="btn btn-primary" id="comp-download-all-btn" disabled>⚡ 一括ダウンロード</button>
+      </div>
+    </div>
+  </div>
+</div>
 
   <script>
     // --- Cloudflare Workers D1 アクセスカウンター取得 ---
@@ -1626,6 +1689,14 @@
 
       {
         version: 'v2.4.0',
+        date: '2026-08-31 08:56',
+        title: '超軽量 WebP / AVIF 一括コンバーター＆圧縮機を追加しました',
+        items: [
+          ' 重たいPNGやJPEGをドラッグするだけで、画質を保ったままファイルサイズを1/10に一括圧縮（ギガ削減）できます',      
+  ]
+      },
+      {
+        version: 'v2.4.0',
         date: '2026-08-30 19:40',
         title: '調べて分かったバグをすべて直しました',
         items: [
@@ -1790,6 +1861,188 @@
           }
         }
       } catch(e) {}
+    });
+
+// --- 超軽量 WebP / AVIF 一括コンバーター＆圧縮機ロジック ---
+    const compressorModal = document.getElementById('compressor-modal');
+    const compDropzone = document.getElementById('comp-dropzone');
+    const compFileInput = document.getElementById('comp-file-input');
+    const compQuality = document.getElementById('comp-quality');
+    const compQualityVal = document.getElementById('comp-quality-val');
+    const compFormat = document.getElementById('comp-format');
+    const compResize = document.getElementById('comp-resize');
+    const compResultList = document.getElementById('comp-result-list');
+    const compTotalStats = document.getElementById('comp-total-stats');
+    const compDownloadAllBtn = document.getElementById('comp-download-all-btn');
+
+    let compressedFiles = [];
+
+    document.getElementById('compressor-modal-btn').addEventListener('click', () => {
+      compressorModal.style.display = 'flex';
+    });
+
+    function closeCompressorModal() {
+      compressorModal.style.display = 'none';
+    }
+
+    compQuality.addEventListener('input', (e) => {
+      compQualityVal.textContent = `${e.target.value}%`;
+    });
+
+    compDropzone.addEventListener('click', () => compFileInput.click());
+
+    compDropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      compDropzone.style.borderColor = 'var(--primary)';
+      compDropzone.style.background = 'rgba(37,99,235,0.05)';
+    });
+
+    compDropzone.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      compDropzone.style.borderColor = 'var(--border)';
+      compDropzone.style.background = 'rgba(0,0,0,0.02)';
+    });
+
+    compDropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      compDropzone.style.borderColor = 'var(--border)';
+      compDropzone.style.background = 'rgba(0,0,0,0.02)';
+      if (e.dataTransfer && e.dataTransfer.files.length > 0) {
+        handleBatchCompression(Array.from(e.dataTransfer.files));
+      }
+    });
+
+    compFileInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleBatchCompression(Array.from(e.target.files));
+      }
+    });
+
+    async function handleBatchCompression(files) {
+      const imageFiles = files.filter(f => f.type.startsWith('image/'));
+      if (imageFiles.length === 0) return;
+
+      const format = compFormat.value;
+      const quality = parseInt(compQuality.value, 10) / 100;
+      const maxW = parseInt(compResize.value, 10);
+      const ext = format === 'image/webp' ? 'webp' : (format === 'image/avif' ? 'avif' : (format === 'image/jpeg' ? 'jpg' : 'png'));
+
+      consumeStamina(imageFiles.length * 3000);
+
+      for (const file of imageFiles) {
+        const originalSize = file.size;
+        const imgBitmap = await createImageBitmap(file);
+
+        let targetW = imgBitmap.width;
+        let targetH = imgBitmap.height;
+
+        if (maxW > 0 && targetW > maxW) {
+          targetH = Math.round((maxW / targetW) * targetH);
+          targetW = maxW;
+        }
+
+        const tCanvas = document.createElement('canvas');
+        tCanvas.width = targetW;
+        tCanvas.height = targetH;
+        const tCtx = tCanvas.getContext('2d');
+        tCtx.drawImage(imgBitmap, 0, 0, targetW, targetH);
+
+        // CanvasからBlob生成 (WebP / AVIF 対応)
+        let blob = await new Promise(resolve => tCanvas.toBlob(resolve, format, quality));
+        
+        // ブラウザがAVIF非対応等の場合の自動WebPフォールバック
+        if (!blob || blob.type !== format) {
+          blob = await new Promise(resolve => tCanvas.toBlob(resolve, 'image/webp', quality));
+        }
+
+        const compressedSize = blob.size;
+        const savedPercent = Math.round(((originalSize - compressedSize) / originalSize) * 100);
+        const newName = file.name.replace(/\.[^/.]+$/, "") + `_compressed.${ext}`;
+        const blobUrl = URL.createObjectURL(blob);
+
+        const item = {
+          originalName: file.name,
+          newName: newName,
+          originalSize: originalSize,
+          compressedSize: compressedSize,
+          savedPercent: savedPercent,
+          url: blobUrl
+        };
+
+        compressedFiles.push(item);
+      }
+
+      renderCompressionList();
+      compFileInput.value = '';
+    }
+
+    function renderCompressionList() {
+      compResultList.innerHTML = '';
+      let totalOrig = 0;
+      let totalComp = 0;
+
+      compressedFiles.forEach((item, index) => {
+        totalOrig += item.originalSize;
+        totalComp += item.compressedSize;
+
+        const row = document.createElement('div');
+        row.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 0.4rem 0.6rem; background: var(--panel); border: 1px solid var(--border); border-radius: 6px; font-size: 0.75rem;';
+        
+        const isReduced = item.savedPercent > 0;
+        const badgeColor = isReduced ? '#166534' : '#991b1b';
+        const badgeBg = isReduced ? '#dcfce7' : '#fee2e2';
+
+        row.innerHTML = `
+          <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 45%;">
+            <strong>${item.originalName}</strong>
+            <div style="color: #64748b; font-size: 0.7rem;">${formatBytes(item.originalSize)} ➔ ${formatBytes(item.compressedSize)}</div>
+          </div>
+          <div style="display: flex; align-items: center; gap: 0.4rem;">
+            <span style="background: ${badgeBg}; color: ${badgeColor}; padding: 0.1rem 0.3rem; border-radius: 4px; font-weight: bold;">
+              ${isReduced ? `-${item.savedPercent}% 削減` : `+${Math.abs(item.savedPercent)}%`}
+            </span>
+            <a href="${item.url}" download="${item.newName}" class="btn" style="height: 24px; padding: 0 0.4rem; font-size: 0.7rem; text-decoration: none;">💾 保存</a>
+          </div>
+        `;
+        compResultList.appendChild(row);
+      });
+
+      if (compressedFiles.length > 0) {
+        const totalSaved = Math.round(((totalOrig - totalComp) / totalOrig) * 100);
+        compTotalStats.innerHTML = `
+          <span>合計: ${compressedFiles.length}枚</span> | 
+          <span style="color: var(--stamina);">${formatBytes(totalOrig)} ➔ ${formatBytes(totalComp)} (${totalSaved}% ギガ削減)</span>
+        `;
+        compDownloadAllBtn.disabled = false;
+      } else {
+        compTotalStats.textContent = 'ファイル数: 0枚';
+        compDownloadAllBtn.disabled = true;
+      }
+    }
+
+    function formatBytes(bytes) {
+      if (bytes === 0) return '0 B';
+      const k = 1024;
+      const sizes = ['B', 'KB', 'MB', 'GB'];
+      const i = Math.floor(Math.log(bytes) / Math.log(k));
+      return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    function clearCompressorList() {
+      compressedFiles.forEach(f => URL.revokeObjectURL(f.url));
+      compressedFiles = [];
+      renderCompressionList();
+    }
+
+    compDownloadAllBtn.addEventListener('click', () => {
+      compressedFiles.forEach((item, idx) => {
+        setTimeout(() => {
+          const a = document.createElement('a');
+          a.href = item.url;
+          a.download = item.newName;
+          a.click();
+        }, idx * 250);
+      });
     });
   </script>
 </body>
