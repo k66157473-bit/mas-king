@@ -2294,9 +2294,10 @@ const tCanvas = document.createElement('canvas');
         compressedFiles.push(item);
       }
 
-      renderCompressionList();
+renderCompressionList();
       compFileInput.value = '';
-    
+    }
+
     function renderCompressionList() {
       compResultList.innerHTML = '';
       let totalOrig = 0;
@@ -2441,40 +2442,8 @@ const tCanvas = document.createElement('canvas');
   </style>
 
   <script>
-    (function() {
-      let isEnabled = true;
-      const toggle = document.getElementById('sparkleToggle');
-      const container = document.getElementById('draggableToggle');
-      
-      const savedState = localStorage.getItem('sparkleEnabled');
-      if (savedState !== null) {
-        isEnabled = savedState === 'true';
-      } else {
-        isEnabled = true;
-      }
-      toggle.checked = isEnabled;
-      
-      toggle.addEventListener('change', (e) => {
-        isEnabled = e.target.checked;
-        localStorage.setItem('sparkleEnabled', isEnabled);
-      });
 
-      const savedTop = localStorage.getItem('sparkleToggleTop');
-      const savedLeft = localStorage.getItem('sparkleToggleLeft');
-      
-      if (savedTop !== null && savedLeft !== null) {
-        container.style.top = savedTop;
-        container.style.left = savedLeft;
-      } else {
-        container.style.top = '10px';
-        container.style.right = '10px';
-      }
-
-      let isDragging = false;
-      let startX, startY;
-      let initialX, initialY;
-
-      function onPointerDown(e) {
+function onPointerDown(e) {
         if (e.target === toggle) return;
         
         isDragging = true;
@@ -2495,49 +2464,34 @@ const tCanvas = document.createElement('canvas');
         window.addEventListener('touchmove', onPointerMove, { passive: false });
         window.addEventListener('touchend', onPointerUp);
       }
-// ポインタームーブ（rAFによる高速・なめらか描画）
-    let isRafScheduled = false;
-    let latestCoords = null;
 
-    function onPointerMove(e) {
-      if (isPinching && e.touches && e.touches.length >= 2) {
-        e.preventDefault();
-        const dist = getTouchDistance(e.touches);
-        const scale = dist / initialPinchDistance;
-        updateZoom(initialPinchZoom * scale);
-        return;
+      function onPointerMove(e) {
+        if (!isDragging) return;
+        
+        const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0].clientY);
+        
+        if (clientX === undefined || clientY === undefined) return;
+        if (e.cancelable) e.preventDefault();
+        
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+        
+        let newLeft = initialX + dx;
+        let newTop = initialY + dy;
+        
+        const padding = 5;
+        const maxLeft = window.innerWidth - container.offsetWidth - padding;
+        const maxTop = window.innerHeight - container.offsetHeight - padding;
+        
+        newLeft = Math.max(padding, Math.min(newLeft, maxLeft));
+        newTop = Math.max(padding, Math.min(newTop, maxTop));
+        
+        container.style.left = `${newLeft}px`;
+        container.style.top = `${newTop}px`;
+        container.style.right = 'auto';
       }
 
-      if (!isInteracting) return;
-      if (e.cancelable) e.preventDefault();
-
-      latestCoords = getEventCoords(e);
-
-      if (!isRafScheduled) {
-        isRafScheduled = true;
-        requestAnimationFrame(() => {
-          if (isInteracting && latestCoords) {
-            const rect = canvas.getBoundingClientRect();
-            const curCssX = latestCoords.cssX;
-            const curCssY = latestCoords.cssY;
-            const startCssX = (startX / canvas.width) * rect.width;
-            const startCssY = (startY / canvas.height) * rect.height;
-
-            const boxLeft = Math.min(startCssX, curCssX);
-            const boxTop = Math.min(startCssY, curCssY);
-            const boxWidth = Math.abs(curCssX - startCssX);
-            const boxHeight = Math.abs(curCssY - startCssY);
-
-            selectionBox.style.transform = `translate3d(${boxLeft}px, ${boxTop}px, 0)`;
-            selectionBox.style.width = `${boxWidth}px`;
-            selectionBox.style.height = `${boxHeight}px`;
-
-            showLoupe(latestCoords);
-          }
-          isRafScheduled = false;
-        });
-      }
-    }
       function onPointerUp() {
         if (!isDragging) return;
         isDragging = false;
@@ -2549,58 +2503,6 @@ const tCanvas = document.createElement('canvas');
         window.removeEventListener('mouseup', onPointerUp);
         window.removeEventListener('touchmove', onPointerMove);
         window.removeEventListener('touchend', onPointerUp);
-      }
-
-      container.addEventListener('mousedown', onPointerDown);
-      container.addEventListener('touchstart', onPointerDown, { passive: true });
-
-      function createSparkle(x, y) {
-if (!isEnabled || isInteracting || isDraggingDummy) return;
-        const sparkle = document.createElement('div');
-        sparkle.className = 'internet-sparkle';
-        sparkle.textContent = '★';
-
-        const baseSize = Math.floor(Math.random() * 7) + 6; 
-        sparkle.style.fontSize = `${baseSize}px`;
-
-        const startScale = (Math.random() * 0.4) + 0.4;
-        const endScale = (Math.random() * 0.6) + 0.8;
-
-        const moveX = (Math.random() - 0.5) * 40;
-        const moveY = (Math.random() - 0.5) * 40 - 20;
-        const rotate = Math.random() * 360;
-
-        sparkle.style.setProperty('--ms-start', startScale);
-        sparkle.style.setProperty('--ms-end', endScale);
-        sparkle.style.setProperty('--mx', `${moveX}px`);
-        sparkle.style.setProperty('--my', `${moveY}px`);
-        sparkle.style.setProperty('--mr', `${rotate}deg`);
-
-        sparkle.style.left = `${x}px`;
-        sparkle.style.top = `${y}px`;
-
-        document.body.appendChild(sparkle);
-
-        sparkle.addEventListener('animationend', () => {
-          sparkle.remove();
-        });
-      }
-
-      window.addEventListener('mousemove', (e) => {
-        if (Math.random() < 0.3) {
-          createSparkle(e.clientX, e.clientY);
-        }
-      });
-
-      window.addEventListener('touchmove', (e) => {
-        if (Math.random() < 0.4) {
-          const touch = e.touches[0];
-          if (touch) {
-            createSparkle(touch.clientX, touch.clientY);
-          }
-        }
-      }, { passive: true });
-    })();
-  </script>
+      }  </script>
 </body>
 </html>
