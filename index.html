@@ -1687,6 +1687,15 @@
     // 更新履歴データ
     const changelogData = [
 
+
+      {
+        version: 'v2.5.0',
+        date: '2026-08-31 09:38',
+        title: '星のマウスストーカを追加しました',
+        items: [
+          ' スマホでもついてきます。ライトモードだと少しはっきりした黄色、ダークモードだと薄い黄色にしてあります。on/off機能付きです',      
+  ]
+   },
       {
         version: 'v2.4.0',
         date: '2026-08-31 08:56',
@@ -2045,5 +2054,138 @@
       });
     });
   </script>
+<div class="sparkle-toggle-container">
+  <label class="sparkle-toggle-label">
+    <input type="checkbox" id="sparkleToggle">
+    <span class="sparkle-toggle-text">キラキラエフェクト</span>
+  </label>
+</div>
+
+<style>
+  .sparkle-toggle-container {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    z-index: 99999;
+    background: rgba(255, 255, 255, 0.8);
+    padding: 5px 10px;
+    border-radius: 20px;
+    border: 1px solid #ccc;
+    font-size: 12px;
+    font-family: sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    .sparkle-toggle-container {
+      background: rgba(0, 0, 0, 0.8);
+      border-color: #555;
+      color: #fff;
+    }
+  }
+  .sparkle-toggle-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 5px;
+  }
+
+  .internet-sparkle {
+    position: fixed;
+    pointer-events: none;
+    z-index: 99998;
+    line-height: 1;
+    user-select: none;
+    animation: sparkle-fade 0.8s linear forwards;
+    color: #ffcc00;
+    text-shadow: 0 0 3px rgba(255, 204, 0, 0.6);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    .internet-sparkle {
+      color: #fffacd;
+      text-shadow: 0 0 5px rgba(255, 250, 205, 0.8);
+    }
+  }
+
+  @keyframes sparkle-fade {
+    0% {
+      transform: translate(-50%, -50%) scale(var(--ms-start)) rotate(0deg);
+      opacity: 1;
+    }
+    50% {
+      opacity: 1;
+    }
+    100% {
+      transform: translate(calc(-50% + var(--mx)), calc(-50% + var(--my))) scale(var(--ms-end)) rotate(var(--mr));
+      opacity: 0;
+    }
+  }
+</style>
+
+<script>
+  (function() {
+    let isEnabled = true;
+    const toggle = document.getElementById('sparkleToggle');
+    
+    const savedState = localStorage.getItem('sparkleEnabled');
+    if (savedState !== null) {
+      isEnabled = savedState === 'true';
+    } else {
+      isEnabled = true;
+    }
+    toggle.checked = isEnabled;
+    
+    toggle.addEventListener('change', (e) => {
+      isEnabled = e.target.checked;
+      localStorage.setItem('sparkleEnabled', isEnabled);
+    });
+
+    function createSparkle(x, y) {
+      if (!isEnabled) return;
+
+      const sparkle = document.createElement('div');
+      sparkle.className = 'internet-sparkle';
+      sparkle.textContent = '★';
+
+      const baseSize = Math.floor(Math.random() * 7) + 6; 
+      sparkle.style.fontSize = `${baseSize}px`;
+
+      const startScale = (Math.random() * 0.4) + 0.4;
+      const endScale = (Math.random() * 0.6) + 0.8;
+
+      const moveX = (Math.random() - 0.5) * 40;
+      const moveY = (Math.random() - 0.5) * 40 - 20;
+      const rotate = Math.random() * 360;
+
+      sparkle.style.setProperty('--ms-start', startScale);
+      sparkle.style.setProperty('--ms-end', endScale);
+      sparkle.style.setProperty('--mx', `${moveX}px`);
+      sparkle.style.setProperty('--my', `${moveY}px`);
+      sparkle.style.setProperty('--mr', `${rotate}deg`);
+
+      sparkle.style.left = `${x}px`;
+      sparkle.style.top = `${y}px`;
+
+      document.body.appendChild(sparkle);
+
+      sparkle.addEventListener('animationend', () => {
+        sparkle.remove();
+      });
+    }
+
+    window.addEventListener('mousemove', (e) => {
+      if (Math.random() < 0.3) {
+        createSparkle(e.clientX, e.clientY);
+      }
+    });
+
+    window.addEventListener('touchmove', (e) => {
+      if (Math.random() < 0.4) {
+        const touch = e.touches[0];
+        createSparkle(touch.clientX, touch.clientY);
+      }
+    }, { passive: true });
+  })();
+</script>
+
 </body>
 </html>
