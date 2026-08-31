@@ -485,7 +485,7 @@
           <li><strong>定型マスク:</strong> マイナンバーカード・免許証・保険証の個人情報位置を一発一括マスキング。</li>
           <li><strong>透かし文字 / トリミング / 回転 / リサイズ:</strong> 「社外秘」刻印やサイズ変更に対応。</li>
           <li><strong>保存オプション:</strong> PNG / JPEG / WebP 形式選択および圧縮品質スライダー設定。</li>
-          <li><strong> 超軽量 WebP / AVIF 一括コンバーター＆圧縮機</strong>  - 重たいPNGやJPEGをドラッグするだけで、画質を保ったままファイルサイズを1/10に一括圧縮（ギガ削減）。:</strong> PNG / JPEG / WebP 形式選択および圧縮品質スライダー設定。 </li>
+          <li><strong>超軽量 WebP / AVIF 一括コンバーター＆圧縮機:</strong> 重たいPNGやJPEGをドラッグするだけで、画質を保ったままファイルサイズを1/10に一括圧縮（ギガ削減）。</li>
         </ul>
       </div>
     </div>
@@ -632,66 +632,66 @@
     </div>
   </div>
 
-<!-- 超軽量 WebP / AVIF 一括コンバーター＆圧縮機 モーダル -->
-<div class="modal-overlay" id="compressor-modal">
-  <div class="modal-content" style="max-width: 600px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
-      <h3 style="margin: 0;">🗜️ 超軽量 WebP / AVIF 一括コンバーター</h3>
-      <button type="button" class="btn" onclick="closeCompressorModal()" style="height: 26px; padding: 0 6px;">✕</button>
-    </div>
-    <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.8rem;">
-      サーバー送信なし！重いPNG/JPEGをブラウザ内で超軽量なWebP/AVIFに一括圧縮・変換します。
-    </p>
-
-    <!-- ドロップエリア -->
-    <div id="comp-dropzone" style="border: 2px dashed var(--border); border-radius: 8px; padding: 1.2rem; text-align: center; background: rgba(0,0,0,0.02); cursor: pointer; margin-bottom: 0.8rem;">
-      <div style="font-size: 1.8rem; margin-bottom: 0.2rem;">📦 ➔ ⚡</div>
-      <div style="font-size: 0.85rem; font-weight: bold;">圧縮する画像を一括ドラッグ＆ドロップ</div>
-      <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.2rem;">またはクリックして複数ファイルを選択</div>
-      <input type="file" id="comp-file-input" accept="image/*" multiple style="display: none;">
-    </div>
-
-    <!-- 圧縮設定 -->
-    <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; background: var(--bg); padding: 0.6rem; border-radius: 6px; margin-bottom: 0.8rem; font-size: 0.8rem;">
-      <div style="flex: 1; min-width: 130px;">
-        <label style="display: block; font-weight: bold; margin-bottom: 0.2rem;">変換形式:</label>
-        <select id="comp-format" style="width: 100%; padding: 0.3rem; border-radius: 4px; border: 1px solid var(--border);">
-          <option value="image/webp" selected>WebP (推奨・超軽量)</option>
-          <option value="image/avif">AVIF (次世代・最高圧縮)</option>
-          <option value="image/jpeg">JPEG (高圧縮)</option>
-          <option value="image/png">PNG (可逆圧縮)</option>
-        </select>
+  <!-- 超軽量 WebP / AVIF 一括コンバーター＆圧縮機 モーダル -->
+  <div class="modal-overlay" id="compressor-modal">
+    <div class="modal-content" style="max-width: 600px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem;">
+        <h3 style="margin: 0;">🗜️ 超軽量 WebP / AVIF 一括コンバーター</h3>
+        <button type="button" class="btn" onclick="closeCompressorModal()" style="height: 26px; padding: 0 6px;">✕</button>
       </div>
-      <div style="flex: 1; min-width: 130px;">
-        <label style="display: block; font-weight: bold; margin-bottom: 0.2rem;">品質: <span id="comp-quality-val">80%</span></label>
-        <input type="range" id="comp-quality" min="10" max="100" value="80" style="width: 100%;">
-      </div>
-      <div style="flex: 1; min-width: 130px;">
-        <label style="display: block; font-weight: bold; margin-bottom: 0.2rem;">最大幅リサイズ:</label>
-        <select id="comp-resize" style="width: 100%; padding: 0.3rem; border-radius: 4px; border: 1px solid var(--border);">
-          <option value="0" selected>変更なし（元サイズ）</option>
-          <option value="1920">最大 1920px (フルHD)</option>
-          <option value="1200">最大 1200px (Web標準)</option>
-          <option value="800">最大 800px (SNS・ブログ)</option>
-        </select>
-      </div>
-    </div>
+      <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 0.8rem;">
+        サーバー送信なし！重いPNG/JPEGをブラウザ内で超軽量なWebP/AVIFに一括圧縮・変換します。
+      </p>
 
-    <!-- 処理結果一覧リスト -->
-    <div id="comp-result-list" style="max-height: 200px; overflow-y: auto; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.4rem;"></div>
-
-    <!-- 合計と一括ダウンロードボタン -->
-    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 0.8rem;">
-      <div id="comp-total-stats" style="font-size: 0.8rem; font-weight: bold; color: var(--text);">
-        ファイル数: 0枚
+      <!-- ドロップエリア -->
+      <div id="comp-dropzone" style="border: 2px dashed var(--border); border-radius: 8px; padding: 1.2rem; text-align: center; background: rgba(0,0,0,0.02); cursor: pointer; margin-bottom: 0.8rem;">
+        <div style="font-size: 1.8rem; margin-bottom: 0.2rem;">📦 ➔ ⚡</div>
+        <div style="font-size: 0.85rem; font-weight: bold;">圧縮する画像を一括ドラッグ＆ドロップ</div>
+        <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.2rem;">またはクリックして複数ファイルを選択</div>
+        <input type="file" id="comp-file-input" accept="image/*" multiple style="display: none;">
       </div>
-      <div style="display: flex; gap: 0.4rem;">
-        <button type="button" class="btn" onclick="clearCompressorList()">クリア</button>
-        <button type="button" class="btn btn-primary" id="comp-download-all-btn" disabled>⚡ 一括ダウンロード</button>
+
+      <!-- 圧縮設定 -->
+      <div style="display: flex; flex-wrap: wrap; gap: 0.6rem; background: var(--bg); padding: 0.6rem; border-radius: 6px; margin-bottom: 0.8rem; font-size: 0.8rem;">
+        <div style="flex: 1; min-width: 130px;">
+          <label style="display: block; font-weight: bold; margin-bottom: 0.2rem;">変換形式:</label>
+          <select id="comp-format" style="width: 100%; padding: 0.3rem; border-radius: 4px; border: 1px solid var(--border);">
+            <option value="image/webp" selected>WebP (推奨・超軽量)</option>
+            <option value="image/avif">AVIF (次世代・最高圧縮)</option>
+            <option value="image/jpeg">JPEG (高圧縮)</option>
+            <option value="image/png">PNG (可逆圧縮)</option>
+          </select>
+        </div>
+        <div style="flex: 1; min-width: 130px;">
+          <label style="display: block; font-weight: bold; margin-bottom: 0.2rem;">品質: <span id="comp-quality-val">80%</span></label>
+          <input type="range" id="comp-quality" min="10" max="100" value="80" style="width: 100%;">
+        </div>
+        <div style="flex: 1; min-width: 130px;">
+          <label style="display: block; font-weight: bold; margin-bottom: 0.2rem;">最大幅リサイズ:</label>
+          <select id="comp-resize" style="width: 100%; padding: 0.3rem; border-radius: 4px; border: 1px solid var(--border);">
+            <option value="0" selected>変更なし（元サイズ）</option>
+            <option value="1920">最大 1920px (フルHD)</option>
+            <option value="1200">最大 1200px (Web標準)</option>
+            <option value="800">最大 800px (SNS・ブログ)</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- 処理結果一覧リスト -->
+      <div id="comp-result-list" style="max-height: 200px; overflow-y: auto; margin-bottom: 1rem; display: flex; flex-direction: column; gap: 0.4rem;"></div>
+
+      <!-- 合計と一括ダウンロードボタン -->
+      <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 0.8rem;">
+        <div id="comp-total-stats" style="font-size: 0.8rem; font-weight: bold; color: var(--text);">
+          ファイル数: 0枚
+        </div>
+        <div style="display: flex; gap: 0.4rem;">
+          <button type="button" class="btn" onclick="clearCompressorList()">クリア</button>
+          <button type="button" class="btn btn-primary" id="comp-download-all-btn" disabled>⚡ 一括ダウンロード</button>
+        </div>
       </div>
     </div>
   </div>
-</div>
 
   <script>
     // --- Cloudflare Workers D1 アクセスカウンター取得 ---
@@ -835,34 +835,107 @@
       });
     });
 
-    // --- 自動保存（リロードしても100%保持される統合ステート保存） ---
+    // --- マウスストーカー設定の取得・適用ヘルパー ---
+    function getSparkleState() {
+      const toggle = document.getElementById('sparkleToggle');
+      const container = document.getElementById('draggableToggle');
+      return {
+        enabled: toggle ? toggle.checked : true,
+        top: container ? container.style.top : (localStorage.getItem('sparkleToggleTop') || '10px'),
+        left: container ? container.style.left : (localStorage.getItem('sparkleToggleLeft') || '')
+      };
+    }
+
+    function applySparkleState(sparkleData) {
+      if (!sparkleData) return;
+      const toggle = document.getElementById('sparkleToggle');
+      const container = document.getElementById('draggableToggle');
+
+      if (toggle && sparkleData.enabled !== undefined) {
+        toggle.checked = sparkleData.enabled;
+        toggle.dispatchEvent(new Event('change'));
+      }
+
+      if (container) {
+        if (sparkleData.top) container.style.top = sparkleData.top;
+        if (sparkleData.left) {
+          container.style.left = sparkleData.left;
+          container.style.right = 'auto';
+        }
+        localStorage.setItem('sparkleToggleTop', container.style.top);
+        localStorage.setItem('sparkleToggleLeft', container.style.left);
+      }
+    }
+
+    // --- 全データ統合保存オブジェクト生成関数 ---
+    function generateFullProjectJSON() {
+      return {
+        app: "Mas-King",
+        version: "2.6.0",
+        timestamp: new Date().toISOString(),
+        stamina: {
+          current: currentStamina,
+          totalUsed: totalUsedStamina
+        },
+        settings: {
+          darkMode: document.body.classList.contains('dark-mode'),
+          currentMode: currentMode,
+          strength: document.getElementById('strength-slider')?.value || 12,
+          feather: document.getElementById('feather-chk')?.checked || false
+        },
+        sparkle: getSparkleState(),
+        activeImageIndex: activeImageIndex,
+        images: imageList.map((img, idx) => ({
+          name: img.name,
+          width: img.width,
+          height: img.height,
+          src: (idx === activeImageIndex && canvas.width > 0) ? canvas.toDataURL('image/png') : img.src
+        }))
+      };
+    }
+
+    // --- 自動保存（localStorage）の更新 ---
     function saveStateToLocal() {
       try {
         if (imageList.length === 0 && !canvas.width) {
           localStorage.removeItem('maskou_project_autosave');
           return;
         }
-
-        const projectData = {
-          app: "Mas-King",
-          version: "2.3.0",
-          timestamp: new Date().toISOString(),
-          stamina: {
-            current: currentStamina,
-            totalUsed: totalUsedStamina
-          },
-          activeImageIndex: activeImageIndex,
-          images: imageList.map((img, idx) => ({
-            name: img.name,
-            width: img.width,
-            height: img.height,
-            src: (idx === activeImageIndex && canvas.width > 0) ? canvas.toDataURL('image/png') : img.src
-          }))
-        };
-
+        const projectData = generateFullProjectJSON();
         localStorage.setItem('maskou_project_autosave', JSON.stringify(projectData));
       } catch(e) {}
     }
+
+    // --- 毎分 .mask 自動バックアップシステム ---
+    function autoSaveMaskData() {
+      if (imageList.length === 0 && (!canvas || !canvas.width)) return;
+      try {
+        const projectData = generateFullProjectJSON();
+        projectData.autoSavedAt = new Date().toLocaleTimeString('ja-JP');
+
+        const jsonStr = JSON.stringify(projectData);
+        localStorage.setItem('maskou_project_autosave', jsonStr);
+        localStorage.setItem('maskou_last_mask_backup', jsonStr);
+
+        showAutoSaveToast(`⏱️ ${projectData.autoSavedAt} .mask自動保存完了`);
+      } catch (e) {
+        console.warn('.mask の毎分自動保存に失敗しました:', e);
+      }
+    }
+
+    function showAutoSaveToast(msg) {
+      let toast = document.getElementById('auto-mask-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'auto-mask-toast';
+        toast.style.cssText = 'position:fixed; bottom:35px; right:15px; background:rgba(15,23,42,0.85); color:#38bdf8; padding:4px 10px; border-radius:6px; font-size:0.7rem; font-family:monospace; z-index:9999; pointer-events:none; transition:opacity 0.4s ease; border:1px solid rgba(56,189,248,0.3);';
+        document.body.appendChild(toast);
+      }
+      toast.textContent = msg;
+      toast.style.opacity = '1';
+      setTimeout(() => { toast.style.opacity = '0'; }, 3000);
+    }
+    setInterval(autoSaveMaskData, 60000);
 
     // --- 複数画像管理 & 自動復元 ---
     function addImageFile(src, name = `画像 ${imageList.length + 1}`) {
@@ -956,25 +1029,8 @@
         alert('保存する画像がありません');
         return;
       }
-      
-      const projectData = {
-        app: "Mas-King",
-        version: "2.3.0",
-        timestamp: new Date().toISOString(),
-        stamina: {
-          current: currentStamina,
-          totalUsed: totalUsedStamina
-        },
-        activeImageIndex: activeImageIndex,
-        images: imageList.map((img, idx) => ({
-          name: img.name,
-          width: img.width,
-          height: img.height,
-          src: (idx === activeImageIndex && canvas.width > 0) ? canvas.toDataURL('image/png') : img.src
-        }))
-      };
-
-      const jsonStr = JSON.stringify(projectData);
+      const projectData = generateFullProjectJSON();
+      const jsonStr = JSON.stringify(projectData, null, 2);
       const blob = new Blob([jsonStr], { type: 'application/json' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
@@ -998,12 +1054,25 @@
             return;
           }
 
+          // スタミナ復元
           if (data.stamina) {
             currentStamina = Math.min(MAX_STAMINA, data.stamina.current || MAX_STAMINA);
             totalUsedStamina = data.stamina.totalUsed || 0;
             updateStaminaUI();
           }
 
+          // マウスストーカー (ON/OFF & 位置座標) 復元
+          if (data.sparkle) {
+            applySparkleState(data.sparkle);
+          }
+
+          // 設定・モード復元
+          if (data.settings) {
+            if (data.settings.strength) document.getElementById('strength-slider').value = data.settings.strength;
+            if (data.settings.feather !== undefined) document.getElementById('feather-chk').checked = data.settings.feather;
+          }
+
+          // 画像リスト復元
           imageList = [];
           data.images.forEach(imgData => {
             imageList.push({
@@ -1019,7 +1088,7 @@
           renderImageTabs();
           selectImage(data.activeImageIndex >= 0 ? data.activeImageIndex : 0);
           saveStateToLocal();
-          alert('data.mask プロジェクトとスタミナ状態を完全復元しました！');
+          alert('data.mask（画像・スタミナ・マウスストーカー位置）を完全復元しました！');
         } catch(err) {
           alert('.mask ファイルの読み込みに失敗しました。');
         }
@@ -1686,41 +1755,37 @@
 
     // 更新履歴データ
     const changelogData = [
-
-
-
       {
         version: 'v2.6.0',
         date: '2026-08-31 09:47',
         title: 'on/offボタンを動かせる機能を追加しました',
         items: [
-          ' 位置を自由自在に変えれます',      
-  ]
-   },
-
+          ' 位置を自由自在に変えれます'
+        ]
+      },
       {
         version: 'v2.5.0',
         date: '2026-08-31 09:38',
         title: '星のマウスストーカを追加しました',
         items: [
-          ' スマホでもついてきます。ライトモードだと少しはっきりした黄色、ダークモードだと薄い黄色にしてあります。on/off機能付きです',      
-  ]
-   },
+          ' スマホでもついてきます。ライトモードだと少しはっきりした黄色、ダークモードだと薄い黄色にしてあります。on/off機能付きです'
+        ]
+      },
       {
         version: 'v2.4.0',
         date: '2026-08-31 08:56',
         title: '超軽量 WebP / AVIF 一括コンバーター＆圧縮機を追加しました',
         items: [
-          ' 重たいPNGやJPEGをドラッグするだけで、画質を保ったままファイルサイズを1/10に一括圧縮（ギガ削減）できます',      
-  ]
+          ' 重たいPNGやJPEGをドラッグするだけで、画質を保ったままファイルサイズを1/10に一括圧縮（ギガ削減）できます'
+        ]
       },
       {
         version: 'v2.4.0',
         date: '2026-08-30 19:40',
         title: '調べて分かったバグをすべて直しました',
         items: [
-          'パソコンで機能が使用できないバグなどを直しました。文法なども直しました',      
-  ]
+          'パソコンで機能が使用できないバグなどを直しました。文法なども直しました'
+        ]
       },
       {
         version: 'v2.3.0',
@@ -1861,6 +1926,12 @@
         const savedProject = localStorage.getItem('maskou_project_autosave');
         if (savedProject) {
           const data = JSON.parse(savedProject);
+          
+          // マウスストーカー復元
+          if (data.sparkle) {
+            applySparkleState(data.sparkle);
+          }
+
           if (data.images && data.images.length > 0) {
             if (data.stamina) {
               currentStamina = data.stamina.current || MAX_STAMINA;
@@ -1882,7 +1953,7 @@
       } catch(e) {}
     });
 
-// --- 超軽量 WebP / AVIF 一括コンバーター＆圧縮機ロジック ---
+    // --- 超軽量 WebP / AVIF 一括コンバーター＆圧縮機ロジック ---
     const compressorModal = document.getElementById('compressor-modal');
     const compDropzone = document.getElementById('comp-dropzone');
     const compFileInput = document.getElementById('comp-file-input');
@@ -2064,227 +2135,228 @@
       });
     });
   </script>
-<div class="sparkle-toggle-container" id="draggableToggle">
-  <label class="sparkle-toggle-label">
-    <input type="checkbox" id="sparkleToggle">
-    <span class="sparkle-toggle-text">キラキラエフェクト</span>
-  </label>
-</div>
 
-<style>
-  .sparkle-toggle-container {
-    position: fixed;
-    z-index: 2147483647;
-    background: rgba(255, 255, 255, 0.8);
-    padding: 5px 10px;
-    border-radius: 20px;
-    border: 1px solid #ccc;
-    font-size: 12px;
-    font-family: sans-serif;
-    user-select: none;
-    touch-action: none;
-    cursor: move;
-  }
-  @media (prefers-color-scheme: dark) {
+  <!-- マウスストーカー (キラキラ) トグル -->
+  <div class="sparkle-toggle-container" id="draggableToggle">
+    <label class="sparkle-toggle-label">
+      <input type="checkbox" id="sparkleToggle">
+      <span class="sparkle-toggle-text">キラキラエフェクト</span>
+    </label>
+  </div>
+
+  <style>
     .sparkle-toggle-container {
-      background: rgba(0, 0, 0, 0.8);
-      border-color: #555;
-      color: #fff;
+      position: fixed;
+      z-index: 2147483647;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 5px 10px;
+      border-radius: 20px;
+      border: 1px solid #ccc;
+      font-size: 12px;
+      font-family: sans-serif;
+      user-select: none;
+      touch-action: none;
+      cursor: move;
     }
-  }
-  .sparkle-toggle-label {
-    display: flex;
-    align-items: center;
-    cursor: move;
-    gap: 5px;
-  }
-  .sparkle-toggle-label input,
-  .sparkle-toggle-label span {
-    cursor: pointer;
-  }
+    @media (prefers-color-scheme: dark) {
+      .sparkle-toggle-container {
+        background: rgba(0, 0, 0, 0.8);
+        border-color: #555;
+        color: #fff;
+      }
+    }
+    .sparkle-toggle-label {
+      display: flex;
+      align-items: center;
+      cursor: move;
+      gap: 5px;
+    }
+    .sparkle-toggle-label input,
+    .sparkle-toggle-label span {
+      cursor: pointer;
+    }
 
-  .internet-sparkle {
-    position: fixed;
-    pointer-events: none;
-    z-index: 2147483646;
-    line-height: 1;
-    user-select: none;
-    animation: sparkle-fade 0.8s linear forwards;
-    color: #ffcc00;
-    text-shadow: 0 0 3px rgba(255, 204, 0, 0.6);
-  }
-
-  @media (prefers-color-scheme: dark) {
     .internet-sparkle {
-      color: #fffacd;
-      text-shadow: 0 0 5px rgba(255, 250, 205, 0.8);
-    }
-  }
-
-  @keyframes sparkle-fade {
-    0% {
-      transform: translate(-50%, -50%) scale(var(--ms-start)) rotate(0deg);
-      opacity: 1;
-    }
-    50% {
-      opacity: 1;
-    }
-    100% {
-      transform: translate(calc(-50% + var(--mx)), calc(-50% + var(--my))) scale(var(--ms-end)) rotate(var(--mr));
-      opacity: 0;
-    }
-  }
-</style>
-
-<script>
-  (function() {
-    let isEnabled = true;
-    const toggle = document.getElementById('sparkleToggle');
-    const container = document.getElementById('draggableToggle');
-    
-    const savedState = localStorage.getItem('sparkleEnabled');
-    if (savedState !== null) {
-      isEnabled = savedState === 'true';
-    } else {
-      isEnabled = true;
-    }
-    toggle.checked = isEnabled;
-    
-    toggle.addEventListener('change', (e) => {
-      isEnabled = e.target.checked;
-      localStorage.setItem('sparkleEnabled', isEnabled);
-    });
-
-    const savedTop = localStorage.getItem('sparkleToggleTop');
-    const savedLeft = localStorage.getItem('sparkleToggleLeft');
-    
-    if (savedTop !== null && savedLeft !== null) {
-      container.style.top = savedTop;
-      container.style.left = savedLeft;
-    } else {
-      container.style.top = '10px';
-      container.style.right = '10px';
+      position: fixed;
+      pointer-events: none;
+      z-index: 2147483646;
+      line-height: 1;
+      user-select: none;
+      animation: sparkle-fade 0.8s linear forwards;
+      color: #ffcc00;
+      text-shadow: 0 0 3px rgba(255, 204, 0, 0.6);
     }
 
-    let isDragging = false;
-    let startX, startY;
-    let initialX, initialY;
-
-    function onPointerDown(e) {
-      if (e.target === toggle) return;
-      
-      isDragging = true;
-      container.style.transition = 'none';
-      
-      const clientX = e.clientX || (e.touches && e.touches[0].clientX);
-      const clientY = e.clientY || (e.touches && e.touches[0].clientY);
-      
-      startX = clientX;
-      startY = clientY;
-      
-      const rect = container.getBoundingClientRect();
-      initialX = rect.left;
-      initialY = rect.top;
-      
-      window.addEventListener('mousemove', onPointerMove);
-      window.addEventListener('mouseup', onPointerUp);
-      window.addEventListener('touchmove', onPointerMove, { passive: false });
-      window.addEventListener('touchend', onPointerUp);
+    @media (prefers-color-scheme: dark) {
+      .internet-sparkle {
+        color: #fffacd;
+        text-shadow: 0 0 5px rgba(255, 250, 205, 0.8);
+      }
     }
 
-    function onPointerMove(e) {
-      if (!isDragging) return;
-      
-      const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0].clientX);
-      const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0].clientY);
-      
-      if (clientX === undefined || clientY === undefined) return;
-      
-      if (e.cancelable) e.preventDefault();
-      
-      const dx = clientX - startX;
-      const dy = clientY - startY;
-      
-      let newLeft = initialX + dx;
-      let newTop = initialY + dy;
-      
-      const padding = 5;
-      const maxLeft = window.innerWidth - container.offsetWidth - padding;
-      const maxTop = window.innerHeight - container.offsetHeight - padding;
-      
-      newLeft = Math.max(padding, Math.min(newLeft, maxLeft));
-      newTop = Math.max(padding, Math.min(newTop, maxTop));
-      
-      container.style.left = `${newLeft}px`;
-      container.style.top = `${newTop}px`;
-      container.style.right = 'auto';
+    @keyframes sparkle-fade {
+      0% {
+        transform: translate(-50%, -50%) scale(var(--ms-start)) rotate(0deg);
+        opacity: 1;
+      }
+      50% {
+        opacity: 1;
+      }
+      100% {
+        transform: translate(calc(-50% + var(--mx)), calc(-50% + var(--my))) scale(var(--ms-end)) rotate(var(--mr));
+        opacity: 0;
+      }
     }
+  </style>
 
-    function onPointerUp() {
-      if (!isDragging) return;
-      isDragging = false;
+  <script>
+    (function() {
+      let isEnabled = true;
+      const toggle = document.getElementById('sparkleToggle');
+      const container = document.getElementById('draggableToggle');
       
-      localStorage.setItem('sparkleToggleTop', container.style.top);
-      localStorage.setItem('sparkleToggleLeft', container.style.left);
+      const savedState = localStorage.getItem('sparkleEnabled');
+      if (savedState !== null) {
+        isEnabled = savedState === 'true';
+      } else {
+        isEnabled = true;
+      }
+      toggle.checked = isEnabled;
       
-      window.removeEventListener('mousemove', onPointerMove);
-      window.removeEventListener('mouseup', onPointerUp);
-      window.removeEventListener('touchmove', onPointerMove);
-      window.removeEventListener('touchend', onPointerUp);
-    }
-
-    container.addEventListener('mousedown', onPointerDown);
-    container.addEventListener('touchstart', onPointerDown, { passive: true });
-
-    function createSparkle(x, y) {
-      if (!isEnabled) return;
-
-      const sparkle = document.createElement('div');
-      sparkle.className = 'internet-sparkle';
-      sparkle.textContent = '★';
-
-      const baseSize = Math.floor(Math.random() * 7) + 6; 
-      sparkle.style.fontSize = `${baseSize}px`;
-
-      const startScale = (Math.random() * 0.4) + 0.4;
-      const endScale = (Math.random() * 0.6) + 0.8;
-
-      const moveX = (Math.random() - 0.5) * 40;
-      const moveY = (Math.random() - 0.5) * 40 - 20;
-      const rotate = Math.random() * 360;
-
-      sparkle.style.setProperty('--ms-start', startScale);
-      sparkle.style.setProperty('--ms-end', endScale);
-      sparkle.style.setProperty('--mx', `${moveX}px`);
-      sparkle.style.setProperty('--my', `${moveY}px`);
-      sparkle.style.setProperty('--mr', `${rotate}deg`);
-
-      sparkle.style.left = `${x}px`;
-      sparkle.style.top = `${y}px`;
-
-      document.body.appendChild(sparkle);
-
-      sparkle.addEventListener('animationend', () => {
-        sparkle.remove();
+      toggle.addEventListener('change', (e) => {
+        isEnabled = e.target.checked;
+        localStorage.setItem('sparkleEnabled', isEnabled);
       });
-    }
 
-    window.addEventListener('mousemove', (e) => {
-      if (Math.random() < 0.3) {
-        createSparkle(e.clientX, e.clientY);
+      const savedTop = localStorage.getItem('sparkleToggleTop');
+      const savedLeft = localStorage.getItem('sparkleToggleLeft');
+      
+      if (savedTop !== null && savedLeft !== null) {
+        container.style.top = savedTop;
+        container.style.left = savedLeft;
+      } else {
+        container.style.top = '10px';
+        container.style.right = '10px';
       }
-    });
 
-    window.addEventListener('touchmove', (e) => {
-      if (Math.random() < 0.4) {
-        const touch = e.touches[0];
-        if (touch) {
-          createSparkle(touch.clientX, touch.clientY);
+      let isDragging = false;
+      let startX, startY;
+      let initialX, initialY;
+
+      function onPointerDown(e) {
+        if (e.target === toggle) return;
+        
+        isDragging = true;
+        container.style.transition = 'none';
+        
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        
+        startX = clientX;
+        startY = clientY;
+        
+        const rect = container.getBoundingClientRect();
+        initialX = rect.left;
+        initialY = rect.top;
+        
+        window.addEventListener('mousemove', onPointerMove);
+        window.addEventListener('mouseup', onPointerUp);
+        window.addEventListener('touchmove', onPointerMove, { passive: false });
+        window.addEventListener('touchend', onPointerUp);
+      }
+
+      function onPointerMove(e) {
+        if (!isDragging) return;
+        
+        const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0].clientY);
+        
+        if (clientX === undefined || clientY === undefined) return;
+        
+        if (e.cancelable) e.preventDefault();
+        
+        const dx = clientX - startX;
+        const dy = clientY - startY;
+        
+        let newLeft = initialX + dx;
+        let newTop = initialY + dy;
+        
+        const padding = 5;
+        const maxLeft = window.innerWidth - container.offsetWidth - padding;
+        const maxTop = window.innerHeight - container.offsetHeight - padding;
+        
+        newLeft = Math.max(padding, Math.min(newLeft, maxLeft));
+        newTop = Math.max(padding, Math.min(newTop, maxTop));
+        
+        container.style.left = `${newLeft}px`;
+        container.style.top = `${newTop}px`;
+        container.style.right = 'auto';
+      }
+
+      function onPointerUp() {
+        if (!isDragging) return;
+        isDragging = false;
+        
+        localStorage.setItem('sparkleToggleTop', container.style.top);
+        localStorage.setItem('sparkleToggleLeft', container.style.left);
+        
+        window.removeEventListener('mousemove', onPointerMove);
+        window.removeEventListener('mouseup', onPointerUp);
+        window.removeEventListener('touchmove', onPointerMove);
+        window.removeEventListener('touchend', onPointerUp);
+      }
+
+      container.addEventListener('mousedown', onPointerDown);
+      container.addEventListener('touchstart', onPointerDown, { passive: true });
+
+      function createSparkle(x, y) {
+        if (!isEnabled) return;
+
+        const sparkle = document.createElement('div');
+        sparkle.className = 'internet-sparkle';
+        sparkle.textContent = '★';
+
+        const baseSize = Math.floor(Math.random() * 7) + 6; 
+        sparkle.style.fontSize = `${baseSize}px`;
+
+        const startScale = (Math.random() * 0.4) + 0.4;
+        const endScale = (Math.random() * 0.6) + 0.8;
+
+        const moveX = (Math.random() - 0.5) * 40;
+        const moveY = (Math.random() - 0.5) * 40 - 20;
+        const rotate = Math.random() * 360;
+
+        sparkle.style.setProperty('--ms-start', startScale);
+        sparkle.style.setProperty('--ms-end', endScale);
+        sparkle.style.setProperty('--mx', `${moveX}px`);
+        sparkle.style.setProperty('--my', `${moveY}px`);
+        sparkle.style.setProperty('--mr', `${rotate}deg`);
+
+        sparkle.style.left = `${x}px`;
+        sparkle.style.top = `${y}px`;
+
+        document.body.appendChild(sparkle);
+
+        sparkle.addEventListener('animationend', () => {
+          sparkle.remove();
+        });
+      }
+
+      window.addEventListener('mousemove', (e) => {
+        if (Math.random() < 0.3) {
+          createSparkle(e.clientX, e.clientY);
         }
-      }
-    }, { passive: true });
-  })();
-</script>
+      });
 
+      window.addEventListener('touchmove', (e) => {
+        if (Math.random() < 0.4) {
+          const touch = e.touches[0];
+          if (touch) {
+            createSparkle(touch.clientX, touch.clientY);
+          }
+        }
+      }, { passive: true });
+    })();
+  </script>
 </body>
 </html>
