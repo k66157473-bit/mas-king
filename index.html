@@ -1862,8 +1862,6 @@ let loupeThrottle = 0;
       dummyOverlay.style.display = 'none';
     });
 
-let autoSaveDebounceTimer = null;
-
 function debouncedSaveStateToLocal() {
   if (autoSaveDebounceTimer) clearTimeout(autoSaveDebounceTimer);
   autoSaveDebounceTimer = setTimeout(() => {
@@ -2267,7 +2265,7 @@ function pushUndo() {
           targetW = maxW;
         }
 
-        const tCanvas = document.createElement('canvas');
+const tCanvas = document.createElement('canvas');
         tCanvas.width = targetW;
         tCanvas.height = targetH;
         const tCtx = tCanvas.getContext('2d');
@@ -2298,8 +2296,7 @@ function pushUndo() {
 
       renderCompressionList();
       compFileInput.value = '';
-    }
-
+    
     function renderCompressionList() {
       compResultList.innerHTML = '';
       let totalOrig = 0;
@@ -2498,35 +2495,49 @@ function pushUndo() {
         window.addEventListener('touchmove', onPointerMove, { passive: false });
         window.addEventListener('touchend', onPointerUp);
       }
+// ポインタームーブ（rAFによる高速・なめらか描画）
+    let isRafScheduled = false;
+    let latestCoords = null;
 
-      function onPointerMove(e) {
-        if (!isDragging) return;
-        
-        const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0].clientX);
-        const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0].clientY);
-        
-        if (clientX === undefined || clientY === undefined) return;
-        
-        if (e.cancelable) e.preventDefault();
-        
-        const dx = clientX - startX;
-        const dy = clientY - startY;
-        
-        let newLeft = initialX + dx;
-        let newTop = initialY + dy;
-        
-        const padding = 5;
-        const maxLeft = window.innerWidth - container.offsetWidth - padding;
-        const maxTop = window.innerHeight - container.offsetHeight - padding;
-        
-        newLeft = Math.max(padding, Math.min(newLeft, maxLeft));
-        newTop = Math.max(padding, Math.min(newTop, maxTop));
-        
-        container.style.left = `${newLeft}px`;
-        container.style.top = `${newTop}px`;
-        container.style.right = 'auto';
+    function onPointerMove(e) {
+      if (isPinching && e.touches && e.touches.length >= 2) {
+        e.preventDefault();
+        const dist = getTouchDistance(e.touches);
+        const scale = dist / initialPinchDistance;
+        updateZoom(initialPinchZoom * scale);
+        return;
       }
 
+      if (!isInteracting) return;
+      if (e.cancelable) e.preventDefault();
+
+      latestCoords = getEventCoords(e);
+
+      if (!isRafScheduled) {
+        isRafScheduled = true;
+        requestAnimationFrame(() => {
+          if (isInteracting && latestCoords) {
+            const rect = canvas.getBoundingClientRect();
+            const curCssX = latestCoords.cssX;
+            const curCssY = latestCoords.cssY;
+            const startCssX = (startX / canvas.width) * rect.width;
+            const startCssY = (startY / canvas.height) * rect.height;
+
+            const boxLeft = Math.min(startCssX, curCssX);
+            const boxTop = Math.min(startCssY, curCssY);
+            const boxWidth = Math.abs(curCssX - startCssX);
+            const boxHeight = Math.abs(curCssY - startCssY);
+
+            selectionBox.style.transform = `translate3d(${boxLeft}px, ${boxTop}px, 0)`;
+            selectionBox.style.width = `${boxWidth}px`;
+            selectionBox.style.height = `${boxHeight}px`;
+
+            showLoupe(latestCoords);
+          }
+          isRafScheduled = false;
+        });
+      }
+    }
       function onPointerUp() {
         if (!isDragging) return;
         isDragging = false;
