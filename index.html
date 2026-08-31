@@ -183,19 +183,26 @@
     }
     canvas { display: block; touch-action: none; }
     
+/* 選択ボックス（GPU加速・カクつき防止） */
     .selection-box {
       position: absolute;
+      top: 0;
+      left: 0;
       border: 2px dashed #2563eb;
-      background: rgba(37, 99, 235, 0.15);
+      background: rgba(37, 99, 235, 0.2);
       pointer-events: none;
       display: none;
+      z-index: 10;
+      will-change: transform, width, height;
     }
 
-    /* ルーペ */
+    /* ルーペ（GPU加速） */
     #loupe {
       position: absolute;
-      width: 100px;
-      height: 100px;
+      top: 0;
+      left: 0;
+      width: 90px;
+      height: 90px;
       border: 3px solid #fff;
       border-radius: 50%;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
@@ -204,6 +211,7 @@
       overflow: hidden;
       background: #fff;
       z-index: 100;
+      will-change: transform;
     }
 
     /* ドロップゾーン */
@@ -1297,36 +1305,7 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
       selectionBox.style.display = 'block';
 
       showLoupe(coords);
-    }
-    // ポインタームーブ
-    function onPointerMove(e) {
-      if (isPinching && e.touches && e.touches.length >= 2) {
-        e.preventDefault();
-        const dist = getTouchDistance(e.touches);
-        const scale = dist / initialPinchDistance;
-        updateZoom(initialPinchZoom * scale);
-        return;
-      }
-
-      if (!isInteracting) return;
-      e.preventDefault();
-      const coords = getEventCoords(e);
-      const rect = canvas.getBoundingClientRect();
-
-      const curCssX = Math.min(Math.max(0, coords.cssX), rect.width);
-      const curCssY = Math.min(Math.max(0, coords.cssY), rect.height);
-      const startCssX = (startX / canvas.width) * rect.width;
-      const startCssY = (startY / canvas.height) * rect.height;
-
-      selectionBox.style.left = `${Math.min(startCssX, curCssX)}px`;
-      selectionBox.style.top = `${Math.min(startCssY, curCssY)}px`;
-      selectionBox.style.width = `${Math.abs(curCssX - startCssX)}px`;
-      selectionBox.style.height = `${Math.abs(curCssY - startCssY)}px`;
-
-      showLoupe(coords);
-    }
-
-    // ポインターアップ
+    }    // ポインターアップ
     function onPointerUp(e) {
       if (isPinching) {
         if (!e.touches || e.touches.length < 2) isPinching = false;
@@ -2565,8 +2544,7 @@ function pushUndo() {
       container.addEventListener('touchstart', onPointerDown, { passive: true });
 
       function createSparkle(x, y) {
-        if (!isEnabled) return;
-
+if (!isEnabled || isInteracting || isDraggingDummy) return;
         const sparkle = document.createElement('div');
         sparkle.className = 'internet-sparkle';
         sparkle.textContent = '★';
