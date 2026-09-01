@@ -293,31 +293,41 @@
   align-items: center;
   gap: 0.5rem;
 }
+/* ふりがな表示エリアの初期化とコンテナ設定 */
+rt {
+  display: block; /* 確実にインラインブロック化して幅を持たせる */
+  text-align: center;
+}
 
-/* ルビ部分だけを切り取る横幅固定のコンテナ */
-.ruby-marquee-container {
-  overflow: hidden; /* コンテナからはみ出た部分を隠す */
+/* 小さいふりがなだけを切り取る横幅固定のコンテナ */
+.rt-marquee-container {
+  overflow: hidden; /* 枠外に飛び出た文字を隠す */
   white-space: nowrap;
-  width: 120px; /* ★ルビ2つ分が綺麗に収まるお好みの横幅に調整してください */
+  width: 50px; /* ★「マスキング」1つ分が綺麗に収まる横幅に調整（お好みで） */
   display: inline-block;
-  vertical-align: middle;
+  vertical-align: bottom;
 }
 
-/* 動かすトラック（2つのルビを横並びに） */
-.ruby-marquee-track {
+/* 動かすトラック（2つの「マスキング」を横並びに） */
+.rt-marquee-track {
   display: inline-flex;
-  gap: 1.5rem; /* ルビ同士の横の間隔 */
-  padding-right: 1.5rem; /* ループがガタつかないためのバッファ */
-  animation: rubyScroll 6s linear infinite; /* 6秒で1ループ（無限） */
+  gap: 1rem; /* 文字同士の横の隙間 */
+  padding-right: 1rem; /* ループがガタつかないためのバッファ */
+  animation: rtScroll 4s linear infinite; /* 4秒で1ループ（無限・等速） */
 }
 
-/* 無限ループのアニメーション定義 */
-@keyframes rubyScroll {
+/* 隙間を無くすために子要素の文字もインラインブロック化 */
+.rt-marquee-track span {
+  flex-shrink: 0;
+}
+
+/* ふりがな専用の無限ループアニメーション定義 */
+@keyframes rtScroll {
   0% {
     transform: translateX(0);
   }
   100% {
-    transform: translateX(-50%); /* ちょうど1セット分左に進んだら0%にループ */
+    transform: translateX(-50%); /* ちょうど半分（1セット分）進んだら一瞬で0%に戻る */
   }
 }
 
@@ -329,14 +339,21 @@
   <header>
 <div class="logo">
   🛡️ 
-  <!-- ルび部分だけを動かすためのコンテナ -->
-  <div class="ruby-marquee-container">
-    <div class="ruby-marquee-track">
-      <ruby>マス王 <rp>(</rp><rt>マスキング</rt><rp>)</rp></ruby>
-      <!-- ループを滑らかに繋ぐための複製 -->
-      <ruby aria-hidden="true">マス王 <rp>(</rp><rt>マスキング</rt><rp>)</rp></ruby>
-    </div>
-  </div>
+  <ruby>
+    マス王 
+    <rp>(</rp>
+    <rt>
+      <!-- 小さいマスキング部分だけを動かすコンテナ -->
+      <span class="rt-marquee-container">
+        <span class="rt-marquee-track">
+          <span>マスキング</span>
+          <!-- ループを滑らかに繋ぐための複製 -->
+          <span aria-hidden="true">マスキング</span>
+        </span>
+      </span>
+    </rt>
+    <rp>)</rp>
+  </ruby>
   <span class="badge">完全安全ローカル</span>
 </div>
 
