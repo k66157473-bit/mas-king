@@ -2740,6 +2740,39 @@
         }
       }, { passive: true });
     })();
+// --- Web Share Target から共有された画像の自動読み込み ---
+    async function checkSharedImage() {
+      const urlParams = new URLSearchParams(window.location.search);
+      
+      // ?shared=true がついて起動された場合
+      if (urlParams.get('shared') === 'true') {
+        try {
+          const cache = await caches.open('shared-image-cache');
+          const response = await cache.match('shared-image');
+          
+          if (response) {
+            const blob = await response.blob();
+            const reader = new FileReader();
+            reader.onload = (e) => {
+              // マス王の既存の画像追加関数を呼ぶ
+              addImageFile(e.target.result, '共有された画像');
+            };
+            reader.readAsDataURL(blob);
+
+            // 使い終わった一時キャッシュを削除
+            await cache.delete('shared-image');
+          }
+        } catch (err) {
+          console.warn('共有画像の展開に失敗しました:', err);
+        }
+
+        // URLバーの ?shared=true を綺麗に消去
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    }
+
+    // ページ読み込み時に実行
+    window.addEventListener('DOMContentLoaded', checkSharedImage);
   </script>
 </body>
 </html>
