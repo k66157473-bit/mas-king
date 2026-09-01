@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>【サーバー送信なし】ローカル完結の画像マスキングツール「マス王」| 写真のモザイク・個人情報保護に</title>
   <meta name="description" content="サーバーに画像を一切送信しない安全・超高機能な画像マスキング＆注釈ツールです。" />
   <meta name="format-detection" content="telephone=no" />
@@ -77,7 +77,6 @@
     .tab-btn {
       background: none; border: none; padding: 0.4rem 0.7rem; border-radius: 6px;
       cursor: pointer; font-weight: 600; color: #64748b; font-size: 0.85rem;
-      min-height: 36px;
     }
     .tab-btn.active { background: #e0e7ff; color: var(--primary); }
     body.dark-mode .tab-btn.active { background: #312e81; color: #a5b4fc; }
@@ -97,16 +96,15 @@
       padding: 0.3rem 0.75rem;
       overflow-x: auto;
       flex-shrink: 0;
-      -webkit-overflow-scrolling: touch;
     }
     .img-tab {
       background: #e2e8f0; border: 1px solid var(--border); border-radius: 4px;
-      padding: 0.25rem 0.6rem; font-size: 0.75rem; display: flex; align-items: center;
-      gap: 0.4rem; cursor: pointer; white-space: nowrap; min-height: 28px;
+      padding: 0.2rem 0.6rem; font-size: 0.75rem; display: flex; align-items: center;
+      gap: 0.4rem; cursor: pointer; white-space: nowrap;
     }
     body.dark-mode .img-tab { background: #334155; }
     .img-tab.active { background: var(--primary); color: white; border-color: var(--primary); }
-    .img-tab-close { font-weight: bold; cursor: pointer; font-size: 0.9rem; padding: 0 0.2rem; }
+    .img-tab-close { font-weight: bold; cursor: pointer; font-size: 0.9rem; }
 
     /* ツールバー */
     .toolbar-wrapper {
@@ -135,7 +133,6 @@
       border-right: 1px solid var(--border);
       padding-right: 0.5rem;
       margin-right: 0.2rem;
-      flex-shrink: 0;
     }
     
     .btn {
@@ -151,14 +148,13 @@
       align-items: center;
       gap: 0.25rem;
       touch-action: manipulation;
-      height: 34px;
+      height: 32px;
       flex-shrink: 0;
     }
     .btn:hover { background: rgba(0,0,0,0.05); }
     .btn.active { background: var(--primary); color: white; border-color: var(--primary); }
     .btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
     .btn-primary:hover { background: var(--primary-hover); }
-    .btn-auto { background: linear-gradient(135deg, #6366f1, #a855f7); color: white; border-color: #6366f1; font-weight: bold; }
 
     /* ワークスペース */
     .workspace {
@@ -183,26 +179,19 @@
     }
     canvas { display: block; touch-action: none; }
     
-/* 選択ボックス（GPU加速・カクつき防止） */
     .selection-box {
       position: absolute;
-      top: 0;
-      left: 0;
       border: 2px dashed #2563eb;
-      background: rgba(37, 99, 235, 0.2);
+      background: rgba(37, 99, 235, 0.15);
       pointer-events: none;
       display: none;
-      z-index: 10;
-      will-change: transform, width, height;
     }
 
-    /* ルーペ（GPU加速） */
+    /* ルーペ */
     #loupe {
       position: absolute;
-      top: 0;
-      left: 0;
-      width: 90px;
-      height: 90px;
+      width: 100px;
+      height: 100px;
       border: 3px solid #fff;
       border-radius: 50%;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
@@ -211,7 +200,6 @@
       overflow: hidden;
       background: #fff;
       z-index: 100;
-      will-change: transform;
     }
 
     /* ドロップゾーン */
@@ -300,23 +288,58 @@
     .changelog-badge { background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.75rem; }
     body.dark-mode .changelog-badge { background: #1e3a8a; color: #93c5fd; border-color: #1d4ed8; }
 
-    /* スマホ最適化 */
-    @media (max-width: 768px) {
-      .btn { padding: 0.35rem 0.55rem; font-size: 0.75rem; height: 36px; }
-      header { padding: 0.3rem 0.6rem; }
-      .counter-badge { font-size: 0.7rem; }
-    }
+/* ロゴエリア全体のコンテナ設定 */
+.logo-area {
+  overflow: hidden; /* 枠外に飛び出た文字を隠す */
+  white-space: nowrap; /* 子要素を横一列に並べる */
+  width: 100%; /* 横幅いっぱいに広げる */
+  background: transparent; /* 背景はそのまま透過 */
+}
+
+/* アニメーションを動かすトラック */
+.marquee-track {
+  display: inline-flex; /* ロゴセットを横並びに */
+  gap: 2rem; /* ロゴ同士の横の隙間（好みに合わせて調整） */
+  padding-right: 2rem; /* ループがガタつかないための余白 */
+  animation: logoScroll 15s linear infinite; /* 15秒で1ループ（無限） */
+}
+
+/* ロゴのスタイル（文字が溢れないよう折り返し禁止） */
+.logo {
+  flex-shrink: 0; /* 縮まないように固定 */
+  white-space: nowrap;
+}
+
+/* 無限ループのアニメーション定義 */
+@keyframes logoScroll {
+  0% {
+    transform: translateX(0); /* 開始位置 */
+  }
+  100% {
+    transform: translateX(-50%); /* ちょうど半分（1セット分）進んだら一瞬で0%に戻る */
+  }
+}
+
   </style>
 </head>
 <body>
 
   <!-- ヘッダー -->
   <header>
-    <div class="logo-area">
-      <div class="logo">
-        🛡️ <ruby>マス王 <rp>(</rp><rt>マスキング</rt><rp>)</rp></ruby>
-        <span class="badge">完全安全ローカル</span>
-      </div>
+<div class="logo-area">
+  <div class="marquee-track">
+    <!-- 1つ目のロゴセット -->
+    <div class="logo">
+      🛡️ <ruby>マス王 <rp>(</rp><rt>マスキング</rt><rp>)</rp></ruby>
+      <span class="badge">完全安全ローカル</span>
+    </div>
+    <!-- 2つ目のロゴセット（隙間なく繋ぐための複製） -->
+    <div class="logo" aria-hidden="true">
+      🛡️ <ruby>マス王 <rp>(</rp><rt>マスキング</rt><rp>)</rp></ruby>
+      <span class="badge">完全安全ローカル</span>
+    </div>
+  </div>
+</div>
 
       <!-- アクセスカウンター ＆ リアルタイム現地時計 -->
       <div class="counter-badge" title="訪問者カウンターと現地時間">
@@ -342,7 +365,7 @@
       <div class="image-tabs-bar" id="image-tabs-bar">
         <span style="font-size:0.75rem; color:#64748b;">画像:</span>
         <div id="img-tab-list" style="display:flex; gap:0.3rem;"></div>
-        <button type="button" class="btn" style="height:28px; padding:0 0.5rem; font-size:0.75rem;" onclick="document.getElementById('file-input').click()">＋ 追加</button>
+        <button type="button" class="btn" style="height:24px; padding:0 0.4rem; font-size:0.75rem;" onclick="document.getElementById('file-input').click()">＋ 追加</button>
       </div>
 
       <!-- ツールバー -->
@@ -359,28 +382,18 @@
             <button type="button" class="btn" id="export-mask-btn" title="編集状態とスタミナを .mask に保存">📦 .mask 保存</button>
           </div>
 
-          <!-- AI / 自動認識マスキング -->
-          <div class="tool-group">
-            <button type="button" class="btn btn-auto" id="auto-detect-btn" title="高精度ローカル自動認識で文字や顔を一発マスキング">🤖 自動認識マスク▼</button>
-          </div>
-
           <div class="tool-group">
             <button type="button" class="btn active mode-btn" data-mode="black">⬛ 黒塗り</button>
             <button type="button" class="btn mode-btn" data-mode="white">⬜ 白塗り</button>
-            <button type="button" class="btn mode-btn" data-mode="circle">⭕ 円形マスク</button>
-            <div style="display:inline-flex; align-items:center; gap:0.2rem; background:rgba(0,0,0,0.04); padding:2px 6px; border-radius:4px;" title="円形マスクや文字、カスタム塗りの色">
-              <label for="mask-color-picker" style="font-size:0.75rem; cursor:pointer;">🎨 色:</label>
-              <input type="color" id="mask-color-picker" value="#000000" style="width:24px; height:24px; border:none; cursor:pointer; background:none; border-radius:4px;">
-            </div>
             <button type="button" class="btn mode-btn" data-mode="mosaic">▦ モザイク</button>
             <button type="button" class="btn mode-btn" data-mode="glass">🧊 すりガラス</button>
             <button type="button" class="btn mode-btn" data-mode="blur">💧 ぼかし</button>
+            <button type="button" class="btn mode-btn" data-mode="circle">⭕ 円形マスク</button>
             <button type="button" class="btn mode-btn" data-mode="spotlight">🔦 スポット</button>
           </div>
 
           <div class="tool-group">
-            <button type="button" class="btn mode-btn" data-mode="eraser" title="ドラッグした部分の加工を消して元の画像に復元" style="color:var(--accent); font-weight:bold;">🧹 消しゴム</button>
-            <button type="button" class="btn mode-btn" data-mode="redframe">🔲 枠</button>
+            <button type="button" class="btn mode-btn" data-mode="redframe">🔲 赤枠</button>
             <button type="button" class="btn mode-btn" data-mode="arrow">↗ 矢印</button>
             <button type="button" class="btn mode-btn" data-mode="stamp">① 連番</button>
             <button type="button" class="btn mode-btn" data-mode="text">🔤 文字</button>
@@ -406,7 +419,7 @@
 
           <div class="tool-group">
             <label style="font-size:0.75rem;">強度/サイズ:</label>
-            <input type="range" id="strength-slider" min="4" max="50" value="14" style="width:60px;">
+            <input type="range" id="strength-slider" min="4" max="40" value="12" style="width:60px;">
             <label style="font-size:0.75rem; margin-left:0.3rem;"><input type="checkbox" id="feather-chk"> 境界ぼかし</label>
           </div>
 
@@ -488,32 +501,32 @@
         <h3>1. 基本操作・画像読み込み・.maskファイル</h3>
         <ul>
           <li><strong>画像の追加:</strong> 画面中央タップ、ドラッグ＆ドロップ、または <kbd>Ctrl</kbd>+<kbd>V</kbd> で即座に展開。</li>
-          <li><strong>📦 .mask 保存 / 📂 .mask 読込:</strong> 作業中の全画像・全履歴・スタミナ・設定・マウスストーカー位置を独自の <code>data.mask</code>（JSON形式）として手元に書き出し・復元可能。</li>
+          <li><strong>📦 .mask 保存 / 📂 .mask 読込:</strong> 作業中の全画像・全履歴・スタミナ状態を独自の <code>data.mask</code>（JSON形式）として手元に書き出し・復元可能。後から何度でも再編集できます。</li>
           <li><strong>スタミナシステム:</strong> 毎分520,000の超高速回復エネルギーで快適に無制限利用可能。</li>
         </ul>
 
-        <h3>2. 隠す・ぼかす・自動認識（マスキング機能）</h3>
+        <h3>2. 隠す・ぼかす（マスキング機能）</h3>
         <ul>
-          <li><strong>🤖 高精度ローカル自動認識マスク:</strong> 完全ローカルのエッジ密度・色空間解析により、書類やスクショ内の「テキスト・文字領域」や写真内の「顔・人物領域」をワンクリックで自動検出して一括マスキング。</li>
-          <li><strong>⭕ 円形マスク（カラーピッカー＆スポイト連動）:</strong> 好きな色やスポイトで抽出した色で丸型に塗りつぶし。</li>
-          <li><strong>🧹 消しゴム（選択削除）:</strong> ドラッグした範囲の加工を消去し、元画像のピクセルを綺麗に復元。</li>
-          <li><strong>黒塗り / 白塗り / モザイク / すりガラス / ぼかし / スポットライト:</strong> スライダーで強度やサイズを自在に調整可能。</li>
+          <li><strong>黒塗り / 白塗り:</strong> 完全な塗りつぶしで情報を不可視化。</li>
+          <li><strong>モザイク / すりガラス / ぼかし:</strong> 自然なカモフラージュ加工（スライダーで粗さ調整可能）。</li>
+          <li><strong>円形マスク:</strong> 顔やアイコン、印鑑などを隠す丸型マスキング。</li>
+          <li><strong>スポットライト:</strong> 注目させたい場所以外を自動で暗転＆ぼかし。</li>
           <li><strong>境界ぼかし（フェザー）:</strong> チェックを入れるとマスクの四隅の境目を自然になじませます。</li>
         </ul>
 
         <h3>3. 注釈・ハイライト・ダミー置換</h3>
         <ul>
           <li><strong>ダミー置換:</strong> 氏名・電話番号・メール・住所などをリアルなダミー文字で自然に上書き。<strong>指やマウスで直感ドラッグ移動</strong>してぴったり重ねて確定できます。</li>
-          <li><strong>枠 / 矢印:</strong> カラーピッカーで選択した色でフレームや矢印を描画。</li>
+          <li><strong>赤枠 / 矢印:</strong> バグ報告や注目箇所を囲むフレーム＆矢印描画。</li>
           <li><strong>連番スタンプ:</strong> タップするたびに ① ② ③ と自動カウントアップ。</li>
           <li><strong>文字入れ / 蛍光ペン / スポイト:</strong> 自由テキスト配置、半透明マーカー、色抽出塗りつぶし。</li>
         </ul>
 
-        <h3>4. 高度な編集・一括処理・保存・モバイル操作</h3>
+        <h3>4. 高度な編集・一括処理・保存</h3>
         <ul>
-          <li><strong>📱 スマホ最適化・2本指ピンチズーム:</strong> 2本指での拡大縮小・画面スクロール移動に対応。</li>
           <li><strong>定型マスク:</strong> マイナンバーカード・免許証・保険証の個人情報位置を一発一括マスキング。</li>
           <li><strong>透かし文字 / トリミング / 回転 / リサイズ:</strong> 「社外秘」刻印やサイズ変更に対応。</li>
+          <li><strong>保存オプション:</strong> PNG / JPEG / WebP 形式選択および圧縮品質スライダー設定。</li>
           <li><strong>超軽量 WebP / AVIF 一括コンバーター＆圧縮機:</strong> 重たいPNGやJPEGをドラッグするだけで、画質を保ったままファイルサイズを1/10に一括圧縮（ギガ削減）。</li>
         </ul>
       </div>
@@ -545,35 +558,6 @@
       </div>
     </div>
   </main>
-
-  <!-- 自動認識マスキング選択モーダル -->
-  <div class="modal-overlay" id="auto-detect-modal">
-    <div class="modal-content">
-      <h3 style="margin-bottom: 0.8rem;">🤖 高精度ローカル自動認識マスク</h3>
-      <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 1rem;">
-        サーバー通信なし！ブラウザ内の画像解析エンジンが個人情報や顔を一発で検出して隠します。
-      </p>
-      
-      <div style="display:flex; flex-direction:column; gap:0.6rem;">
-        <button type="button" class="btn btn-primary" style="justify-content:flex-start; padding:0.6rem 0.8rem; height:auto;" onclick="runAutoDetect('text')">
-          <div>
-            <div style="font-weight:bold;">🔤 文字・テキスト領域を一括自動マスク</div>
-            <div style="font-size:0.75rem; opacity:0.9;">契約書、明細書、チャット画面の文字列を高精度検出して黒塗り</div>
-          </div>
-        </button>
-        <button type="button" class="btn" style="justify-content:flex-start; padding:0.6rem 0.8rem; height:auto;" onclick="runAutoDetect('face')">
-          <div>
-            <div style="font-weight:bold;">👤 顔・人物領域を一括自動モザイク</div>
-            <div style="font-size:0.75rem; color:#64748b;">写真内の顔・頭部候補領域を高精度検出してモザイク加工</div>
-          </div>
-        </button>
-      </div>
-
-      <div style="display:flex; justify-content:flex-end; margin-top:1.2rem;">
-        <button type="button" class="btn" onclick="document.getElementById('auto-detect-modal').style.display='none'">閉じる</button>
-      </div>
-    </div>
-  </div>
 
   <!-- ダミー文字選択モーダル -->
   <div class="modal-overlay" id="dummy-modal">
@@ -795,7 +779,7 @@
     setInterval(updateClientClock, 1000);
     updateClientClock();
 
-    // --- スタミナシステム（毎分520,000回復 / 1枚8,500消費 / 超軽量） ---
+    // --- スタミナシステム（毎分520,000回復 / 1枚8,500消費 / 軽量描画） ---
     const MAX_STAMINA = 520000;
     const RECOVER_PER_SEC = 520000 / 60;
     const CONSUME_PER_ACTION = 8500;
@@ -803,12 +787,13 @@
     let currentStamina = MAX_STAMINA;
     let totalUsedStamina = 0;
     let lastStaminaUpdate = Date.now();
-// スタミナ消費時の無駄な同期保存をカット
-function consumeStamina(amount = CONSUME_PER_ACTION) {
-  currentStamina = Math.max(0, currentStamina - amount);
-  totalUsedStamina += amount;
-  updateStaminaUI();
-}
+
+    function consumeStamina(amount = CONSUME_PER_ACTION) {
+      currentStamina = Math.max(0, currentStamina - amount);
+      totalUsedStamina += amount;
+      updateStaminaUI();
+      saveStateToLocal();
+    }
 
     function updateStaminaLoop() {
       const now = Date.now();
@@ -844,7 +829,6 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
     const selectionBox = document.getElementById('selection-box');
     const container = document.getElementById('canvas-container');
     const dropzone = document.getElementById('dropzone');
-    const maskColorPicker = document.getElementById('mask-color-picker');
 
     let imageList = [];
     let activeImageIndex = -1;
@@ -859,14 +843,6 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
     let undoStack = [];
     let redoStack = [];
     const MAX_UNDO = 20;
-
-    // モバイル・マルチタッチ（2本指ピンチズーム）制御用
-    let isPinching = false;
-    let initialPinchDistance = 0;
-    let initialPinchZoom = 1.0;
-
-    // デバウンス用タイマー（高速化）
-    let autoSaveDebounceTimer = null;
 
     // タブ切り替え
     function switchTab(tabId) {
@@ -937,7 +913,7 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
     function generateFullProjectJSON() {
       return {
         app: "Mas-King",
-        version: "2.7.0",
+        version: "2.6.0",
         timestamp: new Date().toISOString(),
         stamina: {
           current: currentStamina,
@@ -946,8 +922,7 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
         settings: {
           darkMode: document.body.classList.contains('dark-mode'),
           currentMode: currentMode,
-          maskColor: maskColorPicker?.value || '#000000',
-          strength: document.getElementById('strength-slider')?.value || 14,
+          strength: document.getElementById('strength-slider')?.value || 12,
           feather: document.getElementById('feather-chk')?.checked || false
         },
         sparkle: getSparkleState(),
@@ -956,20 +931,12 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
           name: img.name,
           width: img.width,
           height: img.height,
-          src: (idx === activeImageIndex && canvas.width > 0) ? canvas.toDataURL('image/png') : img.src,
-          originalSrc: img.originalSrc || img.src
+          src: (idx === activeImageIndex && canvas.width > 0) ? canvas.toDataURL('image/png') : img.src
         }))
       };
     }
 
-    // --- デバウンス自動保存（操作停止1秒後に非同期実行でラグを解消） ---
-    function debouncedSaveStateToLocal() {
-      if (autoSaveDebounceTimer) clearTimeout(autoSaveDebounceTimer);
-      autoSaveDebounceTimer = setTimeout(() => {
-        saveStateToLocal();
-      }, 1000);
-    }
-
+    // --- 自動保存（localStorage）の更新 ---
     function saveStateToLocal() {
       try {
         if (imageList.length === 0 && !canvas.width) {
@@ -1022,7 +989,6 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
           width: img.width,
           height: img.height,
           src: src,
-          originalSrc: src,
           undo: [],
           redo: []
         };
@@ -1062,8 +1028,8 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
         item.redo = [];
         undoStack = item.undo;
         redoStack = item.redo;
-        updateZoom(getFitZoomScale());
-        debouncedSaveStateToLocal();
+        updateZoom(1.0);
+        saveStateToLocal();
       } else {
         const img = new Image();
         img.onload = () => {
@@ -1077,19 +1043,11 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
           }
           undoStack = item.undo;
           redoStack = item.redo;
-          updateZoom(getFitZoomScale());
-          debouncedSaveStateToLocal();
+          updateZoom(1.0);
+          saveStateToLocal();
         };
         img.src = item.src;
       }
-    }
-
-    function getFitZoomScale() {
-      const ws = document.getElementById('workspace');
-      if (!canvas.width || !ws) return 1.0;
-      const padding = window.innerWidth <= 768 ? 16 : 40;
-      const scale = Math.min((ws.clientWidth - padding) / canvas.width, (ws.clientHeight - padding) / canvas.height, 1.0);
-      return Math.max(0.2, scale);
     }
 
     function closeImage(e, idx) {
@@ -1100,7 +1058,7 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
         canvas.width = 0; canvas.height = 0;
         container.style.display = 'none';
         dropzone.style.display = 'flex';
-        debouncedSaveStateToLocal();
+        saveStateToLocal();
       } else {
         selectImage(Math.max(0, idx - 1));
       }
@@ -1138,20 +1096,25 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
             return;
           }
 
+          // スタミナ復元
           if (data.stamina) {
             currentStamina = Math.min(MAX_STAMINA, data.stamina.current || MAX_STAMINA);
             totalUsedStamina = data.stamina.totalUsed || 0;
             updateStaminaUI();
           }
 
-          if (data.sparkle) applySparkleState(data.sparkle);
+          // マウスストーカー (ON/OFF & 位置座標) 復元
+          if (data.sparkle) {
+            applySparkleState(data.sparkle);
+          }
 
+          // 設定・モード復元
           if (data.settings) {
             if (data.settings.strength) document.getElementById('strength-slider').value = data.settings.strength;
             if (data.settings.feather !== undefined) document.getElementById('feather-chk').checked = data.settings.feather;
-            if (data.settings.maskColor && maskColorPicker) maskColorPicker.value = data.settings.maskColor;
           }
 
+          // 画像リスト復元
           imageList = [];
           data.images.forEach(imgData => {
             imageList.push({
@@ -1159,7 +1122,6 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
               width: imgData.width,
               height: imgData.height,
               src: imgData.src,
-              originalSrc: imgData.originalSrc || imgData.src,
               undo: [],
               redo: []
             });
@@ -1168,7 +1130,7 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
           renderImageTabs();
           selectImage(data.activeImageIndex >= 0 ? data.activeImageIndex : 0);
           saveStateToLocal();
-          alert('data.mask プロジェクトを完全復元しました！');
+          alert('data.mask（画像・スタミナ・マウスストーカー位置）を完全復元しました！');
         } catch(err) {
           alert('.mask ファイルの読み込みに失敗しました。');
         }
@@ -1234,7 +1196,11 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
     }
     document.getElementById('zoom-in-btn').addEventListener('click', () => updateZoom(currentZoom + 0.15));
     document.getElementById('zoom-out-btn').addEventListener('click', () => updateZoom(currentZoom - 0.15));
-    document.getElementById('zoom-fit-btn').addEventListener('click', () => updateZoom(getFitZoomScale()));
+    document.getElementById('zoom-fit-btn').addEventListener('click', () => {
+      const ws = document.getElementById('workspace');
+      const scale = Math.min((ws.clientWidth - 40) / canvas.width, (ws.clientHeight - 40) / canvas.height, 1.0);
+      updateZoom(scale);
+    });
 
     // ポインター＆タッチ統一座標取得
     function getEventCoords(e) {
@@ -1253,32 +1219,9 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
       };
     }
 
-    function getTouchDistance(touches) {
-      const dx = touches[0].clientX - touches[1].clientX;
-      const dy = touches[0].clientY - touches[1].clientY;
-      return Math.sqrt(dx * dx + dy * dy);
-    }
-
-// ポインターダウン
+    // ポインターダウン
     function onPointerDown(e) {
       if (!canvas.width) return;
-
-      // 2本指タッチ時はピンチズームモードへ
-      if (e.touches && e.touches.length >= 2) {
-        isPinching = true;
-        isInteracting = false;
-        selectionBox.style.display = 'none';
-        loupe.style.display = 'none';
-        initialPinchDistance = getTouchDistance(e.touches);
-        initialPinchZoom = currentZoom;
-        return;
-      }
-
-      if (e.type === 'touchstart') {
-        e.preventDefault(); // スマホの誤スクロールをブロック
-      }
-
-      isPinching = false;
       isInteracting = true;
       const coords = getEventCoords(e);
       startX = coords.x;
@@ -1305,12 +1248,30 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
       selectionBox.style.display = 'block';
 
       showLoupe(coords);
-    }    // ポインターアップ
+    }
+
+    // ポインタームーブ
+    function onPointerMove(e) {
+      if (!isInteracting) return;
+      e.preventDefault();
+      const coords = getEventCoords(e);
+      const rect = canvas.getBoundingClientRect();
+
+      const curCssX = Math.min(Math.max(0, coords.cssX), rect.width);
+      const curCssY = Math.min(Math.max(0, coords.cssY), rect.height);
+      const startCssX = (startX / canvas.width) * rect.width;
+      const startCssY = (startY / canvas.height) * rect.height;
+
+      selectionBox.style.left = `${Math.min(startCssX, curCssX)}px`;
+      selectionBox.style.top = `${Math.min(startCssY, curCssY)}px`;
+      selectionBox.style.width = `${Math.abs(curCssX - startCssX)}px`;
+      selectionBox.style.height = `${Math.abs(curCssY - startCssY)}px`;
+
+      showLoupe(coords);
+    }
+
+    // ポインターアップ（PC・スマホ両対応）
     function onPointerUp(e) {
-      if (isPinching) {
-        if (!e.touches || e.touches.length < 2) isPinching = false;
-        return;
-      }
       if (!isInteracting) return;
       isInteracting = false;
       selectionBox.style.display = 'none';
@@ -1330,8 +1291,8 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
       const w = Math.abs(endX - startX);
       const h = Math.abs(endY - startY);
 
-      if (w > 3 || h > 3 || currentMode === 'arrow' || currentMode === 'eraser') {
-        executeToolAction(x, y, Math.max(w, 1), Math.max(h, 1), startX, startY, endX, endY);
+      if (w > 3 || h > 3 || currentMode === 'arrow') {
+        executeToolAction(x, y, w, h, startX, startY, endX, endY);
       }
     }
 
@@ -1343,43 +1304,29 @@ function consumeStamina(amount = CONSUME_PER_ACTION) {
     window.addEventListener('touchmove', onPointerMove, { passive: false });
     window.addEventListener('touchend', onPointerUp, { passive: false });
 
-let loupeThrottle = 0;
+    // ルーペ
     function showLoupe(coords) {
-      const now = performance.now();
-      if (now - loupeThrottle < 20) return; // 20ms未満の連続描画を間引き
-      loupeThrottle = now;
-
       loupe.style.display = 'block';
-      const isMobile = window.innerWidth <= 768;
-      const offsetX = isMobile ? -45 : 20;
-      const offsetY = isMobile ? -110 : -100;
+      loupe.style.left = `${coords.cssX + 20}px`;
+      loupe.style.top = `${coords.cssY - 110}px`;
 
-      loupe.style.left = `${Math.max(5, coords.cssX + offsetX)}px`;
-      loupe.style.top = `${Math.max(5, coords.cssY + offsetY)}px`;
-
-      loupeCanvas.width = 90;
-      loupeCanvas.height = 90;
+      loupeCanvas.width = 100;
+      loupeCanvas.height = 100;
       loupeCtx.imageSmoothingEnabled = false;
-      loupeCtx.drawImage(canvas, Math.round(coords.x - 20), Math.round(coords.y - 20), 40, 40, 0, 0, 90, 90);
+      loupeCtx.drawImage(canvas, coords.x - 25, coords.y - 25, 50, 50, 0, 0, 100, 100);
       
       loupeCtx.strokeStyle = '#ef4444';
-      loupeCtx.lineWidth = 1.5;
       loupeCtx.beginPath();
-      loupeCtx.moveTo(45, 35); loupeCtx.lineTo(45, 55);
-      loupeCtx.moveTo(35, 45); loupeCtx.lineTo(55, 45);
+      loupeCtx.moveTo(50, 40); loupeCtx.lineTo(50, 60);
+      loupeCtx.moveTo(40, 50); loupeCtx.lineTo(60, 50);
       loupeCtx.stroke();
     }
-    // 各機能の描画処理（高速化）
+
+    // 各機能の描画処理
     function executeToolAction(x, y, w, h, sx, sy, ex, ey) {
       consumeStamina(100);
       const strength = parseInt(document.getElementById('strength-slider').value, 10);
       const isFeather = document.getElementById('feather-chk').checked;
-      const chosenColor = maskColorPicker ? maskColorPicker.value : '#000000';
-
-      const rx = Math.max(0, Math.floor(x));
-      const ry = Math.max(0, Math.floor(y));
-      const rw = Math.min(canvas.width - rx, Math.floor(w));
-      const rh = Math.min(canvas.height - ry, Math.floor(h));
 
       ctx.save();
       if (isFeather) {
@@ -1390,44 +1337,41 @@ let loupeThrottle = 0;
       switch (currentMode) {
         case 'black':
           ctx.fillStyle = '#000000';
-          ctx.fillRect(rx, ry, rw, rh);
+          ctx.fillRect(x, y, w, h);
           break;
         case 'white':
           ctx.fillStyle = '#ffffff';
-          ctx.fillRect(rx, ry, rw, rh);
-          break;
-        case 'circle':
-          applyCircleMask(rx, ry, rw, rh, chosenColor);
+          ctx.fillRect(x, y, w, h);
           break;
         case 'mosaic':
-          applyMosaic(rx, ry, rw, rh, strength);
+          applyMosaic(x, y, w, h, strength);
           break;
         case 'glass':
-          applyGlass(rx, ry, rw, rh, strength);
+          applyGlass(x, y, w, h, strength);
           break;
         case 'blur':
-          applyBlur(rx, ry, rw, rh, strength);
+          applyBlur(x, y, w, h, strength);
+          break;
+        case 'circle':
+          applyCircleMask(x, y, w, h);
           break;
         case 'spotlight':
-          applySpotlight(rx, ry, rw, rh);
-          break;
-        case 'eraser':
-          applyEraser(rx, ry, rw, rh);
+          applySpotlight(x, y, w, h);
           break;
         case 'redframe':
-          ctx.strokeStyle = chosenColor || '#ef4444';
+          ctx.strokeStyle = '#ef4444';
           ctx.lineWidth = Math.max(3, strength / 3);
-          ctx.strokeRect(rx, ry, rw, rh);
+          ctx.strokeRect(x, y, w, h);
           break;
         case 'arrow':
-          drawArrow(Math.floor(sx), Math.floor(sy), Math.floor(ex), Math.floor(ey), Math.max(3, strength / 3), chosenColor || '#ef4444');
+          drawArrow(sx, sy, ex, ey, Math.max(3, strength / 3));
           break;
         case 'highlighter':
           ctx.fillStyle = 'rgba(253, 224, 71, 0.4)';
-          ctx.fillRect(rx, ry, rw, rh);
+          ctx.fillRect(x, y, w, h);
           break;
         case 'crop':
-          applyCrop(rx, ry, rw, rh);
+          applyCrop(x, y, w, h);
           break;
       }
 
@@ -1435,48 +1379,22 @@ let loupeThrottle = 0;
       pushUndo();
     }
 
-    // 円形マスク
-    function applyCircleMask(x, y, w, h, color = '#000000') {
-      ctx.save();
-      ctx.beginPath();
-      ctx.ellipse(x + w/2, y + h/2, w/2, h/2, 0, 0, Math.PI * 2);
-      ctx.clip();
-      ctx.fillStyle = color;
-      ctx.fill();
-      ctx.restore();
-    }
-
-    // 消しゴム
-    function applyEraser(x, y, w, h) {
-      if (undoStack.length === 0) return;
-      const origData = undoStack[0];
-      if (origData && origData.width === canvas.width && origData.height === canvas.height) {
-        ctx.putImageData(origData, 0, 0, x, y, w, h);
-      }
-    }
-
-    // 高速・安定モザイク処理（整数インデックス化）
-    function applyMosaic(rx, ry, rw, rh, size) {
-      if (rw <= 0 || rh <= 0) return;
-      const imgData = ctx.getImageData(rx, ry, rw, rh);
+    function applyMosaic(x, y, w, h, size) {
+      const imgData = ctx.getImageData(x, y, w, h);
       const d = imgData.data;
-      const bw = imgData.width;
-      const bh = imgData.height;
-      const bSize = Math.max(2, parseInt(size, 10) || 14);
-
-      for (let by = 0; by < bh; by += bSize) {
-        for (let bx = 0; bx < bw; bx += bSize) {
-          const p = (by * bw + bx) * 4;
+      for (let by = 0; by < h; by += size) {
+        for (let bx = 0; bx < w; bx += size) {
+          const p = (by * w + bx) * 4;
           const r = d[p], g = d[p+1], b = d[p+2], a = d[p+3];
-          for (let dy = 0; dy < bSize && by + dy < bh; dy++) {
-            for (let dx = 0; dx < bSize && bx + dx < bw; dx++) {
-              const idx = ((by + dy) * bw + (bx + dx)) * 4;
+          for (let dy = 0; dy < size && by + dy < h; dy++) {
+            for (let dx = 0; dx < size && bx + dx < w; dx++) {
+              const idx = ((by + dy) * w + (bx + dx)) * 4;
               d[idx] = r; d[idx+1] = g; d[idx+2] = b; d[idx+3] = a;
             }
           }
         }
       }
-      ctx.putImageData(imgData, rx, ry);
+      ctx.putImageData(imgData, x, y);
     }
 
     function applyGlass(x, y, w, h, size) {
@@ -1503,6 +1421,16 @@ let loupeThrottle = 0;
       ctx.restore();
     }
 
+    function applyCircleMask(x, y, w, h) {
+      ctx.save();
+      ctx.beginPath();
+      ctx.ellipse(x + w/2, y + h/2, w/2, h/2, 0, 0, Math.PI * 2);
+      ctx.clip();
+      ctx.fillStyle = '#000000';
+      ctx.fill();
+      ctx.restore();
+    }
+
     function applySpotlight(x, y, w, h) {
       const fullCanvas = document.createElement('canvas');
       fullCanvas.width = canvas.width; fullCanvas.height = canvas.height;
@@ -1520,11 +1448,11 @@ let loupeThrottle = 0;
       ctx.restore();
     }
 
-    function drawArrow(fromX, fromY, toX, toY, width, color = '#ef4444') {
+    function drawArrow(fromX, fromY, toX, toY, width) {
       const headlen = width * 4;
       const angle = Math.atan2(toY - fromY, toX - fromX);
-      ctx.strokeStyle = color;
-      ctx.fillStyle = color;
+      ctx.strokeStyle = '#ef4444';
+      ctx.fillStyle = '#ef4444';
       ctx.lineWidth = width;
       ctx.beginPath();
       ctx.moveTo(fromX, fromY);
@@ -1538,9 +1466,8 @@ let loupeThrottle = 0;
     }
 
     function applyStamp(x, y) {
-      const chosenColor = maskColorPicker ? maskColorPicker.value : '#ef4444';
       ctx.save();
-      ctx.fillStyle = chosenColor;
+      ctx.fillStyle = '#ef4444';
       ctx.beginPath();
       ctx.arc(x, y, 16, 0, Math.PI * 2);
       ctx.fill();
@@ -1557,9 +1484,8 @@ let loupeThrottle = 0;
     function applyText(x, y) {
       const text = prompt('挿入する文字を入力してください:', '注記テキスト');
       if (text) {
-        const chosenColor = maskColorPicker ? maskColorPicker.value : '#ef4444';
         ctx.save();
-        ctx.fillStyle = chosenColor;
+        ctx.fillStyle = '#ef4444';
         ctx.font = 'bold 20px sans-serif';
         ctx.textBaseline = 'top';
         ctx.fillText(text, x, y);
@@ -1569,15 +1495,10 @@ let loupeThrottle = 0;
     }
 
     function applyDropper(x, y) {
-      const pixel = ctx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
-      const hex = "#" + ((1 << 24) + (pixel[0] << 16) + (pixel[1] << 8) + pixel[2]).toString(16).slice(1);
-      dropperColor = hex;
-      if (maskColorPicker) maskColorPicker.value = hex;
-      alert(`色を抽出してカラーピッカーにセットしました: ${hex}`);
-      currentMode = 'circle';
-      document.querySelectorAll('.mode-btn').forEach(b => {
-        b.classList.toggle('active', b.dataset.mode === 'circle');
-      });
+      const pixel = ctx.getImageData(x, y, 1, 1).data;
+      dropperColor = `rgb(${pixel[0]},${pixel[1]},${pixel[2]})`;
+      alert(`色を抽出しました: ${dropperColor}`);
+      currentMode = 'black';
     }
 
     function applyCrop(x, y, w, h) {
@@ -1587,92 +1508,6 @@ let loupeThrottle = 0;
       ctx.putImageData(cropped, 0, 0);
       updateZoom(currentZoom);
       pushUndo();
-    }
-
-    // --- 高精度ローカル自動認識マスキング (テキスト / 顔) ---
-    document.getElementById('auto-detect-btn').addEventListener('click', () => {
-      if (!canvas.width) { alert('先に画像を開いてください'); return; }
-      document.getElementById('auto-detect-modal').style.display = 'flex';
-    });
-
-    function runAutoDetect(type) {
-      document.getElementById('auto-detect-modal').style.display = 'none';
-      if (!canvas.width) return;
-
-      consumeStamina(CONSUME_PER_ACTION * 2);
-      const w = canvas.width, h = canvas.height;
-      const imgData = ctx.getImageData(0, 0, w, h);
-      const d = imgData.data;
-
-      if (type === 'text') {
-        const blockSize = Math.max(16, Math.round(w / 40));
-        const blocksX = Math.floor(w / blockSize);
-        const blocksY = Math.floor(h / blockSize);
-        const densityGrid = new Uint8Array(blocksX * blocksY);
-
-        for (let by = 0; by < blocksY; by++) {
-          for (let bx = 0; bx < blocksX; bx++) {
-            let highEdgeCount = 0;
-            const startX = bx * blockSize;
-            const startY = by * blockSize;
-
-            for (let py = startY; py < startY + blockSize - 1; py += 2) {
-              for (let px = startX; px < startX + blockSize - 1; px += 2) {
-                const idx1 = (py * w + px) * 4;
-                const idx2 = (py * w + (px + 1)) * 4;
-                const diff = Math.abs(d[idx1] - d[idx2]) + Math.abs(d[idx1+1] - d[idx2+1]) + Math.abs(d[idx1+2] - d[idx2+2]);
-                if (diff > 50) highEdgeCount++;
-              }
-            }
-            if (highEdgeCount > (blockSize * blockSize) / 25) {
-              densityGrid[by * blocksX + bx] = 1;
-            }
-          }
-        }
-
-        ctx.fillStyle = '#000000';
-        let detected = 0;
-        for (let by = 0; by < blocksY; by++) {
-          for (let bx = 0; bx < blocksX; bx++) {
-            if (densityGrid[by * blocksX + bx] === 1) {
-              ctx.fillRect(bx * blockSize, by * blockSize, blockSize, blockSize);
-              detected++;
-            }
-          }
-        }
-        pushUndo();
-        alert(`高精度解析完了: ${detected} 箇所の文字・高密度領域を自動マスキングしました。`);
-      } else if (type === 'face') {
-        const skinRegions = [];
-        const step = 4;
-        for (let y = 0; y < h; y += step) {
-          for (let x = 0; x < w; x += step) {
-            const i = (y * w + x) * 4;
-            const r = d[i], g = d[i+1], b = d[i+2];
-            const isSkin = (r > 95 && g > 40 && b > 20 && (Math.max(r,g,b) - Math.min(r,g,b) > 15) && Math.abs(r - g) > 15 && r > g && r > b);
-            if (isSkin) skinRegions.push({ x, y });
-          }
-        }
-
-        if (skinRegions.length > 50) {
-          let minX = w, maxX = 0, minY = h, maxY = 0;
-          skinRegions.forEach(p => {
-            if (p.x < minX) minX = p.x;
-            if (p.x > maxX) maxX = p.x;
-            if (p.y < minY) minY = p.y;
-            if (p.y > maxY) maxY = p.y;
-          });
-          const fw = Math.min(w, (maxX - minX) * 0.85);
-          const fh = Math.min(h, (maxY - minY) * 0.85);
-          const fx = minX + (maxX - minX - fw) / 2;
-          const fy = minY + (maxY - minY - fh) / 2;
-          applyMosaic(Math.round(fx), Math.round(fy), Math.round(fw), Math.round(fh), 18);
-          pushUndo();
-          alert('高精度解析完了: 検出された顔・人物領域にモザイクを適用しました。');
-        } else {
-          alert('顕著な顔・人物領域が検出されませんでした。手動ツールをご利用ください。');
-        }
-      }
     }
 
     document.getElementById('rotate-btn').addEventListener('click', () => {
@@ -1862,20 +1697,15 @@ let loupeThrottle = 0;
       dummyOverlay.style.display = 'none';
     });
 
-function debouncedSaveStateToLocal() {
-  if (autoSaveDebounceTimer) clearTimeout(autoSaveDebounceTimer);
-  autoSaveDebounceTimer = setTimeout(() => {
-    saveStateToLocal();
-  }, 1000); // 1秒間操作が止まったときにバックグラウンドで保存
-}
+    // --- Undo / Redo ---
+    function pushUndo() {
+      if (!canvas.width) return;
+      redoStack = [];
+      undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+      if (undoStack.length > MAX_UNDO) undoStack.shift();
+      saveStateToLocal();
+    }
 
-function pushUndo() {
-  if (!canvas.width) return;
-  redoStack = [];
-  undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-  if (undoStack.length > MAX_UNDO) undoStack.shift();
-  debouncedSaveStateToLocal(); // ← 描画直後は重い保存を後回しにする
-}
     function undo() {
       if (undoStack.length > 1) {
         redoStack.push(undoStack.pop());
@@ -1883,7 +1713,7 @@ function pushUndo() {
         canvas.width = state.width;
         canvas.height = state.height;
         ctx.putImageData(state, 0, 0);
-        debouncedSaveStateToLocal();
+        saveStateToLocal();
       }
     }
 
@@ -1894,7 +1724,7 @@ function pushUndo() {
         canvas.width = state.width;
         canvas.height = state.height;
         ctx.putImageData(state, 0, 0);
-        debouncedSaveStateToLocal();
+        saveStateToLocal();
       }
     }
 
@@ -1907,7 +1737,7 @@ function pushUndo() {
         ctx.putImageData(init, 0, 0);
         undoStack = [init];
         redoStack = [];
-        debouncedSaveStateToLocal();
+        saveStateToLocal();
       }
     });
 
@@ -1967,6 +1797,16 @@ function pushUndo() {
 
     // 更新履歴データ
     const changelogData = [
+
+      {
+        version: 'v2.8',
+        date: '2026-09-01 10:15',
+        title: 'ロゴのルビをマーキーに変えました',
+        items: [
+          'ロゴのルビのところをmarquee(文字がスクロールするアニメーション)にしました',
+          ]
+      },
+
       {
         version: 'v2.7.1',
         date: '2026-08-31 12:15',
@@ -2159,10 +1999,9 @@ function pushUndo() {
         if (savedProject) {
           const data = JSON.parse(savedProject);
           
-          if (data.sparkle) applySparkleState(data.sparkle);
-
-          if (data.settings && data.settings.maskColor && maskColorPicker) {
-            maskColorPicker.value = data.settings.maskColor;
+          // マウスストーカー復元
+          if (data.sparkle) {
+            applySparkleState(data.sparkle);
           }
 
           if (data.images && data.images.length > 0) {
@@ -2176,7 +2015,6 @@ function pushUndo() {
               width: imgData.width,
               height: imgData.height,
               src: imgData.src,
-              originalSrc: imgData.originalSrc || imgData.src,
               undo: [],
               redo: []
             }));
@@ -2265,14 +2103,16 @@ function pushUndo() {
           targetW = maxW;
         }
 
-const tCanvas = document.createElement('canvas');
+        const tCanvas = document.createElement('canvas');
         tCanvas.width = targetW;
         tCanvas.height = targetH;
         const tCtx = tCanvas.getContext('2d');
         tCtx.drawImage(imgBitmap, 0, 0, targetW, targetH);
 
+        // CanvasからBlob生成 (WebP / AVIF 対応)
         let blob = await new Promise(resolve => tCanvas.toBlob(resolve, format, quality));
         
+        // ブラウザがAVIF非対応等の場合の自動WebPフォールバック
         if (!blob || blob.type !== format) {
           blob = await new Promise(resolve => tCanvas.toBlob(resolve, 'image/webp', quality));
         }
@@ -2294,7 +2134,7 @@ const tCanvas = document.createElement('canvas');
         compressedFiles.push(item);
       }
 
-renderCompressionList();
+      renderCompressionList();
       compFileInput.value = '';
     }
 
@@ -2303,7 +2143,7 @@ renderCompressionList();
       let totalOrig = 0;
       let totalComp = 0;
 
-      compressedFiles.forEach((item) => {
+      compressedFiles.forEach((item, index) => {
         totalOrig += item.originalSize;
         totalComp += item.compressedSize;
 
@@ -2380,7 +2220,7 @@ renderCompressionList();
     .sparkle-toggle-container {
       position: fixed;
       z-index: 2147483647;
-      background: rgba(255, 255, 255, 0.85);
+      background: rgba(255, 255, 255, 0.8);
       padding: 5px 10px;
       border-radius: 20px;
       border: 1px solid #ccc;
@@ -2392,7 +2232,7 @@ renderCompressionList();
     }
     @media (prefers-color-scheme: dark) {
       .sparkle-toggle-container {
-        background: rgba(0, 0, 0, 0.85);
+        background: rgba(0, 0, 0, 0.8);
         border-color: #555;
         color: #fff;
       }
@@ -2441,14 +2281,12 @@ renderCompressionList();
     }
   </style>
 
-<script>
+  <script>
     (function() {
       let isEnabled = true;
       const toggle = document.getElementById('sparkleToggle');
       const container = document.getElementById('draggableToggle');
-      if (!toggle || !container) return;
-
-      // 保存されたON/OFF状態の復元
+      
       const savedState = localStorage.getItem('sparkleEnabled');
       if (savedState !== null) {
         isEnabled = savedState === 'true';
@@ -2456,105 +2294,101 @@ renderCompressionList();
         isEnabled = true;
       }
       toggle.checked = isEnabled;
-
+      
       toggle.addEventListener('change', (e) => {
         isEnabled = e.target.checked;
         localStorage.setItem('sparkleEnabled', isEnabled);
       });
 
-      // 保存された位置の復元
       const savedTop = localStorage.getItem('sparkleToggleTop');
       const savedLeft = localStorage.getItem('sparkleToggleLeft');
+      
       if (savedTop !== null && savedLeft !== null) {
         container.style.top = savedTop;
         container.style.left = savedLeft;
-        container.style.right = 'auto';
       } else {
         container.style.top = '10px';
         container.style.right = '10px';
       }
 
       let isDragging = false;
-      let startX = 0, startY = 0;
-      let initialX = 0, initialY = 0;
+      let startX, startY;
+      let initialX, initialY;
 
-      function onToggleDragStart(e) {
+      function onPointerDown(e) {
         if (e.target === toggle) return;
-
+        
         isDragging = true;
         container.style.transition = 'none';
-
-        const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
-        const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
-
+        
+        const clientX = e.clientX || (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY || (e.touches && e.touches[0].clientY);
+        
         startX = clientX;
         startY = clientY;
-
+        
         const rect = container.getBoundingClientRect();
         initialX = rect.left;
         initialY = rect.top;
-
-        window.addEventListener('mousemove', onToggleDragMove);
-        window.addEventListener('mouseup', onToggleDragEnd);
-        window.addEventListener('touchmove', onToggleDragMove, { passive: false });
-        window.addEventListener('touchend', onToggleDragEnd);
+        
+        window.addEventListener('mousemove', onPointerMove);
+        window.addEventListener('mouseup', onPointerUp);
+        window.addEventListener('touchmove', onPointerMove, { passive: false });
+        window.addEventListener('touchend', onPointerUp);
       }
 
-      function onToggleDragMove(e) {
+      function onPointerMove(e) {
         if (!isDragging) return;
-
-        const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
-        const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
-
+        
+        const clientX = e.clientX !== undefined ? e.clientX : (e.touches && e.touches[0].clientX);
+        const clientY = e.clientY !== undefined ? e.clientY : (e.touches && e.touches[0].clientY);
+        
         if (clientX === undefined || clientY === undefined) return;
+        
         if (e.cancelable) e.preventDefault();
-
+        
         const dx = clientX - startX;
         const dy = clientY - startY;
-
+        
         let newLeft = initialX + dx;
         let newTop = initialY + dy;
-
+        
         const padding = 5;
         const maxLeft = window.innerWidth - container.offsetWidth - padding;
         const maxTop = window.innerHeight - container.offsetHeight - padding;
-
+        
         newLeft = Math.max(padding, Math.min(newLeft, maxLeft));
         newTop = Math.max(padding, Math.min(newTop, maxTop));
-
+        
         container.style.left = `${newLeft}px`;
         container.style.top = `${newTop}px`;
         container.style.right = 'auto';
       }
 
-      function onToggleDragEnd() {
+      function onPointerUp() {
         if (!isDragging) return;
         isDragging = false;
-
+        
         localStorage.setItem('sparkleToggleTop', container.style.top);
         localStorage.setItem('sparkleToggleLeft', container.style.left);
-
-        window.removeEventListener('mousemove', onToggleDragMove);
-        window.removeEventListener('mouseup', onToggleDragEnd);
-        window.removeEventListener('touchmove', onToggleDragMove);
-        window.removeEventListener('touchend', onToggleDragEnd);
+        
+        window.removeEventListener('mousemove', onPointerMove);
+        window.removeEventListener('mouseup', onPointerUp);
+        window.removeEventListener('touchmove', onPointerMove);
+        window.removeEventListener('touchend', onPointerUp);
       }
 
-      container.addEventListener('mousedown', onToggleDragStart);
-      container.addEventListener('touchstart', onToggleDragStart, { passive: false });
+      container.addEventListener('mousedown', onPointerDown);
+      container.addEventListener('touchstart', onPointerDown, { passive: true });
 
-      // キラキラ星エフェクトの生成
       function createSparkle(x, y) {
-        // マスキング操作中やダミー移動中は星を止めて超軽量化
-        const isInteractingActive = (typeof isInteracting !== 'undefined' && isInteracting);
-        const isDummyActive = (typeof isDraggingDummy !== 'undefined' && isDraggingDummy);
-        if (!isEnabled || isInteractingActive || isDummyActive || isDragging) return;
+        if (!isEnabled) return;
 
         const sparkle = document.createElement('div');
         sparkle.className = 'internet-sparkle';
         sparkle.textContent = '★';
 
-        const baseSize = Math.floor(Math.random() * 7) + 6;
+        const baseSize = Math.floor(Math.random() * 7) + 6; 
         sparkle.style.fontSize = `${baseSize}px`;
 
         const startScale = (Math.random() * 0.4) + 0.4;
