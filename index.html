@@ -287,36 +287,37 @@
     .changelog-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.5rem; }
     .changelog-badge { background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.75rem; }
     body.dark-mode .changelog-badge { background: #1e3a8a; color: #93c5fd; border-color: #1d4ed8; }
-
-/* ロゴエリア全体のコンテナ設定 */
-.logo-area {
-  overflow: hidden; /* 枠外に飛び出た文字を隠す */
-  white-space: nowrap; /* 子要素を横一列に並べる */
-  width: 100%; /* 横幅いっぱいに広げる */
-  background: transparent; /* 背景はそのまま透過 */
-}
-
-/* アニメーションを動かすトラック */
-.marquee-track {
-  display: inline-flex; /* ロゴセットを横並びに */
-  gap: 2rem; /* ロゴ同士の横の隙間（好みに合わせて調整） */
-  padding-right: 2rem; /* ループがガタつかないための余白 */
-  animation: logoScroll 15s linear infinite; /* 15秒で1ループ（無限） */
-}
-
-/* ロゴのスタイル（文字が溢れないよう折り返し禁止） */
+/* ロゴ全体の並びを調整（盾、ルビ、バッジを中央揃えに） */
 .logo {
-  flex-shrink: 0; /* 縮まないように固定 */
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ルビ部分だけを切り取る横幅固定のコンテナ */
+.ruby-marquee-container {
+  overflow: hidden; /* コンテナからはみ出た部分を隠す */
   white-space: nowrap;
+  width: 120px; /* ★ルビ2つ分が綺麗に収まるお好みの横幅に調整してください */
+  display: inline-block;
+  vertical-align: middle;
+}
+
+/* 動かすトラック（2つのルビを横並びに） */
+.ruby-marquee-track {
+  display: inline-flex;
+  gap: 1.5rem; /* ルビ同士の横の間隔 */
+  padding-right: 1.5rem; /* ループがガタつかないためのバッファ */
+  animation: rubyScroll 6s linear infinite; /* 6秒で1ループ（無限） */
 }
 
 /* 無限ループのアニメーション定義 */
-@keyframes logoScroll {
+@keyframes rubyScroll {
   0% {
-    transform: translateX(0); /* 開始位置 */
+    transform: translateX(0);
   }
   100% {
-    transform: translateX(-50%); /* ちょうど半分（1セット分）進んだら一瞬で0%に戻る */
+    transform: translateX(-50%); /* ちょうど1セット分左に進んだら0%にループ */
   }
 }
 
@@ -326,20 +327,19 @@
 
   <!-- ヘッダー -->
   <header>
-<div class="logo-area">
-  <div class="marquee-track">
-    <!-- 1つ目のロゴセット -->
-    <div class="logo">
-      🛡️ <ruby>マス王 <rp>(</rp><rt>マスキング</rt><rp>)</rp></ruby>
-      <span class="badge">完全安全ローカル</span>
-    </div>
-    <!-- 2つ目のロゴセット（隙間なく繋ぐための複製） -->
-    <div class="logo" aria-hidden="true">
-      🛡️ <ruby>マス王 <rp>(</rp><rt>マスキング</rt><rp>)</rp></ruby>
-      <span class="badge">完全安全ローカル</span>
+<div class="logo">
+  🛡️ 
+  <!-- ルび部分だけを動かすためのコンテナ -->
+  <div class="ruby-marquee-container">
+    <div class="ruby-marquee-track">
+      <ruby>マス王 <rp>(</rp><rt>マスキング</rt><rp>)</rp></ruby>
+      <!-- ループを滑らかに繋ぐための複製 -->
+      <ruby aria-hidden="true">マス王 <rp>(</rp><rt>マスキング</rt><rp>)</rp></ruby>
     </div>
   </div>
+  <span class="badge">完全安全ローカル</span>
 </div>
+
 
       <!-- アクセスカウンター ＆ リアルタイム現地時計 -->
       <div class="counter-badge" title="訪問者カウンターと現地時間">
