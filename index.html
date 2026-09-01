@@ -408,6 +408,7 @@
       <button type="button" class="tab-btn active" onclick="switchTab('tool')">ツール</button>
       <button type="button" class="tab-btn" onclick="switchTab('guide')">📖 使い方</button>
       <button type="button" class="tab-btn" onclick="switchTab('changelog')">🕒 更新履歴</button>
+      <button type="button" class="tab-btn" onclick="switchTab('profile')">👤 自己紹介</button>
       <button type="button" class="btn" id="dark-mode-btn" title="ダークモード切替" style="padding:0.2rem 0.5rem;">🌙</button>
     </div>
   </header>
@@ -627,6 +628,63 @@
         </div>
       </div>
     </div>
+
+<!-- 自己紹介画面 -->
+    <div id="profile-view" class="view-panel">
+      <div class="guide-container">
+        <h2>👤 開発者プロフィール</h2>
+
+        <!-- プロフィールカード -->
+        <div class="changelog-item" style="padding: 1.5rem; border-left: 4px solid var(--primary);">
+          <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem; flex-wrap: wrap;">
+            <div style="font-size: 2.5rem; background: rgba(37,99,235,0.1); width: 60px; height: 60px; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+              🍑
+            </div>
+            <div>
+              <h3 style="margin: 0; font-size: 1.3rem; color: var(--text);">
+                <ruby>福島 桃好<rp>(</rp><rt style="font-size:0.75rem; color:var(--primary);">フゥー ディン タオ ハオ</rt><rp>)</rp></ruby>
+              </h3>
+              <span class="badge" style="margin-top: 0.3rem;">マス王 開発者</span>
+            </div>
+          </div>
+
+          <!-- 基本情報テーブル -->
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem; line-height: 1.8;">
+            <tbody>
+              <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 0.6rem 0; font-weight: bold; width: 110px; color: var(--primary);">🍑 名前の由来</td>
+                <td style="padding: 0.6rem 0;">福島のモモが好き ＝「福島 桃好」を台湾語読みした名前</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 0.6rem 0; font-weight: bold; color: var(--primary);">🇯🇵 国籍</td>
+                <td style="padding: 0.6rem 0;">日本</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 0.6rem 0; font-weight: bold; color: var(--primary);">🎂 生年月日</td>
+                <td style="padding: 0.6rem 0;">6月7日</td>
+              </tr>
+              <tr style="border-bottom: 1px solid var(--border);">
+                <td style="padding: 0.6rem 0; font-weight: bold; color: var(--primary);">♂️ 性別</td>
+                <td style="padding: 0.6rem 0;">雄</td>
+              </tr>
+              <tr>
+                <td style="padding: 0.6rem 0; font-weight: bold; color: var(--primary);">💻 趣味</td>
+                <td style="padding: 0.6rem 0;">サイト更新</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- メッセージ -->
+        <div style="background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+          <h3 style="margin-top: 0; color: var(--primary); font-size: 1rem;">💬 ひとこと</h3>
+          <p style="font-size: 0.85rem; line-height: 1.6; margin: 0;">
+            「完全ローカル・サーバー送信ゼロ」で誰でも安全に使えるWebツールを目指して日々サイト更新しています！
+          </p>
+        </div>
+      </div>
+    </div>
+
   </main>
 
   <!-- ダミー文字選択モーダル -->
@@ -2086,6 +2144,15 @@
 
     // 更新履歴データ
     const changelogData = [
+
+      {
+        version: 'v3.0.0',
+        date: '2026-09-01 15:25',
+        title: '自己紹介タブを追加しました',
+        items: [
+          '管理人の自己紹介タブを追加しました'
+        ]
+      },
       {
         version: 'v2.9.2',
         date: '2026-09-01 12:00',
