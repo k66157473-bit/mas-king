@@ -6,6 +6,23 @@
   <title>【サーバー送信なし】ローカル完結の画像マスキングツール「マス王」| 写真のモザイク・個人情報保護に</title>
   <meta name="description" content="サーバーに画像を一切送信しない安全・超高機能な画像マスキング＆注釈ツールです。" />
   <meta name="format-detection" content="telephone=no" />
+<!-- 1. マニフェストファイルの読み込み -->
+<link rel="manifest" href="/manifest.json">
+
+<!-- 2. サービスワーカーの登録スクリプト -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then((registration) => {
+          console.log('マス王 PWA: サービスワーカー登録成功！スコープ:', registration.scope);
+        })
+        .catch((error) => {
+          console.error('マス王 PWA: サービスワーカー登録失敗:', error);
+        });
+    });
+  }
+</script>
 
   <style>
     :root {
@@ -1815,6 +1832,14 @@ rt {
     // 更新履歴データ
     const changelogData = [
 
+      {
+        version: 'v2.9',
+        date: '2026-09-01 10:39',
+        title: 'PWA化しました',
+        items: [
+          'これで実際にアプリのように使えます',
+          ]
+      },
       {
         version: 'v2.8',
         date: '2026-09-01 10:15',
