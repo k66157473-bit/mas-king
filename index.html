@@ -2939,75 +2939,8 @@
 
     // ページ読み込み時に実行
     window.addEventListener('DOMContentLoaded', checkSharedImage);
-
-// --- 起動時タイピング自己紹介（5秒自動クローズ / スキップ / もう流さない） ---
-    (function() {
-      const STORAGE_KEY = 'maskou_hide_welcome_typing';
-      if (localStorage.getItem(STORAGE_KEY) === 'true') return;
-
-      const overlay = document.getElementById('welcome-typing-overlay');
-      const textarea = document.getElementById('typing-textarea');
-      const timerCount = document.getElementById('typing-timer-count');
-      const skipBtn = document.getElementById('typing-skip-btn');
-      const neverBtn = document.getElementById('typing-never-btn');
-
-      if (!overlay || !textarea) return;
-
-      const text = "はじめまして。私は福島桃好です。以後お見知りおきを。";
-      let charIndex = 0;
-      let typingInterval = null;
-      let autoCloseTimeout = null;
-      let countdownInterval = null;
-      let remainingSeconds = 5;
-
-      // オーバーレイを表示
-      overlay.style.display = 'flex';
-
-      // 1文字ずつタイピング表示
-      function typeNextChar() {
-        charIndex++;
-        textarea.value = text.substring(0, charIndex) + "_";
-        if (charIndex >= text.length) {
-          textarea.value = text;
-          clearInterval(typingInterval);
-        }
-      }
-      typingInterval = setInterval(typeNextChar, 60);
-
-      // 画面を閉じる共通処理
-      function closeOverlay() {
-        clearInterval(typingInterval);
-        clearTimeout(autoCloseTimeout);
-        clearInterval(countdownInterval);
-        overlay.style.transition = 'opacity 0.3s ease';
-        overlay.style.opacity = '0';
-        setTimeout(() => { overlay.style.display = 'none'; }, 300);
-      }
-
-      // カウントダウン表示（5秒 ➔ 0秒）
-      countdownInterval = setInterval(() => {
-        remainingSeconds--;
-        if (timerCount) timerCount.textContent = `(${remainingSeconds}s)`;
-      }, 1000);
-
-      // 5秒後に自動クローズ
-      autoCloseTimeout = setTimeout(closeOverlay, 5000);
-
-      // スキップボタン
-      if (skipBtn) {
-        skipBtn.addEventListener('click', closeOverlay);
-      }
-
-      // もう流さないボタン
-      if (neverBtn) {
-        neverBtn.addEventListener('click', () => {
-          localStorage.setItem(STORAGE_KEY, 'true');
-          closeOverlay();
-        });
-      }
-    })();
-  </script>
-<!-- サイト読み込み時のレトロタイピング自己紹介オーバーレイ -->
+</script>
+<!-- ① HTML（オーバーレイ画面） -->
 <div id="welcome-typing-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); z-index: 999999; justify-content: center; align-items: center; padding: 1rem; backdrop-filter: blur(4px);">
   <div style="background: #202020; border: 2px solid #00ff00; border-radius: 8px; padding: 1.2rem; max-width: 460px; width: 100%; box-shadow: 0 0 20px rgba(0, 255, 0, 0.4); font-family: monospace;">
     
@@ -3018,7 +2951,7 @@
     </div>
 
     <!-- タイピングテキストエリア -->
-    <textarea id="typing-textarea" readonly rows="3" style="width: 100%; color: #00ff00; background-color: #101010; border: 1px solid #333; border-radius: 4px; padding: 0.6rem; font-size: 0.95rem; font-family: monospace; line-height: 1.5; resize: none; outline: none; box-sizing: border-box;"></textarea>
+    <textarea id="typing-textarea" readonly tabindex="-1" rows="3" style="width: 100%; color: #00ff00; background-color: #101010; border: 1px solid #333; border-radius: 4px; padding: 0.6rem; font-size: 0.95rem; font-family: monospace; line-height: 1.5; resize: none; outline: none; box-sizing: border-box;"></textarea>
 
     <!-- コントロールボタン -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.8rem; gap: 0.5rem; flex-wrap: wrap;">
@@ -3031,5 +2964,77 @@
     </div>
   </div>
 </div>
+
+<!-- ② JavaScript（読み込み完了を待ってから実行） -->
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    const STORAGE_KEY = 'maskou_hide_welcome_typing';
+    if (localStorage.getItem(STORAGE_KEY) === 'true') return;
+
+    const overlay = document.getElementById('welcome-typing-overlay');
+    const textarea = document.getElementById('typing-textarea');
+    const timerCount = document.getElementById('typing-timer-count');
+    const skipBtn = document.getElementById('typing-skip-btn');
+    const neverBtn = document.getElementById('typing-never-btn');
+
+    if (!overlay || !textarea) return;
+
+    const text = "はじめまして。私は福島桃好です。以後お見知りおきを。";
+    let charIndex = 0;
+    let typingInterval = null;
+    let autoCloseTimeout = null;
+    let countdownInterval = null;
+    let remainingSeconds = 5;
+
+    // オーバーレイを表示
+    overlay.style.display = 'flex';
+
+    // 1文字ずつタイピング表示
+    function typeNextChar() {
+      charIndex++;
+      textarea.value = text.substring(0, charIndex) + "_";
+      if (charIndex >= text.length) {
+        textarea.value = text;
+        clearInterval(typingInterval);
+      }
+    }
+    typingInterval = setInterval(typeNextChar, 60);
+
+    // 画面を閉じる共通処理
+    function closeOverlay() {
+      clearInterval(typingInterval);
+      clearTimeout(autoCloseTimeout);
+      clearInterval(countdownInterval);
+      overlay.style.transition = 'opacity 0.3s ease';
+      overlay.style.opacity = '0';
+      setTimeout(() => { overlay.style.display = 'none'; }, 300);
+    }
+
+    // カウントダウン表示（5秒 ➔ 0秒）
+    countdownInterval = setInterval(() => {
+      remainingSeconds--;
+      if (remainingSeconds <= 0) {
+        clearInterval(countdownInterval);
+      }
+      if (timerCount) timerCount.textContent = `(${Math.max(0, remainingSeconds)}s)`;
+    }, 1000);
+
+    // 5秒後に自動クローズ
+    autoCloseTimeout = setTimeout(closeOverlay, 5000);
+
+    // スキップボタン
+    if (skipBtn) {
+      skipBtn.addEventListener('click', closeOverlay);
+    }
+
+    // もう流さないボタン
+    if (neverBtn) {
+      neverBtn.addEventListener('click', () => {
+        localStorage.setItem(STORAGE_KEY, 'true');
+        closeOverlay();
+      });
+    }
+  });
+</script>
 </body>
 </html>
