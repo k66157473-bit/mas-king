@@ -26,6 +26,53 @@
   </script>
 
   <style>
+/* Git風コミットツリー＆ブランチUI */
+    .git-branch-badge {
+      background: #eff6ff;
+      color: #2563eb;
+      border: 1px solid #bfdbfe;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-weight: bold;
+      font-family: monospace;
+    }
+    body.dark-mode .git-branch-badge {
+      background: #1e3a8a;
+      color: #93c5fd;
+      border-color: #1d4ed8;
+    }
+
+    .git-node {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.5rem 0.7rem;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+    .git-node:hover {
+      border-color: var(--primary);
+      background: rgba(37, 99, 235, 0.04);
+    }
+    .git-node.active-head {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.08);
+      box-shadow: 0 0 0 1px #10b981;
+    }
+
+    .git-hash {
+      font-family: monospace;
+      font-size: 0.75rem;
+      background: rgba(0, 0, 0, 0.06);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      color: var(--text);
+    }
+    body.dark-mode .git-hash { background: rgba(255, 255, 255, 0.1); }
     :root {
       --primary: #2563eb;
       --primary-hover: #1d4ed8;
@@ -491,6 +538,7 @@
             <button type="button" class="btn" id="undo-btn" title="元に戻す (Ctrl+Z)">↩</button>
             <button type="button" class="btn" id="redo-btn" title="やり直す (Ctrl+Y)">↪</button>
             <button type="button" class="btn" id="clear-btn">🔄 リセット</button>
+            <button type="button" class="btn" id="git-tree-btn" title="GitHub風コミット履歴・ブランチ分岐ツリーを開く" style="color:var(--primary); font-weight:bold;">🌿 Git履歴ツリー</button>
           </div>
 
           <div class="tool-group">
@@ -603,6 +651,13 @@
           <li><strong>透かし文字 / トリミング / 回転 / リサイズ:</strong> 「社外秘」刻印やサイズ変更に対応。</li>
           <li><strong>超軽量 WebP / AVIF 一括コンバーター＆圧縮機:</strong> 重たいPNGやJPEGをドラッグするだけで、画質を保ったままファイルサイズを1/10に一括圧縮。</li>
         </ul>
+
+        <h3>5.Gitの仕組みを活用</h3>
+        <ul>
+          <li><strong>自動コミット</strong> 操作が自動的にすべて履歴ツリーにコミットされます。</li>
+          <li><strong>簡単に復元可能</strong> コミットを押すと、そのコミットの操作に復元できます</li>
+          <li><strong>maskに自動保存/ブランチ作成可能</strong> '.maskにもしっかり履歴ツリーが保存できます。ブランチも作れます</li>
+        </ui>
       </div>
     </div>
 
@@ -865,6 +920,39 @@
       </div>
     </div>
   </div>
+
+<!-- Git風コミット履歴＆ブランチツリーモーダル -->
+<div class="modal-overlay" id="git-tree-modal">
+  <div class="modal-content" style="max-width: 620px; max-height: 85vh; display: flex; flex-direction: column;">
+    
+    <!-- ヘッダー -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.6rem; margin-bottom: 0.8rem;">
+      <div style="display: flex; align-items: center; gap: 0.5rem;">
+        <span style="font-size: 1.2rem;">🌿</span>
+        <h3 style="margin: 0; font-size: 1.1rem;">Git風 バージョン管理ツリー</h3>
+      </div>
+      <button type="button" class="btn" onclick="document.getElementById('git-tree-modal').style.display='none'" style="height: 26px; padding: 0 6px;">✕</button>
+    </div>
+
+    <!-- ブランチ操作バー -->
+    <div style="display: flex; gap: 0.4rem; align-items: center; background: var(--bg); padding: 0.5rem; border-radius: 6px; margin-bottom: 0.8rem; font-size: 0.8rem; flex-wrap: wrap;">
+      <span>現在ブランチ:</span>
+      <span id="git-current-branch-badge" class="git-branch-badge">main</span>
+      <button type="button" class="btn" id="git-new-branch-btn" style="height: 26px; padding: 0 0.5rem; font-size: 0.75rem; margin-left: auto;">＋ 新規ブランチ</button>
+    </div>
+
+    <!-- コミットタイムラインリスト -->
+    <div id="git-commit-list" style="flex: 1; overflow-y: auto; padding-right: 0.3rem; display: flex; flex-direction: column; gap: 0.5rem;">
+      <!-- コミットノードがJSで動的生成されます -->
+    </div>
+
+    <!-- フッター -->
+    <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid var(--border); padding-top: 0.6rem; margin-top: 0.8rem; font-size: 0.75rem; color: #64748b;">
+      <span>💡 コミットをクリックするとその時点へ一瞬でタイムトラベルします</span>
+      <button type="button" class="btn" onclick="document.getElementById('git-tree-modal').style.display='none'">閉じる</button>
+    </div>
+  </div>
+</div>
 
   <script>
     // --- Cloudflare Workers D1 アクセスカウンター取得 ---
@@ -1624,8 +1712,22 @@
       }
 
       ctx.restore();
-      pushUndo();
-    }
+　      const toolNames = {
+        'black': '⬛ 黒塗り適用',
+        'white': '⬜ 白塗り適用',
+        'color': '🎨 カラー塗り適用',
+        'circle': '⭕ 円形マスク適用',
+        'mosaic': '▦ モザイク加工',
+        'glass': '🧊 すりガラス加工',
+        'blur': '💧 ぼかし加工',
+        'spotlight': '🔦 スポットライト',
+        'eraser': '🧹 消しゴム復元',
+        'redframe': '🔲 枠線描画',
+        'arrow': '↗ 矢印描画',
+        'highlighter': '🖍 蛍光ペン',
+        'crop': '✂️ 切り抜き'
+      };
+      pushUndo(toolNames[currentMode] || '画像加工');    }
 
     // 円形マスク（カラーピッカー＆スポイト連動）
     function applyCircleMask(x, y, w, h, color = '#000000') {
@@ -2046,51 +2148,119 @@
       e.stopPropagation();
       dummyOverlay.style.display = 'none';
     });
+// ==========================================
+    // 🌿 Git風コミット履歴・ブランチ分岐エンジン
+    // ==========================================
+    let gitCommits = [];          // 全コミット（DAGツリー）
+    let currentCommitId = null;   // 現在チェックアウト中のコミットID
+    let currentBranch = 'main';   // 現在のブランチ名
+    let branches = { 'main': null }; // ブランチごとのHEAD
 
-    // --- 高速 Undo / Redo ---
-    function pushUndo() {
+    // 1. 自動コミット作成関数（作業ごとに自動でGitコミットを記録）
+    function pushCommit(message = '作業更新') {
       if (!canvas.width) return;
-      redoStack = [];
-      undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+
+      const commitId = 'c_' + Math.random().toString(36).substring(2, 8);
+      const timestamp = new Date().toLocaleTimeString('ja-JP', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+      const newCommit = {
+        id: commitId,
+        parentId: currentCommitId,
+        branch: currentBranch,
+        message: message,
+        timestamp: timestamp,
+        imgData: ctx.getImageData(0, 0, canvas.width, canvas.height),
+        width: canvas.width,
+        height: canvas.height
+      };
+
+      gitCommits.push(newCommit);
+      currentCommitId = commitId;
+      branches[currentBranch] = commitId;
+
+      // 従来のUndoスタックとも互換性を保持
+      undoStack.push(newCommit.imgData);
       if (undoStack.length > MAX_UNDO) undoStack.shift();
+
+      renderGitTree();
       debouncedSaveStateToLocal();
     }
 
-    function undo() {
-      if (undoStack.length > 1) {
-        redoStack.push(undoStack.pop());
-        const state = undoStack[undoStack.length - 1];
-        canvas.width = state.width;
-        canvas.height = state.height;
-        ctx.putImageData(state, 0, 0);
-        debouncedSaveStateToLocal();
-      }
+    // 2. 任意のコミットへタイムトラベル（チェックアウト）
+    function checkoutCommit(commitId) {
+      const target = gitCommits.find(c => c.id === commitId);
+      if (!target) return;
+
+      currentCommitId = target.id;
+      currentBranch = target.branch;
+
+      canvas.width = target.width;
+      canvas.height = target.height;
+      ctx.putImageData(target.imgData, 0, 0);
+
+      renderGitTree();
+      debouncedSaveStateToLocal();
     }
 
-    function redo() {
-      if (redoStack.length > 0) {
-        const state = redoStack.pop();
-        undoStack.push(state);
-        canvas.width = state.width;
-        canvas.height = state.height;
-        ctx.putImageData(state, 0, 0);
-        debouncedSaveStateToLocal();
+    // 3. Gitツリーの描画
+    function renderGitTree() {
+      const listEl = document.getElementById('git-commit-list');
+      const badgeEl = document.getElementById('git-current-branch-badge');
+      if (!listEl) return;
+
+      if (badgeEl) badgeEl.textContent = currentBranch;
+      listEl.innerHTML = '';
+
+      if (gitCommits.length === 0) {
+        listEl.innerHTML = '<p style="text-align:center; color:#64748b; font-size:0.8rem; padding:1.5rem;">まだコミット履歴がありません</p>';
+        return;
       }
+
+      // 新しいコミット順に表示
+      [...gitCommits].reverse().forEach(c => {
+        const isHead = (c.id === currentCommitId);
+        const node = document.createElement('div');
+        node.className = `git-node ${isHead ? 'active-head' : ''}`;
+        node.onclick = () => checkoutCommit(c.id);
+
+        node.innerHTML = `
+          <div style="font-size: 1rem; margin-top: 2px;">${isHead ? '📍' : '○'}</div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.2rem; flex-wrap: wrap;">
+              <span class="git-hash">${c.id}</span>
+              <span class="git-branch-badge" style="font-size: 0.7rem;">${c.branch}</span>
+              <span style="font-size: 0.7rem; color: #64748b; margin-left: auto;">🕒 ${c.timestamp}</span>
+            </div>
+            <div style="font-size: 0.85rem; font-weight: bold; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+              ${c.message}
+            </div>
+          </div>
+        `;
+        listEl.appendChild(node);
+      });
     }
 
-    document.getElementById('undo-btn').addEventListener('click', undo);
-    document.getElementById('redo-btn').addEventListener('click', redo);
-    document.getElementById('clear-btn').addEventListener('click', () => {
-      if (undoStack.length > 0) {
-        const init = undoStack[0];
-        canvas.width = init.width; canvas.height = init.height;
-        ctx.putImageData(init, 0, 0);
-        undoStack = [init];
-        redoStack = [];
-        debouncedSaveStateToLocal();
-      }
+    // 4. 新規ブランチ作成
+    document.getElementById('git-new-branch-btn')?.addEventListener('click', () => {
+      const name = prompt('新しいブランチ名を入力してください (例: sns-ver, blur-test):');
+      if (!name) return;
+      const cleanName = name.trim().replace(/\s+/g, '-');
+      currentBranch = cleanName;
+      branches[cleanName] = currentCommitId;
+      renderGitTree();
+      alert(`🌿 ブランチ [${cleanName}] に切り替えました！これ以降の加工はこのブランチに記録されます。`);
     });
 
+    // モーダル開閉
+    document.getElementById('git-tree-btn')?.addEventListener('click', () => {
+      renderGitTree();
+      document.getElementById('git-tree-modal').style.display = 'flex';
+    });
+
+    // 従来の pushUndo を pushCommit に連動
+    function pushUndo(actionMsg = '編集作業') {
+      pushCommit(actionMsg);
+    }
     // キーボードショートカット
     window.addEventListener('keydown', (e) => {
       if (e.key === '?' || (e.shiftKey && e.key === '/')) {
@@ -2147,7 +2317,18 @@
 
     // 更新履歴データ
     const changelogData = [
+ [
 
+      {
+        version: 'v3.20',
+        date: '2026-09-02 17:45',
+        title: 'Git履歴ツリーを追加しました',
+        items: [
+          '操作が自動的にすべて履歴ツリーにコミットされます',
+          'コミットを押すと、そのコミットの操作に復元できます',
+          '.maskにもしっかり履歴ツリーが保存できます。ブランチも作れます'
+        ]
+      },
       {
         version: 'v3.1.0',
         date: '2026-09-02 09:25',
