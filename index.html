@@ -1164,6 +1164,12 @@
           feather: document.getElementById('feather-chk')?.checked || false
         },
         sparkle: getSparkleState(),
+  gitHistory: {
+          commits: gitCommits,
+          currentCommitId: currentCommitId,
+          currentBranch: currentBranch,
+          branches: branches
+        },
         activeImageIndex: activeImageIndex,
         images: imageList.map((img, idx) => ({
           name: img.name,
@@ -1363,6 +1369,14 @@
             if (data.settings.strength) document.getElementById('strength-slider').value = data.settings.strength;
             if (data.settings.feather !== undefined) document.getElementById('feather-chk').checked = data.settings.feather;
             if (data.settings.maskColor && maskColorPicker) maskColorPicker.value = data.settings.maskColor;
+          }
+
+if (data.gitHistory) {
+            gitCommits = data.gitHistory.commits || [];
+            currentCommitId = data.gitHistory.currentCommitId || null;
+            currentBranch = data.gitHistory.currentBranch || 'main';
+            branches = data.gitHistory.branches || { 'main': null };
+            renderGitTree();
           }
 
           imageList = [];
@@ -2156,7 +2170,7 @@
     let currentBranch = 'main';   // 現在のブランチ名
     let branches = { 'main': null }; // ブランチごとのHEAD
 
-    // 1. 自動コミット作成関数（作業ごとに自動でGitコミットを記録）
+// 1. 自動コミット作成関数（JSONシリアライズ対応）
     function pushCommit(message = '作業更新') {
       if (!canvas.width) return;
 
@@ -2169,7 +2183,7 @@
         branch: currentBranch,
         message: message,
         timestamp: timestamp,
-        imgData: ctx.getImageData(0, 0, canvas.width, canvas.height),
+        src: canvas.toDataURL('image/png'), // ★JSONに保存できるBase64形式で記録
         width: canvas.width,
         height: canvas.height
       };
@@ -2178,8 +2192,7 @@
       currentCommitId = commitId;
       branches[currentBranch] = commitId;
 
-      // 従来のUndoスタックとも互換性を保持
-      undoStack.push(newCommit.imgData);
+      undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
       if (undoStack.length > MAX_UNDO) undoStack.shift();
 
       renderGitTree();
@@ -2194,14 +2207,17 @@
       currentCommitId = target.id;
       currentBranch = target.branch;
 
-      canvas.width = target.width;
-      canvas.height = target.height;
-      ctx.putImageData(target.imgData, 0, 0);
-
-      renderGitTree();
-      debouncedSaveStateToLocal();
+      const img = new Image();
+      img.onload = () => {
+        canvas.width = target.width;
+        canvas.height = target.height;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0);
+        renderGitTree();
+        debouncedSaveStateToLocal();
+      };
+      img.src = target.src;
     }
-
     // 3. Gitツリーの描画
     function renderGitTree() {
       const listEl = document.getElementById('git-commit-list');
@@ -2571,6 +2587,13 @@
 
           if (data.settings && data.settings.maskColor && maskColorPicker) {
             maskColorPicker.value = data.settings.maskColor;
+          }
+  if (data.gitHistory) {
+            gitCommits = data.gitHistory.commits || [];
+            currentCommitId = data.gitHistory.currentCommitId || null;
+            currentBranch = data.gitHistory.currentBranch || 'main';
+            branches = data.gitHistory.branches || { 'main': null };
+            renderGitTree();
           }
 
           if (data.images && data.images.length > 0) {
