@@ -685,6 +685,41 @@
 
 
 
+<!-- 更新履歴画面 -->
+    <div id="changelog-view" class="view-panel">
+      <div class="guide-container">
+        <h2>🕒 更新履歴 (Changelog)</h2>
+
+        <!-- 検索 ＆ ツールバー -->
+        <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem;">
+          <input type="text" id="cl-search-input" style="flex: 1; min-width: 180px; padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.8rem;" placeholder="🔍 バージョン・日付・内容で検索...">
+          <button type="button" class="btn" id="cl-sort-btn">🔄 新しい順</button>
+          <button type="button" class="btn" id="cl-copy-btn">📋 コピー</button>
+          <button type="button" class="btn btn-primary" id="cl-download-txt-btn">📄 .txt 保存</button>
+        </div>
+
+        <!-- ★ カテゴリ分別（絞り込み）フィルターボタン -->
+        <div style="display: flex; gap: 0.3rem; margin-bottom: 1rem; overflow-x: auto; padding-bottom: 0.2rem; touch-action: pan-x;">
+          <button type="button" class="btn active cl-filter-btn" data-filter="all">すべて</button>
+          <button type="button" class="btn cl-filter-btn" data-filter="feat">✨ 追加</button>
+          <button type="button" class="btn cl-filter-btn" data-filter="fix">🐛 バグ修正</button>
+          <button type="button" class="btn cl-filter-btn" data-filter="remove">🗑️ 削除</button>
+          <button type="button" class="btn cl-filter-btn" data-filter="other">⚙️ その他</button>
+        </div>
+
+        <div id="changelog-list"></div>
+
+        <!-- ページネーション（スマホはみ出し完全防止） -->
+        <div class="pagination-container">
+          <button type="button" class="btn" id="cl-prev-btn">◀ 前へ</button>
+          <span style="font-size: 0.8rem; color: #64748b; display: inline-flex; align-items: center; gap: 0.2rem;">
+            ページ: <select id="cl-page-select" style="padding: 0.2rem 0.3rem; border: 1px solid var(--border); border-radius: 4px; font-size: 0.8rem;"></select>
+            / <span id="cl-total-pages">1</span> (<span id="cl-total-count">0</span>件)
+          </span>
+          <button type="button" class="btn" id="cl-next-btn">次へ ▶</button>
+        </div>
+      </div>
+    </div>
 <!-- 自己紹介画面 -->
     <div id="profile-view" class="view-panel">
       <div class="guide-container">
