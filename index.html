@@ -418,6 +418,25 @@
       .counter-badge { font-size: 0.7rem; }
       .workspace { padding: 0.2rem; }
     }
+
+/* 更新履歴のカテゴリバッジスタイル */
+    .cl-type-badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+    .cl-type-feat { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+    .cl-type-fix { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+    .cl-type-remove { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
+    .cl-type-other { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
+
+    body.dark-mode .cl-type-feat { background: #14532d; color: #86efac; border-color: #166534; }
+    body.dark-mode .cl-type-fix { background: #7f1d1d; color: #fca5a5; border-color: #991b1b; }
+    body.dark-mode .cl-type-remove { background: #78350f; color: #fde68a; border-color: #92400e; }
+    body.dark-mode .cl-type-other { background: #334155; color: #cbd5e1; border-color: #475569; }
   </style>
 </head>
 <body>
@@ -457,7 +476,7 @@
       <button type="button" class="tab-btn" onclick="switchTab('changelog')">🕒 更新履歴</button>
       <button type="button" class="tab-btn" onclick="switchTab('profile')">👤 自己紹介</button>
       <button type="button" class="btn" id="dark-mode-btn" title="ダークモード切替" style="padding:0.2rem 0.5rem;">🌙</button>
-<a href="https://forms.gle/GTVdgicYzdWiv9yh8" target="_blank" class="btn" style="text-decoration:none;">
+<a href="" target="_blank" class="btn" style="text-decoration:none;">
   💌 バグ報告・機能要望
 </a>
     </div>
@@ -664,16 +683,26 @@
       </div>
     </div>
 
-    <!-- 更新履歴画面 -->
+<!-- 更新履歴画面 -->
     <div id="changelog-view" class="view-panel">
       <div class="guide-container">
         <h2>🕒 更新履歴 (Changelog)</h2>
 
-        <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1rem;">
+        <!-- 検索 ＆ ツールバー -->
+        <div style="display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 0.6rem;">
           <input type="text" id="cl-search-input" style="flex: 1; min-width: 180px; padding: 0.4rem 0.6rem; border: 1px solid var(--border); border-radius: 6px; font-size: 0.8rem;" placeholder="🔍 バージョン・日付・内容で検索...">
           <button type="button" class="btn" id="cl-sort-btn">🔄 新しい順</button>
           <button type="button" class="btn" id="cl-copy-btn">📋 コピー</button>
           <button type="button" class="btn btn-primary" id="cl-download-txt-btn">📄 .txt 保存</button>
+        </div>
+
+        <!-- ★ カテゴリ分別（絞り込み）フィルターボタン -->
+        <div style="display: flex; gap: 0.3rem; margin-bottom: 1rem; overflow-x: auto; padding-bottom: 0.2rem; touch-action: pan-x;">
+          <button type="button" class="btn active cl-filter-btn" data-filter="all">すべて</button>
+          <button type="button" class="btn cl-filter-btn" data-filter="feat">✨ 追加</button>
+          <button type="button" class="btn cl-filter-btn" data-filter="fix">🐛 バグ修正</button>
+          <button type="button" class="btn cl-filter-btn" data-filter="remove">🗑️ 削除</button>
+          <button type="button" class="btn cl-filter-btn" data-filter="other">⚙️ その他</button>
         </div>
 
         <div id="changelog-list"></div>
@@ -2390,20 +2419,30 @@ if (data.gitHistory) {
     });
 
     // 更新履歴データ
+  // 更新履歴データ（カテゴリ分別 type: feat=追加, fix=バグ修正, remove=削除, other=その他）
     const changelogData = [
-
+      {
+        version: 'v3.5.0',
+        date: '2026-09-03 17:35',
+        type: 'feat',
+        title: '更新履歴のカテゴリ分別・絞り込みフィルターを追加しました',
+        items: [
+          '「追加 / バグ修正 / 削除 / その他」のボタンで更新履歴を瞬時に絞り込み表示可能にしました'
+        ]
+      },
       {
         version: 'v3.4.0',
         date: '2026-09-02 18:31',
+        type: 'feat',
         title: 'マス王アンケートを公開しました',
         items: [
           '要望、バグ、クレームなどを管理人に送れます'
         ]
       },
-
       {
         version: 'v3.3.0',
         date: '2026-09-02 18:18',
+        type: 'feat',
         title: '保存先をlocalstorageから IndexedDBへ変えました',
         items: [
           '保存容量が5MBから数ギガに増加するので、重い画像やコミットを100件作っても再リロードする際落ちません'
@@ -2412,6 +2451,7 @@ if (data.gitHistory) {
       {
         version: 'v3.20',
         date: '2026-09-02 17:45',
+        type: 'feat',
         title: 'Git履歴ツリーを追加しました',
         items: [
           '操作が自動的にすべて履歴ツリーにコミットされます',
@@ -2422,6 +2462,7 @@ if (data.gitHistory) {
       {
         version: 'v3.1.0',
         date: '2026-09-02 09:25',
+        type: 'feat',
         title: 'センシティブシールド/オープニングアニメーションを追加しました',
         items: [
           'グロ画像を自動検知し、厚めのモザイクをかけます',
@@ -2432,6 +2473,7 @@ if (data.gitHistory) {
       {
         version: 'v3.0.0',
         date: '2026-09-01 15:25',
+        type: 'feat',
         title: '自己紹介タブを追加しました',
         items: [
           '管理人の自己紹介タブを追加しました'
@@ -2440,6 +2482,7 @@ if (data.gitHistory) {
       {
         version: 'v2.9.2',
         date: '2026-09-01 12:00',
+        type: 'feat',
         title: 'カラー塗り・選択移動・カラーピッカー連動＆スマホ完全最適化',
         items: [
           '好きな色やスポイト抽出色で四角く塗りつぶせる「🎨 カラー塗り」機能を追加',
@@ -2453,6 +2496,7 @@ if (data.gitHistory) {
       {
         version: 'v2.9.0',
         date: '2026-09-01 10:39',
+        type: 'feat',
         title: 'PWA化しました',
         items: [
           'これで実際にアプリのように使えます'
@@ -2461,6 +2505,7 @@ if (data.gitHistory) {
       {
         version: 'v2.8.0',
         date: '2026-09-01 10:15',
+        type: 'other',
         title: 'ロゴのルビをマーキーに変えました',
         items: [
           'ロゴのルビのところをmarquee(文字がスクロールするアニメーション)にしました'
@@ -2469,6 +2514,7 @@ if (data.gitHistory) {
       {
         version: 'v2.7.1',
         date: '2026-08-31 12:15',
+        type: 'fix',
         title: '描画・マスキング完了時の超軽量化＆ラグ完全解消',
         items: [
           'ドラッグ終了時の同期Base64書き込みを遅延デバウンス化し、体感遅延をゼロに改善',
@@ -2478,6 +2524,7 @@ if (data.gitHistory) {
       {
         version: 'v2.7.0',
         date: '2026-08-31 11:45',
+        type: 'feat',
         title: '高精度ローカル自動認識マスク＆円形カラーピッカー連動・スマホ操作性超強化',
         items: [
           '完全ローカルで動く高精度エッジ・スキントーン自動解析による文字・顔一発マスキングを搭載',
@@ -2489,6 +2536,7 @@ if (data.gitHistory) {
       {
         version: 'v2.6.0',
         date: '2026-08-31 09:47',
+        type: 'feat',
         title: 'on/offボタンを動かせる機能を追加しました',
         items: [
           ' 位置を自由自在に変えれます'
@@ -2497,6 +2545,7 @@ if (data.gitHistory) {
       {
         version: 'v2.5.0',
         date: '2026-08-31 09:38',
+        type: 'feat',
         title: '星のマウスストーカを追加しました',
         items: [
           ' スマホでもついてきます。ライトモードだと少しはっきりした黄色、ダークモードだと薄い黄色にしてあります。on/off機能付きです'
@@ -2505,6 +2554,7 @@ if (data.gitHistory) {
       {
         version: 'v2.4.0',
         date: '2026-08-31 08:56',
+        type: 'feat',
         title: '超軽量 WebP / AVIF 一括コンバーター＆圧縮機を追加しました',
         items: [
           ' 重たいPNGやJPEGをドラッグするだけで、画質を保ったままファイルサイズを1/10に一括圧縮（ギガ削減）できます'
@@ -2513,6 +2563,7 @@ if (data.gitHistory) {
       {
         version: 'v2.4.0',
         date: '2026-08-30 19:40',
+        type: 'fix',
         title: '調べて分かったバグをすべて直しました',
         items: [
           'パソコンで機能が使用できないバグなどを直しました。文法なども直しました'
@@ -2521,6 +2572,7 @@ if (data.gitHistory) {
       {
         version: 'v2.3.0',
         date: '2026-08-30 09:10',
+        type: 'feat',
         title: '独自形式 data.mask 対応＆超インフレスタミナ可視化バー搭載',
         items: [
           '全画像・スタミナ状態を完全保存＆復元できる data.mask (JSON形式) の入出力に対応',
@@ -2531,6 +2583,7 @@ if (data.gitHistory) {
       {
         version: 'v2.2.0',
         date: '2026-08-29 20:30',
+        type: 'feat',
         title: 'SQL Serverアクセスカウンター＆現地時刻時計の搭載',
         items: [
           'Somee.com MSSQL連動のリアルタイムアクセスカウンターをヘッダーに統合',
@@ -2540,6 +2593,7 @@ if (data.gitHistory) {
       {
         version: 'v2.1.0',
         date: '2026-08-29 14:50',
+        type: 'feat',
         title: 'ダミー文字置換ツール＆直感ドラッグ移動の実装',
         items: [
           '氏名・電話番号・メール・住所・会社名などのダミー上書き置換に対応',
@@ -2549,6 +2603,7 @@ if (data.gitHistory) {
       {
         version: 'v2.0.0',
         date: '2026-08-28 19:15',
+        type: 'feat',
         title: '超大型アップデート：全29大機能＆スマホ完全対応',
         items: [
           'スマホ・タブレットのタッチ・スワイプ・ピンチ操作に完全最適化',
@@ -2558,12 +2613,128 @@ if (data.gitHistory) {
       {
         version: 'v1.0.0',
         date: '2026-08-28 19:00',
+        type: 'other',
         title: '初期リリース',
         items: [
           '完全ローカル完結マスキングツールの初期公開'
         ]
       }
     ];
+
+    let clCurrentPage = 1;
+    const clItemsPerPage = 10;
+    let clSortDesc = true;
+    let clActiveFilter = 'all'; // 現在の絞り込みカテゴリ
+
+    const typeConfig = {
+      'feat':   { label: '✨ 追加',   className: 'cl-type-feat' },
+      'fix':    { label: '🐛 バグ修正', className: 'cl-type-fix' },
+      'remove': { label: '🗑️ 削除',   className: 'cl-type-remove' },
+      'other':  { label: '⚙️ その他', className: 'cl-type-other' }
+    };
+
+    function renderChangelog() {
+      const query = document.getElementById('cl-search-input').value.toLowerCase();
+      const listEl = document.getElementById('changelog-list');
+      const selectEl = document.getElementById('cl-page-select');
+
+      // 検索 ＆ カテゴリ絞り込みフィルター
+      let filtered = changelogData.filter(item => {
+        const matchesCategory = (clActiveFilter === 'all') || (item.type === clActiveFilter);
+        const full = `${item.version} ${item.date} ${item.title} ${item.items.join(' ')}`.toLowerCase();
+        const matchesQuery = full.includes(query);
+        return matchesCategory && matchesQuery;
+      });
+
+      filtered.sort((a, b) => {
+        const diff = new Date(a.date) - new Date(b.date);
+        return clSortDesc ? -diff : diff;
+      });
+
+      const totalItems = filtered.length;
+      const totalPages = Math.max(1, Math.ceil(totalItems / clItemsPerPage));
+      if (clCurrentPage > totalPages) clCurrentPage = totalPages;
+      if (clCurrentPage < 1) clCurrentPage = 1;
+
+      selectEl.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        const opt = document.createElement('option');
+        opt.value = i; opt.textContent = i;
+        if (i === clCurrentPage) opt.selected = true;
+        selectEl.appendChild(opt);
+      }
+      document.getElementById('cl-total-pages').textContent = totalPages;
+      document.getElementById('cl-total-count').textContent = totalItems;
+
+      document.getElementById('cl-prev-btn').disabled = (clCurrentPage === 1);
+      document.getElementById('cl-next-btn').disabled = (clCurrentPage === totalPages);
+
+      if (totalItems === 0) {
+        listEl.innerHTML = '<p style="color:#64748b; text-align:center; padding: 2rem;">該当する更新履歴が見つかりませんでした。</p>';
+        return;
+      }
+
+      const startIdx = (clCurrentPage - 1) * clItemsPerPage;
+      const pageItems = filtered.slice(startIdx, startIdx + clItemsPerPage);
+
+      listEl.innerHTML = pageItems.map(item => {
+        const conf = typeConfig[item.type] || typeConfig['other'];
+        return `
+          <div class="changelog-item">
+            <div class="changelog-header">
+              <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
+                <span class="changelog-badge">${item.version}</span>
+                <span class="cl-type-badge ${conf.className}">${conf.label}</span>
+                <strong>${item.title}</strong>
+              </div>
+              <span style="font-size:0.8rem; color:#64748b;">📅 ${item.date}</span>
+            </div>
+            <ul style="padding-left:1.2rem; font-size:0.85rem; line-height:1.6;">
+              ${item.items.map(li => `<li>${li}</li>`).join('')}
+            </ul>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // カテゴリフィルターボタンのクリック処理
+    document.querySelectorAll('.cl-filter-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        document.querySelectorAll('.cl-filter-btn').forEach(b => b.classList.remove('active'));
+        e.currentTarget.classList.add('active');
+        clActiveFilter = e.currentTarget.dataset.filter;
+        clCurrentPage = 1;
+        renderChangelog();
+      });
+    });
+
+    document.getElementById('cl-prev-btn').addEventListener('click', () => { if (clCurrentPage > 1) { clCurrentPage--; renderChangelog(); } });
+    document.getElementById('cl-next-btn').addEventListener('click', () => { if (clCurrentPage < Math.ceil(changelogData.length / clItemsPerPage)) { clCurrentPage++; renderChangelog(); } });
+    document.getElementById('cl-page-select').addEventListener('change', (e) => { clCurrentPage = parseInt(e.target.value, 10); renderChangelog(); });
+    document.getElementById('cl-search-input').addEventListener('input', () => { clCurrentPage = 1; renderChangelog(); });
+    document.getElementById('cl-sort-btn').addEventListener('click', () => {
+      clSortDesc = !clSortDesc;
+      document.getElementById('cl-sort-btn').textContent = clSortDesc ? '🔄 新しい順' : '🔄 古い順';
+      renderChangelog();
+    });
+
+    document.getElementById('cl-copy-btn').addEventListener('click', async () => {
+      const text = changelogData.map(i => `[${i.version}] (${typeConfig[i.type]?.label || 'その他'}) ${i.title} (${i.date})\n` + i.items.map(li => `・ ${li}`).join('\n')).join('\n\n');
+      await navigator.clipboard.writeText(text);
+      alert('更新履歴テキストをコピーしました！');
+    });
+
+    document.getElementById('cl-download-txt-btn').addEventListener('click', () => {
+      const text = changelogData.map(i => `[${i.version}] (${typeConfig[i.type]?.label || 'その他'}) ${i.title} (${i.date})\n` + i.items.map(li => `・ ${li}`).join('\n')).join('\n\n');
+      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `CHANGELOG_${new Date().toISOString().slice(0, 10)}.txt`;
+      a.click();
+    });
+
+    // 初期表示
+    renderChangelog();
 
     let clCurrentPage = 1;
     const clItemsPerPage = 10;
