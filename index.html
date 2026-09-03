@@ -475,6 +475,7 @@
       <button type="button" class="tab-btn" onclick="switchTab('guide')">📖 使い方</button>
       <button type="button" class="tab-btn" onclick="switchTab('changelog')">🕒 更新履歴</button>
       <button type="button" class="tab-btn" onclick="switchTab('profile')">👤 自己紹介</button>
+      <button type="button" class="tab-btn" onclick="switchTab('link-shu)">⛓　リンク集</button>
       <button type="button" class="btn" id="dark-mode-btn" title="ダークモード切替" style="padding:0.2rem 0.5rem;">🌙</button>
 <a href="" target="_blank" class="btn" style="text-decoration:none;">
   💌 バグ報告・機能要望
@@ -683,7 +684,104 @@
       </div>
     </div>
 
+<!-- リンク集画面 -->
+    <div id="link-shu-view" class="view-panel">
+      <div class="guide-container">
+        <h2>🔗 管理人おすすめ Link集</h2>
 
+        <!-- 当サイトのリンク用バナー（88x31） -->
+        <div class="changelog-item" style="padding: 1.2rem; border-left: 4px solid #f59e0b; margin-bottom: 1.5rem;">
+          <h3 style="margin: 0 0 0.6rem; font-size: 1rem; color: #d97706;">👑 マス王 公式バナー（リンクフリー）</h3>
+          <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.8rem;">
+            当サイトはリンクフリーです。Webサイトやブログでのご紹介大歓迎です！（直リンク推奨・保存してお持ち帰りも可）
+          </p>
+          
+          <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; background: rgba(0,0,0,0.03); padding: 0.8rem; border-radius: 6px;">
+            <!-- 88x31 ピクセルバナー（クリックで拡大なし・原寸大表示） -->
+            <div style="image-rendering: pixelated; border: 1px solid var(--border); line-height: 0; background: #fff;">
+              <img src="バナー.png" alt="マス王 福島桃好 Since 2026" width="88" height="31" style="display: block; image-rendering: pixelated;">
+            </div>
+            
+            <!-- リンク用HTMLコード -->
+            <div style="flex: 1; min-width: 200px;">
+              <label style="font-size: 0.75rem; font-weight: bold; color: var(--text);">貼り付け用HTMLコード:</label>
+              <input type="text" readonly value='<a href="https://mas-king.pages.dev/"><img src="https://mas-king.pages.dev/banner.png" alt="マス王" width="88" height="31"></a>' style="width: 100%; font-size: 0.75rem; font-family: monospace; padding: 0.3rem 0.5rem; border: 1px solid var(--border); border-radius: 4px; background: var(--panel); margin-top: 0.2rem;" onclick="this.select();">
+            </div>
+          </div>
+        </div>
+
+        <!-- カテゴリ①：安全・完全ローカル神ツール -->
+        <div class="changelog-item">
+          <div class="changelog-header">
+            <strong>🛡️ 完全ローカル・サーバー送信ゼロの神ツール</strong>
+          </div>
+          <ul style="padding-left: 1.2rem; font-size: 0.85rem; line-height: 1.8;">
+            <li>
+              <a href="https://gchq.github.io/CyberChef/" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: bold;">CyberChef</a>
+              <span style="color: #64748b;"> - 英国政府GCHQ開発。ブラウザ上で暗号化・デコード・データ変換を安全に行えるWebの万能ナイフ。</span>
+            </li>
+            <li>
+              <a href="https://squoosh.app/" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: bold;">Squoosh</a>
+              <span style="color: #64748b;"> - Google製。完全クライアントサイドで画像を極限まで圧縮・WebP変換するOSSツール。</span>
+            </li>
+            <li>
+              <a href="https://www.photopea.com/" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: bold;">Photopea</a>
+              <span style="color: #64748b;"> - ブラウザで動く本格派画像編集エディタ（PSD対応）。</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- カテゴリ②：プライバシー＆セキュリティ -->
+        <div class="changelog-item">
+          <div class="changelog-header">
+            <strong>🔐 プライバシー保護・セキュリティ情報</strong>
+          </div>
+          <ul style="padding-left: 1.2rem; font-size: 0.85rem; line-height: 1.8;">
+            <li>
+              <a href="https://www.eff.org/" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: bold;">Electronic Frontier Foundation (EFF)</a>
+              <span style="color: #64748b;"> - デジタル世界におけるユーザーのプライバシーと自由を守る国際NPO。</span>
+            </li>
+            <li>
+              <a href="https://www.ppc.go.jp/" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: bold;">個人情報保護委員会</a>
+              <span style="color: #64748b;"> - マイナンバーや本人確認書類の安全な取り扱いガイドライン公式。</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- カテゴリ③：福島県と美味しい桃 -->
+        <div class="changelog-item">
+          <div class="changelog-header">
+            <strong>🍑 福島県 ＆ 美味しいモモ愛好リンク</strong>
+          </div>
+          <ul style="padding-left: 1.2rem; font-size: 0.85rem; line-height: 1.8;">
+            <li>
+              <a href="https://www.tif.ne.jp/" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: bold;">ふくしまの旅 (福島県観光復興推進委員会)</a>
+              <span style="color: #64748b;"> - 管理人おすすめ！くだもの王国・福島の観光と果物狩り情報。</span>
+            </li>
+            <li>
+              <a href="https://www.ja-f-mirai.or.jp/" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: bold;">JAふくしま未来</a>
+              <span style="color: #64748b;"> - 「あかつき」「まどか」「川中島白桃」など甘くてジューシーな福島の桃公式情報。</span>
+            </li>
+          </ul>
+        </div>
+
+
+        <!-- カテゴリ④：HTML関連 -->
+        <div class="changelog-item">
+          <div class="changelog-header">
+            <strong>HTML関連リンク</strong>
+          </div>
+          <ul style="padding-left: 1.2rem; font-size: 0.85rem; line-height: 1.8;">
+            <li>
+              <a href="http://lll.s21.xrea.com/" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: bold;">HTML小技集</a>
+              <span style="color: #64748b;"> HTMLとjsだけでできるギミックがたくさん載っているサイトです</span>
+            </li>
+          </ul>
+        </div>
+
+
+      </div>
+    </div>
 
 <!-- 更新履歴画面 -->
     <div id="changelog-view" class="view-panel">
@@ -2422,6 +2520,16 @@ if (data.gitHistory) {
     // 更新履歴データ
   // 更新履歴データ（カテゴリ分別 type: feat=追加, fix=バグ修正, remove=削除, other=その他）
     const changelogData = [
+
+      {
+        version: 'v3.6.0',
+        date: '2026-09-03 18:55',
+        type: 'feat',
+        title: 'リンク集を追加しました',
+        items: [
+          '管理人が厳選したおすすめサイトをカテゴリ別に分けて掲載しました'
+        ]
+      },
       {
         version: 'v3.5.0',
         date: '2026-09-03 17:35',
