@@ -1,3 +1,108 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>【サーバー送信なし】ローカル完結の画像マスキングツール「マス王」| 写真のモザイク・個人情報保護に</title>
+  <meta name="description" content="サーバーに画像を一切送信しない安全・超高機能な画像マスキング＆注釈ツールです。" />
+  <meta name="format-detection" content="telephone=no" />
+
+  <!-- 1. マニフェストファイルの読み込み -->
+  <link rel="manifest" href="/manifest.json">
+
+  <!-- 2. サービスワーカーの登録スクリプト -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js')
+          .then((registration) => {
+            console.log('マス王 PWA: サービスワーカー登録成功！スコープ:', registration.scope);
+          })
+          .catch((error) => {
+            console.error('マス王 PWA: サービスワーカー登録失敗:', error);
+          });
+      });
+    }
+  </script>
+
+  <style>
+/* Git風コミットツリー＆ブランチUI */
+    .git-branch-badge {
+      background: #eff6ff;
+      color: #2563eb;
+      border: 1px solid #bfdbfe;
+      padding: 0.15rem 0.5rem;
+      border-radius: 999px;
+      font-weight: bold;
+      font-family: monospace;
+    }
+    body.dark-mode .git-branch-badge {
+      background: #1e3a8a;
+      color: #93c5fd;
+      border-color: #1d4ed8;
+    }
+
+    .git-node {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.6rem;
+      padding: 0.5rem 0.7rem;
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+    .git-node:hover {
+      border-color: var(--primary);
+      background: rgba(37, 99, 235, 0.04);
+    }
+    .git-node.active-head {
+      border-color: #10b981;
+      background: rgba(16, 185, 129, 0.08);
+      box-shadow: 0 0 0 1px #10b981;
+    }
+
+    .git-hash {
+      font-family: monospace;
+      font-size: 0.75rem;
+      background: rgba(0, 0, 0, 0.06);
+      padding: 0.1rem 0.35rem;
+      border-radius: 4px;
+      color: var(--text);
+    }
+    body.dark-mode .git-hash { background: rgba(255, 255, 255, 0.1); }
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --bg: #f1f5f9;
+      --panel: #ffffff;
+      --text: #1e293b;
+      --border: #cbd5e1;
+      --accent: #ef4444;
+      --stamina: #10b981;
+    }
+
+    body.dark-mode {
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --bg: #0f172a;
+      --panel: #1e293b;
+      --text: #f8fafc;
+      --border: #334155;
+      --stamina: #34d399;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    input, textarea, select { user-select: auto; -webkit-user-select: auto; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
       flex-direction: column;
       overflow: hidden;
     }
@@ -332,6 +437,167 @@
     body.dark-mode .cl-type-fix { background: #7f1d1d; color: #fca5a5; border-color: #991b1b; }
     body.dark-mode .cl-type-remove { background: #78350f; color: #fde68a; border-color: #92400e; }
     body.dark-mode .cl-type-other { background: #334155; color: #cbd5e1; border-color: #475569; }
+/* ============================================================
+   📱 スマホ向け 自動縮小＆横スクロール最適化レスポンシブコード
+============================================================ */
+
+/* 1. 横スクロール可能コンテナの統一タッチ挙動 */
+.toolbar-row,
+.nav-tabs,
+.image-tabs-bar,
+.pagination-container,
+.chip-container,
+.comp-btn-group,
+.modal-actions {
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  overscroll-behavior-x: contain;
+}
+
+/* 2. ボタンの自動文字サイズ縮小・はみ出し防止 */
+.btn {
+  /* 画面幅に合わせて最小10px〜最大13pxで滑らかに自動縮小 */
+  font-size: clamp(0.68rem, 2.5vw, 0.8rem);
+  padding: clamp(0.25rem, 1.2vw, 0.4rem) clamp(0.35rem, 1.8vw, 0.65rem);
+  white-space: nowrap;
+  flex-shrink: 0;
+  max-width: 100%;
+}
+
+/* 3. モバイル画面（768px以下）での徹底調整 */
+@media (max-width: 768px) {
+  /* ヘッダー全体の横スクロール化＆はみ出し抑止 */
+  header {
+    padding: 0.3rem 0.5rem;
+    gap: 0.4rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  header::-webkit-scrollbar { display: none; }
+
+  .logo-area {
+    flex-shrink: 0;
+    gap: 0.4rem;
+  }
+
+  .logo {
+    font-size: clamp(0.85rem, 3.5vw, 1rem);
+  }
+
+  /* カウンター・時計の自動縮小 */
+  .counter-badge {
+    font-size: clamp(0.62rem, 2.2vw, 0.72rem);
+    padding: 0.1rem 0.35rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ヘッダータブの横スクロール対応 */
+  .nav-tabs {
+    flex-shrink: 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    gap: 0.2rem;
+  }
+  .tab-btn {
+    font-size: clamp(0.7rem, 2.6vw, 0.8rem);
+    padding: 0.3rem 0.5rem;
+    min-height: 32px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ツールバーの余白とボタン高さの最適化 */
+  .toolbar-row {
+    padding: 0.3rem 0.5rem;
+    gap: 0.3rem;
+  }
+  .tool-group {
+    padding-right: 0.4rem;
+    margin-right: 0.15rem;
+    gap: 0.25rem;
+  }
+  .btn {
+    height: 32px;
+  }
+
+  /* モーダル内部のボタングループのはみ出し防止＆横スクロール */
+  .modal-content {
+    padding: 1rem;
+    max-width: 95vw;
+  }
+
+  /* ダミー置換・定型マスク・リサイズのボタン群 */
+  #dummy-modal .btn,
+  #template-modal .btn,
+  #resize-modal .btn {
+    font-size: clamp(0.7rem, 2.8vw, 0.82rem);
+    white-space: normal; /* モーダルの長い選択肢は改行を許容 */
+    text-align: left;
+    height: auto;
+    min-height: 34px;
+    padding: 0.4rem 0.6rem;
+    word-break: break-all;
+  }
+
+  /* プリセットボタン一覧を横スクロール化 */
+  #dummy-modal > div[style*="flex-wrap: wrap;"] {
+    flex-wrap: nowrap !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 0.3rem;
+  }
+  #dummy-modal > div[style*="flex-wrap: wrap;"] .btn {
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* 更新履歴の絞り込みボタン列 */
+  .cl-filter-btn {
+    font-size: clamp(0.68rem, 2.5vw, 0.75rem);
+    padding: 0.2rem 0.45rem;
+    height: 28px;
+  }
+
+  /* ページネーションが小画面端末でもはみ出さないように自動縮小 */
+  .pagination-container {
+    gap: 0.25rem;
+  }
+  .pagination-container .btn {
+    height: 30px;
+    padding: 0 0.4rem;
+  }
+  .pagination-container span {
+    font-size: clamp(0.68rem, 2.4vw, 0.78rem) !important;
+  }
+
+  /* スタミナバーのテキスト自動縮小 */
+  .stamina-footer {
+    padding: 0.25rem 0.6rem;
+    gap: 0.5rem;
+  }
+  .stamina-text {
+    font-size: clamp(0.62rem, 2vw, 0.72rem);
+    gap: 0.4rem;
+  }
+}
+
+/* 4. 極小画面（iPhone SE / 375px以下）用の超省スペース設定 */
+@media (max-width: 375px) {
+  .tool-group {
+    padding-right: 0.25rem;
+    margin-right: 0.1rem;
+  }
+  .btn {
+    padding: 0.2rem 0.35rem;
+    font-size: 0.68rem;
+  }
+  #zoom-val {
+    min-width: 28px !important;
+    font-size: 0.68rem !important;
+  }
+}
   </style>
 </head>
 <body>
@@ -372,7 +638,7 @@
       <button type="button" class="tab-btn" onclick="switchTab('profile')">👤 自己紹介</button>
 <button type="button" class="tab-btn" onclick="switchTab('link-shu')">🔗 リンク集</button>
       <button type="button" class="btn" id="dark-mode-btn" title="ダークモード切替" style="padding:0.2rem 0.5rem;">🌙</button>
-<a href="https://forms.gle/MBQH55nLtQUorCiw5" target="_blank" class="btn" style="text-decoration:none;">
+<a href="https://forms.gle/WaSuEdA8hWj6A8xF6" target="_blank" class="btn" style="text-decoration:none;">
   💌 バグ報告・機能要望
 </a>
     </div>
@@ -2415,7 +2681,17 @@ if (data.gitHistory) {
     // 更新履歴データ
   // 更新履歴データ（カテゴリ分別 type: feat=追加, fix=バグ修正, remove=削除, other=その他）
     const changelogData = [
-
+{
+        version: 'v3.7.0',
+        date: '2026-09-04 16:40',
+        type: 'feat',
+        title: 'スマホ表示の文字・ボタン自動縮小＆横スクロール最適化',
+        items: [
+          '画面サイズに応じてボタンや文字の大きさが自動縮小（clamp対応）し、はみ出しを防止しました',
+          'ヘッダー、ナビタブ、ツールバー、各種設定モーダルの横スクロール操作を滑らかに最適化しました',
+          '小型スマホ（iPhone SEなど）でも操作ボタンが画面外へ押し出されないよう余白と高さを調整しました'
+        ]
+      },
       {
         version: 'v3.6.0',
         date: '2026-09-03 18:55',
@@ -3418,96 +3694,5 @@ if (data.gitHistory) {
     }
   });
 </script>
-      <style>
-/* 1. 横スクロール可能コンテナの統一タッチ挙動 */
-.toolbar-row,
-.nav-tabs,
-.image-tabs-bar,
-.pagination-container,
-.chip-container,
-.comp-btn-group,
-.modal-actions {
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
-  overscroll-behavior-x: contain;
-}
-
-/* 2. ボタンの自動文字サイズ縮小・はみ出し防止 */
-.btn {
-  font-size: clamp(0.68rem, 2.5vw, 0.8rem);
-  padding: clamp(0.25rem, 1.2vw, 0.4rem) clamp(0.35rem, 1.8vw, 0.65rem);
-  white-space: nowrap;
-  flex-shrink: 0;
-  max-width: 100%;
-}
-
-/* 3. モバイル画面（768px以下）での調整 */
-@media (max-width: 768px) {
-  header {
-    padding: 0.3rem 0.5rem;
-    gap: 0.4rem;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-  header::-webkit-scrollbar { display: none; }
-
-  .logo-area { flex-shrink: 0; gap: 0.4rem; }
-  .logo { font-size: clamp(0.85rem, 3.5vw, 1rem); }
-  .counter-badge {
-    font-size: clamp(0.62rem, 2.2vw, 0.72rem);
-    padding: 0.1rem 0.35rem;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .nav-tabs {
-    flex-shrink: 0;
-    overflow-x: auto;
-    white-space: nowrap;
-    gap: 0.2rem;
-  }
-  .tab-btn {
-    font-size: clamp(0.7rem, 2.6vw, 0.8rem);
-    padding: 0.3rem 0.5rem;
-    min-height: 32px;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .toolbar-row { padding: 0.3rem 0.5rem; gap: 0.3rem; }
-  .tool-group { padding-right: 0.4rem; margin-right: 0.15rem; gap: 0.25rem; }
-  .btn { height: 32px; }
-  .modal-content { padding: 1rem; max-width: 95vw; }
-
-  #dummy-modal .btn,
-  #template-modal .btn,
-  #resize-modal .btn {
-    font-size: clamp(0.7rem, 2.8vw, 0.82rem);
-    white-space: normal;
-    text-align: left;
-    height: auto;
-    min-height: 34px;
-    padding: 0.4rem 0.6rem;
-    word-break: break-all;
-  }
-
-  .cl-filter-btn {
-    font-size: clamp(0.68rem, 2.5vw, 0.75rem);
-    padding: 0.2rem 0.45rem;
-    height: 28px;
-  }
-  .pagination-container { gap: 0.25rem; }
-  .pagination-container .btn { height: 30px; padding: 0 0.4rem; }
-  .pagination-container span { font-size: clamp(0.68rem, 2.4vw, 0.78rem) !important; }
-  .stamina-footer { padding: 0.25rem 0.6rem; gap: 0.5rem; }
-  .stamina-text { font-size: clamp(0.62rem, 2vw, 0.72rem); gap: 0.4rem; }
-}
-
-/* 4. 極小画面（375px以下）用 */
-@media (max-width: 375px) {
-  .tool-group { padding-right: 0.25rem; margin-right: 0.1rem; }
-  .btn { padding: 0.2rem 0.35rem; font-size: 0.68rem; }
-  #zoom-val { min-width: 28px !important; font-size: 0.68rem !important; }
-}
-      </style>
 </body>
 </html>
