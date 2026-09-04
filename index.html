@@ -2679,8 +2679,20 @@ if (data.gitHistory) {
     });
 
     // 更新履歴データ
-  // 更新履歴データ（カテゴリ分別 type: feat=追加, fix=バグ修正, remove=削除, other=その他）
+  // 更新履歴データ（カテゴリ分別 type: feat=追加, fix=バグ修正, remove=削除, other=その他 change=変更）
     const changelogData = [
+    {
+        version: 'v3.8.0',
+        date: '2026-09-05 8:35',
+        type: 'change',
+        title: '超軽量 WebP / AVIF 一括コンバーターへの変更&更新履歴のカテゴリに変更を追加しました',
+        items: [
+          '超軽量 WebP / AVIF 一括コンバーターで画像を圧縮した際
+1623.png→1623.(選択した拡張子)
+296.1 KB ➔ (圧縮後のサイズ)と表示するようにしました',
+          '更新履歴のカテゴリに変更を追加しました',
+        ]
+      },
 {
         version: 'v3.7.0',
         date: '2026-09-04 16:40',
@@ -2910,6 +2922,7 @@ if (data.gitHistory) {
       'feat':   { label: '✨ 追加',   className: 'cl-type-feat' },
       'fix':    { label: '🐛 バグ修正', className: 'cl-type-fix' },
       'remove': { label: '🗑️ 削除',   className: 'cl-type-remove' },
+      'change': { label: '変更',   className: 'cl-type-change' },
       'other':  { label: '⚙️ その他', className: 'cl-type-other' }
     };
 
@@ -3162,14 +3175,16 @@ if (data.gitHistory) {
         if (!blob || blob.type !== format) {
           blob = await new Promise(resolve => tCanvas.toBlob(resolve, 'image/webp', quality));
         }
-
-        const compressedSize = blob.size;
+const compressedSize = blob.size;
         const savedPercent = Math.round(((originalSize - compressedSize) / originalSize) * 100);
-        const newName = file.name.replace(/\.[^/.]+$/, "") + `_compressed.${ext}`;
+        const baseName = file.name.replace(/\.[^/.]+$/, "");
+        const convertedName = `${baseName}.${ext}`; // 変換後の拡張子（.webp / .avif 等）
+        const newName = `${baseName}_compressed.${ext}`; // ダウンロード用
         const blobUrl = URL.createObjectURL(blob);
 
         const item = {
           originalName: file.name,
+          convertedName: convertedName,
           newName: newName,
           originalSize: originalSize,
           compressedSize: compressedSize,
@@ -3201,11 +3216,13 @@ if (data.gitHistory) {
         const badgeBg = isReduced ? '#dcfce7' : '#fee2e2';
 
         row.innerHTML = `
-          <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 45%;">
-            <strong>${item.originalName}</strong>
+          <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 60%;">
+            <!-- 1623.png → 1623.webp のように表示 -->
+            <strong title="${item.originalName} → ${item.convertedName}">${item.originalName} → ${item.convertedName}</strong>
+            <!-- 296.1 KB ➔ 86.4 KB のように表示 -->
             <div style="color: #64748b; font-size: 0.7rem;">${formatBytes(item.originalSize)} ➔ ${formatBytes(item.compressedSize)}</div>
           </div>
-          <div style="display: flex; align-items: center; gap: 0.4rem;">
+          <div style="display: flex; align-items: center; gap: 0.4rem; flex-shrink: 0;">
             <span style="background: ${badgeBg}; color: ${badgeColor}; padding: 0.1rem 0.3rem; border-radius: 4px; font-weight: bold;">
               ${isReduced ? `-${item.savedPercent}% 削減` : `+${Math.abs(item.savedPercent)}%`}
             </span>
@@ -3227,7 +3244,7 @@ if (data.gitHistory) {
         compDownloadAllBtn.disabled = true;
       }
     }
-
+        
     function formatBytes(bytes) {
       if (bytes === 0) return '0 B';
       const k = 1024;
@@ -3696,3 +3713,4 @@ if (data.gitHistory) {
 </script>
 </body>
 </html>
+
