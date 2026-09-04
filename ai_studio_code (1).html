@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>超高機能マルチストップウォッチ＆タイマーシステム (完全動作保証版)</title>
+  <!-- WebRTC P2P通信用軽量ライブラリ -->
+  <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+  <style>
+    /* --- 基本テーマ（ライトモード） --- */
+    :root {
+        --bg-color: #f4f5f7;
+        --container-bg: #ffffff;
+        --text-color: #333333;
+        --border-color: #eef0f2;
+        --input-bg: #ffffff;
+        --control-bg: #fdfdfd;
+        --gold: #ffd700; --silver: #c0c0c0; --bronze: #cd7f32; --normal: #2196f3;
+        --over-target: #dc3545;
+        --p2p-green: #28a745;
+    }
+    /* --- ダークモード --- */
+    body.dark-mode {
+        --bg-color: #121212;
+        --container-bg: #1e1e1e;
+        --text-color: #f0f0f0;
+        --border-color: #333333;
+        --input-bg: #2d2d2d;
+        --control-bg: #252525;
+        --over-target: #ff4d5e;
+    }
+
+    /* --- スタイリング --- */
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; background: var(--bg-color); color: var(--text-color); margin: 20px; transition: background 0.3s, color 0.3s; }
+    .container { max-width: 1000px; margin: 0 auto; background: var(--container-bg); padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); position: relative; }
+    h1 { font-size: 24px; margin-top: 0; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+    
+    /* --- P2P接続ステータスバッジ --- */
+    .p2p-badge { font-size: 12px; padding: 4px 12px; border-radius: 20px; background: #6c757d; color: white; font-weight: normal; display: inline-flex; align-items: center; gap: 5px; }
+    .p2p-badge.connected { background: var(--p2p-green); }
+    .p2p-badge.host { background: #6f42c1; }
+
+    /* --- トースト通知 --- */
+    #toastMessage {
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%) translateY(-100px);
+        background: #28a745;
+        color: white;
+        padding: 12px 24px;
+        border-radius: 30px;
+        font-weight: bold;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        z-index: 999999;
+        transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28), opacity 0.3s;
+        opacity: 0;
+        pointer-events: none;
+    }
+    #toastMessage.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* --- タブUI --- */
+    .tab-nav { display: flex; gap: 8px; border-bottom: 2px solid var(--border-color); margin-bottom: 20px; flex-wrap: wrap; }
+    .tab-btn { background: transparent; border: none; border-bottom: 3px solid transparent; padding: 10px 16px; font-size: 14px; font-weight: bold; color: var(--text-color); cursor: pointer; border-radius: 6px 6px 0 0; transition: all 0.2s; }
+    .tab-btn:hover { background: rgba(0,0,0,0.03); }
+    .tab-btn.active { border-bottom-color: #007bff; color: #007bff; background: var(--control-bg); }
+    body.dark-mode .tab-btn.active { color: #4da3ff; border-bottom-color: #4da3ff; }
+    .tab-pane { display: none; }
+    .tab-pane.active { display: block; }
+
+    .section-panel { background: var(--control-bg); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 15px; }
+    .config-row { display: flex; gap: 15px; flex-wrap: wrap; align-items: center; font-size: 13px; font-weight: bold; margin-top: 10px; }
+    .config-group { display: flex; align-items: center; gap: 6px; }
+    
+    input[type="text"], input[type="number"], select, button { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 14px; background: var(--input-bg); color: var(--text-color); }
+    input[type="text"] { flex-grow: 1; }
+    
+    button { cursor: pointer; font-weight: bold; transition: all 0.2s; border: none; }
+    button.primary { background: #007bff; color: white; }
+    button.primary:hover { background: #0056b3; }
+    button.stop { background: #dc3545; color: white; }
+    button.stop:hover { background: #bd2130; }
+    button.sec { background: #6c757d; color: white; }
+    button.sec:hover { background: #5a6268; }
+    button.lap { background: #28a745; color: white; }
+    button.lap:hover { background: #218838; }
+    button.reset-btn { background: #e67e22; color: white; }
+    button.reset-btn:hover { background: #d35400; }
+    button.danger-outline { background: transparent; border: 1px solid #dc3545; color: #dc3545; }
+    button.danger-outline:hover { background: #dc3545; color: white; }
+
+    /* --- タイマーカード --- */
+    .timer-list { display: flex; flex-direction: column; gap: 15px; margin-top: 15px; position: relative; }
+    .timer-item { 
+        background: var(--control-bg); 
+        padding: 18px; 
+        border-radius: 8px; 
+        border: 1px solid var(--border-color); 
+        border-left: 6px solid #ccc; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        position: relative;
+        will-change: transform, box-shadow;
+    }
+    .timer-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; flex-wrap: wrap; gap: 10px; }
+    .timer-title-area { display: flex; align-items: center; gap: 8px; flex-grow: 1; flex-wrap: wrap; }
+    
+    .edit-name-input { font-size: 16px; font-weight: bold; border: 1px dashed #ccc; background: transparent; padding: 4px; width: 30%; min-width: 130px; border-radius: 4px; }
+    .timer-time { font-family: monospace; font-size: 24px; font-weight: bold; min-width: 140px; text-align: right; }
+    .ghost-time { font-size: 12px; color: #888; font-family: monospace; text-align: right; margin-top: -2px; }
+
+    .bar-container { background: #eee; height: 20px; border-radius: 10px; overflow: hidden; position: relative; margin-bottom: 10px; }
+    .bar { height: 100%; width: 0%; transition: width 0.08s linear, background-color 0.3s ease; }
+    .bar.over-target { background-color: var(--over-target) !important; }
+    
+    .rank-badge { color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: bold; transition: background-color 0.3s ease; }
+    .group-badge { color: white; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+    
+    .lap-list { margin-top: 10px; background: var(--container-bg); border: 1px solid var(--border-color); border-radius: 6px; max-height: 120px; overflow-y: auto; font-family: monospace; font-size: 12px; padding: 8px 12px; }
+    .lap-item { display: flex; justify-content: space-between; border-bottom: 1px dashed var(--border-color); padding: 4px 0; }
+    .lap-item.best-lap { color: #28a745; font-weight: bold; background: rgba(40,167,69,0.05); }
+    .lap-item.worst-lap { color: #dc3545; font-weight: bold; background: rgba(220,53,69,0.05); }
+    
+    .memo-input { border: none; border-bottom: 1px solid var(--border-color); background: transparent; font-size: 12px; width: 120px; color: var(--text-color); }
+    textarea { width: 100%; height: 120px; font-family: monospace; font-size: 12px; box-sizing: border-box; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--input-bg); color: var(--text-color); }
+
+    .chip-container { display: flex; flex-wrap: wrap; gap: 6px; max-height: 160px; overflow-y: auto; padding: 10px; background: var(--container-bg); border: 1px solid var(--border-color); border-radius: 6px; }
+    .chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 15px; font-size: 12px; color: white; font-weight: bold; }
+    .chip-del { cursor: pointer; opacity: 0.7; font-size: 14px; }
+    .chip-del:hover { opacity: 1; }
+
+    .scoreboard-table { width: 100%; border-collapse: collapse; font-size: 13px; text-align: left; margin-top: 10px; }
+    .scoreboard-table th, .scoreboard-table td { padding: 10px; border-bottom: 1px solid var(--border-color); }
+    .scoreboard-table th { background: rgba(0,0,0,0.02); }
+
+    /* 全画面シアターモード用 */
+    .theater-exit-btn { display: none; }
+    body.theater-mode { margin: 0; padding: 0; background: var(--container-bg); }
+    body.theater-mode .theater-exit-btn {
+        display: inline-block;
+        position: fixed;
+        top: 15px; right: 15px;
+        z-index: 99999;
+        background: rgba(0, 0, 0, 0.75); color: #ffffff;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: bold; cursor: pointer;
+    }
+    body.theater-mode .tab-nav, body.theater-mode .global-controls, body.theater-mode .system-configs,
+    body.theater-mode h1, body.theater-mode .timer-actions-row, body.theater-mode .lap-list {
+        display: none !important;
+    }
+    body.theater-mode .container { max-width: 100%; width: 100vw; min-height: 100vh; margin: 0; padding: 20px 30px; box-shadow: none; border-radius: 0; box-sizing: border-box; }
+    body.theater-mode .timer-item { padding: 15px 20px; margin-bottom: 12px; }
+    body.theater-mode .timer-time { font-size: 34px; }
+  </style>
+</head>
+<body>
+
+<div id="toastMessage">通知</div>
+<button class="theater-exit-btn" onclick="toggleTheaterMode()">✖ シアター解除 (Esc)</button>
+
+<div class="container">
+    <h1>
+        <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+            <span>⏱️ 超高機能マルチストップウォッチ</span>
+            <span class="p2p-badge" id="p2pStatusBadge">📡 P2P: 単体稼働中</span>
+        </div>
+        <div style="font-size: 14px; display: flex; gap: 8px;">
+            <button class="sec" onclick="toggleDarkMode()">🌙 モード切替</button>
+            <button class="sec" onclick="toggleTheaterMode()">📺 シアターモード</button>
+        </div>
+    </h1>
+
+    <!-- ナビゲーションタブ -->
+    <div class="tab-nav">
+        <button class="tab-btn active" id="btn-tab-timers" onclick="switchTab('tab-timers')">⏱️ タイマー一覧</button>
+        <button class="tab-btn" id="btn-tab-p2p" onclick="switchTab('tab-p2p')" style="color:#28a745;">📡 スマホ/P2P同期</button>
+        <button class="tab-btn" id="btn-tab-groups" onclick="switchTab('tab-groups')">👥 班管理 (1099班)</button>
+        <button class="tab-btn" id="btn-tab-scoreboard" onclick="switchTab('tab-scoreboard')">🏆 班対抗スコア</button>
+        <button class="tab-btn" id="btn-tab-csv" onclick="switchTab('tab-csv')">📊 CSV出力</button>
+        <button class="tab-btn" id="btn-tab-json" onclick="switchTab('tab-json')">💾 JSON</button>
+    </div>
+
+    <!-- ==================== タブ1: タイマー一覧 ==================== -->
+    <div id="tab-timers" class="tab-pane active">
+        <div class="section-panel global-controls">
+            <!-- タイマー＆班の直接入力作成エリア -->
+            <div style="display:flex; gap:10px; width:100%; margin-bottom:10px; flex-wrap: wrap;">
+                <input type="text" id="newName" placeholder="新規タイマー名を入力（Enterでも追加）" onkeydown="if(event.key==='Enter') addTimer()">
+                
+                <!-- 既存の班から選択 -->
+                <select id="newGroup" title="登録済みの班から選択"></select>
+                <!-- ★ その場で新しい班を直接追加できる入力欄 -->
+                <input type="text" id="newGroupDirect" placeholder="または新規班名を直接入力" style="width:170px;" onkeydown="if(event.key==='Enter') addTimer()">
+
+                <select id="newMode" onchange="document.getElementById('initTimeBlock').style.display = this.value==='countdown'?'flex':'none'">
+                    <option value="stopwatch">加算方式 (ストップウォッチ)</option>
+                    <option value="countdown">減算方式 (タイマー)</option>
+                </select>
+                <div id="initTimeBlock" style="display:none; align-items:center; gap:5px;">
+                    初期値(秒): <input type="number" id="newInitSec" value="60" min="1" style="width:70px;">
+                </div>
+                <button class="primary" onclick="addTimer()">➕ タイマー追加</button>
+            </div>
+            
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center;">
+                <button class="lap" onclick="globalStart()">⚡ 全一斉スタート</button>
+                <button class="stop" onclick="globalStop()">🛑 全一斉停止</button>
+                <button class="sec" onclick="globalLap()">📋 全一斉ラップ</button>
+                <button class="reset-btn" onclick="resetAllTimes()">🔄 タイム全リセット</button>
+                <button class="danger-outline" onclick="factoryReset()">🗑️ 完全初期化</button>
+                <button class="primary" style="background:#28a745; margin-left:auto;" onclick="quickExportCSV()">📊 即CSV出力</button>
+            </div>
+
+            <div style="display:flex; gap:10px; align-items:center; margin-top:12px; padding-top:10px; border-top:1px dashed var(--border-color); font-size:13px; flex-wrap:wrap;">
+                <span style="font-weight:bold;">⚡ 班別操作:</span>
+                <select id="targetControlGroup" style="font-size:13px; padding:4px 8px;"></select>
+                <button class="lap" style="font-size:12px; padding:5px 10px;" onclick="groupAction('start')">この班だけスタート</button>
+                <button class="stop" style="font-size:12px; padding:5px 10px;" onclick="groupAction('stop')">この班だけ停止</button>
+                <button class="sec" style="font-size:12px; padding:5px 10px;" onclick="groupAction('lap')">この班だけラップ</button>
+            </div>
+        </div>
+
+        <div class="section-panel system-configs">
+            <div class="config-row">
+                <div class="config-group" style="flex-grow: 1; max-width: 280px;">
+                    <span>🔍 検索:</span>
+                    <input type="text" id="searchKeyword" placeholder="名前・班名で即時検索..." oninput="configChanged()">
+                </div>
+                <div class="config-group">
+                    <span>表示フィルター:</span>
+                    <select id="filterGroup" onchange="configChanged()"></select>
+                </div>
+                <div class="config-group">
+                    <span>最大表示数:</span>
+                    <input type="number" id="maxBars" value="10" min="1" style="width:65px;" onchange="configChanged()">
+                </div>
+                <div class="config-group">
+                    <span>目標(秒):</span>
+                    <input type="number" id="targetSec" value="0" min="0" placeholder="0で1位基準" style="width:70px;" onchange="configChanged()">
+                </div>
+                <div class="config-group">
+                    <span>ハンディ:</span>
+                    <input type="number" id="handicapSec" value="0" min="0" style="width:55px;" onchange="configChanged()"> 秒
+                    <select id="handicapTarget" onchange="configChanged()" style="font-size:12px;"></select>
+                </div>
+            </div>
+            <div class="config-row" style="font-weight: normal; color: #666; gap:15px;">
+                <label><input type="checkbox" id="enableAudio" checked onchange="configChanged()"> 🔊 効果音</label>
+                <label><input type="checkbox" id="enableSpeech" onchange="configChanged()"> 🗣️ 逆転実況</label>
+                <label><input type="checkbox" id="enableAutoSort" checked onchange="configChanged()"> 🏆 Flourish並び替え(0.5s)</label>
+                <span>⌨️ [Space]: 全発走/停止 | [R]: 全リセット | [L]: 全ラップ</span>
+            </div>
+        </div>
+
+        <div id="timerList" class="timer-list"></div>
+    </div>
+
+    <!-- ==================== タブ2: 📡 スマホ/P2P同期 ==================== -->
+    <div id="tab-p2p" class="tab-pane">
+        <div class="section-panel">
+            <h3>📡 スマホ・タブレット・PC 端末間リアルタイム同期 (WebRTC)</h3>
+            <p style="font-size:13px; color:#666;">
+                <strong>スマホ1台からでもワンタップで親機になれます。</strong><br>
+                親機の画面に表示されるQRコードを他のスマホで読み取るだけで、手元のスマホが子機コントローラーに早変わりします。
+            </p>
+
+            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap:15px; margin-top:15px;">
+                <div style="background:var(--container-bg); padding:18px; border-radius:8px; border:2px solid #6f42c1;">
+                    <h4 style="margin-top:0; color:#6f42c1; display:flex; justify-content:space-between; align-items:center;">
+                        <span>👑 この端末を親機（ホスト）にする</span>
+                        <span style="font-size:11px; padding:2px 6px; background:#6f42c1; color:white; border-radius:4px;">スマホ/PC両対応</span>
+                    </h4>
+                    <p style="font-size:12px; color:#666;">任意の名前をルームIDに指定できます（空欄なら自動生成）。</p>
+                    
+                    <div style="display:flex; gap:6px; margin-bottom:10px;">
+                        <input type="text" id="customHostRoomId" placeholder="希望の合言葉 (例: RUN-01)" style="font-family:monospace; text-transform:uppercase;">
+                        <button class="primary" style="background:#6f42c1; white-space:nowrap;" onclick="startP2PHost()">親機を開設</button>
+                    </div>
+
+                    <div id="hostInfoArea" style="display:none; margin-top:15px; padding:15px; background:rgba(111,66,193,0.06); border-radius:8px; text-align:center;">
+                        <div style="font-size:13px; color:#666;">親機ルームID:</div>
+                        <div id="displayRoomId" style="font-size:24px; font-weight:bold; color:#6f42c1; font-family:monospace; margin:5px 0; user-select:all;"></div>
+                        
+                        <div style="margin:12px 0;">
+                            <img id="qrCodeImg" src="" alt="参加用QRコード" style="border:4px solid white; border-radius:8px; box-shadow:0 2px 8px rgba(0,0,0,0.1); width:150px; height:150px;">
+                            <div style="font-size:11px; color:#666; margin-top:4px;">📷 他のスマホのカメラで読み取って即時参加</div>
+                        </div>
+
+                        <div style="display:flex; gap:6px; justify-content:center; margin-top:10px;">
+                            <button class="sec" style="font-size:12px; padding:6px 12px;" onclick="copyInviteLink()">📋 招待URLをコピー</button>
+                        </div>
+                        <div style="margin-top:10px; font-size:13px; font-weight:bold;">接続中の子機数: <span id="connectedClientsCount" style="color:#28a745; font-size:16px;">0</span> 台</div>
+                    </div>
+                </div>
+
+                <div style="background:var(--container-bg); padding:18px; border-radius:8px; border:2px solid #28a745;">
+                    <h4 style="margin-top:0; color:#28a745;">📱 この端末を子機（コントローラー）にする</h4>
+                    <p style="font-size:12px; color:#666;">親機のQRコードを読み取るか、親機に表示されているルームIDを入力して接続します。</p>
+                    <div style="display:flex; gap:8px;">
+                        <input type="text" id="joinRoomId" placeholder="親機のルームID (例: RUN-01)" style="text-transform:uppercase; font-family:monospace; font-weight:bold;">
+                        <button class="lap" onclick="joinP2PHost()">接続する</button>
+                    </div>
+                    <div id="clientStatusArea" style="margin-top:15px; font-size:13px; font-weight:bold; color:#666;">状態: 未接続</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== タブ3: 班管理 (1099班) ==================== -->
+    <div id="tab-groups" class="tab-pane">
+        <div class="section-panel">
+            <h3>👥 班マネージャー (最大 1099 班)</h3>
+            <div style="display:flex; gap:10px; margin-bottom:15px; flex-wrap:wrap;">
+                <input type="text" id="customGroupName" placeholder="新規班名を入力 (Enterでも追加)" style="max-width:300px;" onkeydown="if(event.key==='Enter') addCustomGroup()">
+                <button class="primary" onclick="addCustomGroup()">➕ 班を追加</button>
+            </div>
+            <div style="display:flex; gap:10px; align-items:center; padding:12px; background:rgba(0,123,255,0.05); border-radius:6px; margin-bottom:15px; flex-wrap:wrap;">
+                <span style="font-weight:bold; font-size:13px;">⚡ 班の連番一括自動生成:</span>
+                接頭辞: <input type="text" id="bulkPrefix" value="第" style="width:50px;">
+                開始: <input type="number" id="bulkStart" value="1" min="1" style="width:60px;">
+                〜 終了: <input type="number" id="bulkEnd" value="10" min="1" max="1099" style="width:70px;">
+                接尾辞: <input type="text" id="bulkSuffix" value="班" style="width:50px;">
+                <button class="sec" style="background:#17a2b8;" onclick="generateBulkGroups()">一括生成実行</button>
+            </div>
+            <div style="margin-bottom:8px; display:flex; justify-content:space-between; align-items:center;">
+                <span style="font-weight:bold; font-size:13px;">登録済み班リスト (<span id="groupCount">0</span> / 1099 班):</span>
+                <!-- ★ ブロックなしで100%確実に動くリセットボタン -->
+                <button class="danger-outline" style="font-size:12px; padding:6px 12px;" onclick="clearAllCustomGroups()">🔄 班リスト全リセット</button>
+            </div>
+            <div class="chip-container" id="groupChipList"></div>
+        </div>
+    </div>
+
+    <!-- ==================== タブ4: 班対抗スコアボード ==================== -->
+    <div id="tab-scoreboard" class="tab-pane">
+        <div class="section-panel">
+            <h3>🏆 班対抗スコアボード (自動集計)</h3>
+            <table class="scoreboard-table">
+                <thead>
+                    <tr><th>順位</th><th>班名</th><th>台数</th><th>最速タイム</th><th>平均タイム</th></tr>
+                </thead>
+                <tbody id="scoreboardBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- ==================== タブ5: CSV出力設定 ==================== -->
+    <div id="tab-csv" class="tab-pane">
+        <div class="section-panel">
+            <h3>📊 Excel用 CSV 出力設定</h3>
+            <div style="margin: 15px 0;">
+                <label style="font-weight:bold; font-size:14px; cursor:pointer;">
+                    <input type="checkbox" id="csvCustomEnable" onchange="saveCsvConfig(); toggleCsvOptions();"> ⚙️ 形式をカスタマイズする
+                </label>
+            </div>
+            <div id="csvOptionsBlock" style="display:none; background:var(--container-bg); padding:15px; border-radius:8px; border:1px solid var(--border-color); margin-bottom:15px;">
+                <div class="config-row">
+                    <div class="config-group">
+                        <span>区切り形式:</span>
+                        <select id="csvDelimiter" onchange="saveCsvConfig()">
+                            <option value=",">カンマ区切り (CSV)</option>
+                            <option value="\t">タブ区切り (TSV)</option>
+                        </select>
+                    </div>
+                    <div class="config-group">
+                        <span>タイム表記:</span>
+                        <select id="csvTimeFormat" onchange="saveCsvConfig()">
+                            <option value="formatted">書式付き (00:00.00)</option>
+                            <option value="seconds">秒数 (65.42)</option>
+                            <option value="millis">ミリ秒数値 (65420)</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="config-row" style="margin-top:10px;">
+                    <label><input type="checkbox" id="csvIncludeLaps" checked onchange="saveCsvConfig()"> ラップ詳細行を含める</label>
+                    <label><input type="checkbox" id="csvIncludeMemo" checked onchange="saveCsvConfig()"> メモを含める</label>
+                </div>
+            </div>
+            <button class="primary" style="background:#28a745; padding:10px 20px;" onclick="exportConfiguredCSV()">📥 設定内容でCSVダウンロード</button>
+        </div>
+    </div>
+
+    <!-- ==================== タブ6: JSON復元 ==================== -->
+    <div id="tab-json" class="tab-pane">
+        <div class="section-panel">
+            <h3>💾 JSON バックアップ・一括追加</h3>
+            <textarea id="jsonText" placeholder="JSONデータを貼り付けるか書き出します"></textarea>
+            <div style="display: flex; gap: 10px; margin-top: 10px; flex-wrap: wrap;">
+                <button class="primary" onclick="exportJSON()">📄 JSONデータを生成</button>
+                <button class="lap" onclick="copyJSONToClipboard()">📋 JSONを一括コピー</button>
+                <button class="sec" style="background:#17a2b8; color:white;" onclick="importJSON(false)">➕ JSONから一括追加</button>
+                <button class="stop" onclick="importJSON(true)">🔄 完全上書き復元</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const STORAGE_DATA_KEY = 'multi_stopwatch_v12_data';
+    const STORAGE_CONFIG_KEY = 'multi_stopwatch_v12_config';
+    const STORAGE_GROUPS_KEY = 'multi_stopwatch_v12_groups';
+
+    let timers = [];
+    let groups = ["A班", "B班", "共通"];
+    let config = { 
+        maxBars: 10, targetSec: 0, handicapSec: 0, handicapTarget: "B班",
+        filterGroup: "全表示", enableAudio: true, enableSpeech: false,
+        enableAutoSort: true, activeTab: "tab-timers",
+        csvConfig: { custom: false, delimiter: ",", timeFormat: "formatted", includeLaps: true, includeMemo: true }
+    };
+    const colors = ['#ffd700', '#c0c0c0', '#cd7f32', '#2196f3', '#4caf50', '#9c27b0', '#ff9800', '#e91e63', '#00bcd4'];
+    let lastRanks = {};
+    let lastSpeechTime = 0;
+    let audioCtx = null;
+    let isAnimating = false;
+
+    /* ==========================================================================
+       📱 端末フリー P2P同期エンジン
+       ========================================================================== */
+    let peer = null;
+    let p2pRole = 'standalone';
+    let hostConnections = [];
+    let clientConn = null;
+    let clockOffset = 0;
+    let wakeLock = null;
+
+    async function requestWakeLock() {
+        try {
+            if ('wakeLock' in navigator && !wakeLock) {
+                wakeLock = await navigator.wakeLock.request('screen');
+            }
+        } catch (e) {}
+    }
+
+    function generateRoomId() {
+        return 'ROOM-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+    }
+
+    function updateP2PBadge(text, type = '') {
+        const badge = document.getElementById('p2pStatusBadge');
+        badge.innerText = text;
+        badge.className = 'p2p-badge ' + type;
+    }
+
+    function startP2PHost() {
+        if (typeof Peer === 'undefined') { showToast("⚠️ PeerJSライブラリの読込失敗"); return; }
+        requestWakeLock();
+        
+        const customInput = document.getElementById('customHostRoomId').value.trim().toUpperCase();
+        const roomId = customInput || generateRoomId();
+
+        if (peer) peer.destroy();
+        peer = new Peer(roomId);
+
+        peer.on('open', (id) => {
+            p2pRole = 'host';
+            document.getElementById('hostInfoArea').style.display = 'block';
+            document.getElementById('displayRoomId').innerText = id;
+            
+            const inviteUrl = location.origin + location.pathname + '?room=' + id;
+            document.getElementById('qrCodeImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(inviteUrl)}`;
+
+            updateP2PBadge(`👑 親機: ${id} (子機: 0台)`, 'host');
+            showToast(`親機「${id}」を開設しました`);
+        });
+
+        peer.on('connection', (conn) => {
+            hostConnections.push(conn);
+            document.getElementById('connectedClientsCount').innerText = hostConnections.length;
+            updateP2PBadge(`👑 親機: ${peer.id} (子機: ${hostConnections.length}台)`, 'host');
+
+            conn.on('open', () => {
+                conn.send({ type: 'FULL_SYNC', timers, groups, config, hostNow: Date.now() });
+            });
+
+            conn.on('data', (data) => {
+                handleClientMessage(data);
+            });
+
+            conn.on('close', () => {
+                hostConnections = hostConnections.filter(c => c !== conn);
+                document.getElementById('connectedClientsCount').innerText = hostConnections.length;
+                updateP2PBadge(`👑 親機: ${peer.id} (子機: ${hostConnections.length}台)`, 'host');
+            });
+        });
+
+        peer.on('error', (err) => {
+            if (err.type === 'unavailable-id') {
+                showToast(`⚠️ ID「${roomId}」は使用済みです`);
+            } else {
+                showToast("⚠️ 親機開設エラー: " + err.type);
+            }
+        });
+    }
+
+    function copyInviteLink() {
+        const id = document.getElementById('displayRoomId').innerText;
+        const url = location.origin + location.pathname + '?room=' + id;
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(url).then(() => showToast("📋 招待URLをコピーしました！"));
+        } else {
+            prompt("以下のURLを子機で開いてください:", url);
+        }
+    }
+
+    function joinP2PHost(autoId = '') {
+        if (typeof Peer === 'undefined') { showToast("⚠️ PeerJSライブラリ未検出"); return; }
+        requestWakeLock();
+        
+        const targetId = autoId || document.getElementById('joinRoomId').value.trim().toUpperCase();
+        if (!targetId) { showToast("⚠️ ルームIDを入力してください"); return; }
+
+        if (peer) peer.destroy();
+        peer = new Peer();
+
+        peer.on('open', () => {
+            document.getElementById('clientStatusArea').innerText = `親機 ${targetId} に接続中...`;
+            clientConn = peer.connect(targetId);
+
+            clientConn.on('open', () => {
+                p2pRole = 'client';
+                document.getElementById('clientStatusArea').innerText = `🟢 親機 ${targetId} に接続完了！`;
+                document.getElementById('clientStatusArea').style.color = '#28a745';
+                updateP2PBadge(`📱 子機: 接続中 (${targetId})`, 'connected');
+                showToast(`親機「${targetId}」に接続しました`);
+                switchTab('tab-timers');
+            });
+
+            clientConn.on('data', (data) => {
+                handleHostMessage(data);
+            });
+
+            clientConn.on('close', () => {
+                p2pRole = 'standalone';
+                document.getElementById('clientStatusArea').innerText = '🔴 親機との接続が切断されました';
+                document.getElementById('clientStatusArea').style.color = '#dc3545';
+                updateP2PBadge(`📡 P2P: 切断`, '');
+            });
+        });
+
+        peer.on('error', (err) => {
+            document.getElementById('clientStatusArea').innerText = '接続失敗: IDを確認してください';
+            document.getElementById('clientStatusArea').style.color = '#dc3545';
+        });
+    }
+
+    function broadcastToClients(msg) {
+        if (p2pRole !== 'host') return;
+        msg.hostNow = Date.now();
+        hostConnections.forEach(conn => {
+            if (conn.open) conn.send(msg);
+        });
+    }
+
+    function sendToHost(actionData) {
+        if (p2pRole === 'client' && clientConn && clientConn.open) {
+            clientConn.send(actionData);
+            return true;
+        }
+        return false;
+    }
+
+    function handleClientMessage(msg) {
+        if (msg.type === 'ACTION_TOGGLE') toggleTimer(msg.id, msg.isHandicap, false);
+        else if (msg.type === 'ACTION_LAP') recordLap(msg.id, false);
+        else if (msg.type === 'ACTION_RESET') resetTimer(msg.id);
+        else if (msg.type === 'ACTION_GLOBAL_START') globalStart();
+        else if (msg.type === 'ACTION_GLOBAL_STOP') globalStop();
+        else if (msg.type === 'ACTION_GLOBAL_RESET') resetAllTimes();
+        else if (msg.type === 'ACTION_ADD_TIMER') {
+            timers.push(msg.timer);
+            if (msg.newGroup && !groups.includes(msg.newGroup) && groups.length < 1099) {
+                groups.push(msg.newGroup);
+                saveGroups();
+            }
+            syncState(); render();
+        }
+    }
+
+    function handleHostMessage(msg) {
+        if (msg.hostNow) clockOffset = msg.hostNow - Date.now();
+        if (msg.type === 'FULL_SYNC' || msg.type === 'STATE_UPDATE') {
+            timers = msg.timers;
+            if (msg.groups) { groups = msg.groups; refreshGroupSelects(); updateGroupChips(); }
+            if (msg.config) config = Object.assign(config, msg.config);
+            render();
+        }
+    }
+
+    /* ==========================================================================
+       共通ユーティリティ
+       ========================================================================== */
+    function getGroupColor(str) {
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) hash = str.charCodeAt(i) + ((hash << 5) - hash);
+        return `hsl(${Math.abs(hash) % 360}, 65%, 45%)`;
+    }
+
+    function showToast(msg) {
+        const toast = document.getElementById('toastMessage');
+        toast.innerText = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    function unlockAudio() {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    window.addEventListener('click', unlockAudio, { once: true });
+    window.addEventListener('keydown', unlockAudio, { once: true });
+
+    function formatTime(ms) {
+        if (isNaN(ms) || ms < 0) ms = 0;
+        const totalSec = Math.floor(ms / 1000);
+        const m = Math.floor(totalSec / 60);
+        const s = totalSec % 60;
+        const millis = Math.floor((ms % 1000) / 10);
+        const hh = Math.floor(m / 60);
+        const mm = m % 60;
+        const pad = (n, len = 2) => String(n).padStart(len, '0');
+        if (hh > 0) return `${pad(hh)}:${pad(mm)}:${pad(s)}.${pad(millis)}`;
+        return `${pad(mm)}:${pad(s)}.${pad(millis)}`;
+    }
+
+    window.onload = function() {
+        const savedGroups = localStorage.getItem(STORAGE_GROUPS_KEY);
+        if (savedGroups) { try { groups = JSON.parse(savedGroups); } catch(e) {} }
+        const savedData = localStorage.getItem(STORAGE_DATA_KEY);
+        const savedConfig = localStorage.getItem(STORAGE_CONFIG_KEY);
+        if (savedData) { try { timers = JSON.parse(savedData); adjustTimeOnReload(); } catch(e) { setupDefaultTimers(); } }
+        else { setupDefaultTimers(); }
+        if (savedConfig) { try { Object.assign(config, JSON.parse(savedConfig)); } catch(e) {} }
+        
+        if (localStorage.getItem('multi_stopwatch_theme') === 'dark') document.body.classList.add('dark-mode');
+
+        refreshGroupSelects();
+        updateGroupChips();
+
+        document.getElementById('maxBars').value = config.maxBars || 10;
+        document.getElementById('targetSec').value = config.targetSec || 0;
+        document.getElementById('handicapSec').value = config.handicapSec || 0;
+        document.getElementById('handicapTarget').value = config.handicapTarget || (groups[1] || groups[0]);
+        document.getElementById('filterGroup').value = config.filterGroup || "全表示";
+        document.getElementById('enableAudio').checked = config.enableAudio !== false;
+        document.getElementById('enableSpeech').checked = config.enableSpeech === true;
+        document.getElementById('enableAutoSort').checked = config.enableAutoSort !== false;
+
+        if (config.csvConfig) {
+            document.getElementById('csvCustomEnable').checked = config.csvConfig.custom || false;
+            document.getElementById('csvDelimiter').value = config.csvConfig.delimiter || ",";
+            document.getElementById('csvTimeFormat').value = config.csvConfig.timeFormat || "formatted";
+            document.getElementById('csvIncludeLaps').checked = config.csvConfig.includeLaps !== false;
+            document.getElementById('csvIncludeMemo').checked = config.csvConfig.includeMemo !== false;
+            toggleCsvOptions();
+        }
+
+        if (config.activeTab && document.getElementById(config.activeTab)) switchTab(config.activeTab, false);
+        
+        render();
+        setInterval(tick, 50);
+        setupKeybinds();
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const autoRoom = urlParams.get('room');
+        if (autoRoom) {
+            document.getElementById('joinRoomId').value = autoRoom;
+            setTimeout(() => joinP2PHost(autoRoom), 600);
+        }
+    };
+
+    /* ==========================================================================
+       班マネージャー (最大1099班)
+       ========================================================================== */
+    function refreshGroupSelects() {
+        const selectors = ['newGroup', 'filterGroup', 'targetControlGroup', 'handicapTarget'];
+        selectors.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            const currentVal = el.value;
+            el.innerHTML = '';
+            if (id === 'filterGroup') {
+                const optAll = document.createElement('option');
+                optAll.value = "全表示"; optAll.innerText = "すべてのグループ";
+                el.appendChild(optAll);
+            }
+            groups.forEach(g => {
+                const opt = document.createElement('option');
+                opt.value = g; opt.innerText = g;
+                el.appendChild(opt);
+            });
+            if (currentVal && (groups.includes(currentVal) || currentVal === '全表示')) el.value = currentVal;
+        });
+    }
+
+    function updateGroupChips() {
+        const container = document.getElementById('groupChipList');
+        document.getElementById('groupCount').innerText = groups.length;
+        container.innerHTML = '';
+        groups.forEach(g => {
+            const chip = document.createElement('div');
+            chip.className = 'chip';
+            chip.style.backgroundColor = getGroupColor(g);
+            chip.innerHTML = `<span>${g}</span><span class="chip-del" onclick="deleteGroup('${g}')">×</span>`;
+            container.appendChild(chip);
+        });
+    }
+
+    function addCustomGroup() {
+        const inp = document.getElementById('customGroupName');
+        const name = inp.value.trim();
+        if (!name) return;
+        if (groups.length >= 1099) { showToast("⚠️ 班の登録上限は1099個です"); return; }
+        if (groups.includes(name)) { showToast(`⚠️ 「${name}」は既に存在します`); return; }
+        groups.push(name);
+        inp.value = '';
+        saveGroups();
+        showToast(`➕ 班「${name}」を追加しました`);
+    }
+
+    function generateBulkGroups() {
+        const prefix = document.getElementById('bulkPrefix').value.trim();
+        const start = parseInt(document.getElementById('bulkStart').value) || 1;
+        const end = parseInt(document.getElementById('bulkEnd').value) || 10;
+        const suffix = document.getElementById('bulkSuffix').value.trim();
+        if (start > end) { showToast("⚠️ 番号範囲が不正です"); return; }
+        let added = 0;
+        for (let i = start; i <= end; i++) {
+            if (groups.length >= 1099) break;
+            const gName = `${prefix}${i}${suffix}`;
+            if (!groups.includes(gName)) { groups.push(gName); added++; }
+        }
+        saveGroups();
+        showToast(`${added} 個の班を一括生成しました！`);
+    }
+
+    function deleteGroup(name) {
+        if (groups.length <= 1) { showToast("⚠️ 最低1つの班が必要です"); return; }
+        groups = groups.filter(g => g !== name);
+        saveGroups();
+        showToast(`班「${name}」を削除しました`);
+    }
+
+    // ★ 確実に動作する「班リスト全リセット」（confirmブロック完全排除）
+    function clearAllCustomGroups() {
+        groups = ["A班", "B班", "共通"];
+        saveGroups();
+        showToast("🔄 班リストを初期状態（A班・B班・共通）にリセットしました");
+    }
+
+    function saveGroups() {
+        localStorage.setItem(STORAGE_GROUPS_KEY, JSON.stringify(groups));
+        refreshGroupSelects();
+        updateGroupChips();
+        render();
+        broadcastToClients({ type: 'FULL_SYNC', timers, groups, config });
+    }
+
+    function groupAction(actionType) {
+        const targetG = document.getElementById('targetControlGroup').value;
+        const targetTimers = timers.filter(t => t.group === targetG);
+        if (targetTimers.length === 0) { showToast(`⚠️ 「${targetG}」のタイマーがありません`); return; }
+
+        if (actionType === 'start') targetTimers.forEach(t => { if(!t.running) toggleTimer(t.id, config.handicapSec > 0, true); });
+        else if (actionType === 'stop') targetTimers.forEach(t => { if(t.running) toggleTimer(t.id, false, true); });
+        else if (actionType === 'lap') targetTimers.forEach(t => { if(t.running) recordLap(t.id, true); });
+        render();
+        syncState();
+        showToast(`【${targetG}】の一斉操作を実行`);
+    }
+
+    function updateScoreboard() {
+        const tbody = document.getElementById('scoreboardBody');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        const groupStats = groups.map(g => {
+            const gTimers = timers.filter(t => t.group === g);
+            if (gTimers.length === 0) return { group: g, count: 0, best: Infinity, avg: Infinity };
+            let total = 0, best = Infinity;
+            gTimers.forEach(t => {
+                const p = getProgressTime(t);
+                total += p;
+                if (p > 0 && p < best) best = p;
+            });
+            return { group: g, count: gTimers.length, best: best === Infinity ? 0 : best, avg: total / gTimers.length };
+        }).filter(s => s.count > 0).sort((a, b) => b.avg - a.avg);
+
+        groupStats.forEach((s, idx) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><strong>${idx + 1}位</strong></td>
+                <td><span class="chip" style="background:${getGroupColor(s.group)}">${s.group}</span></td>
+                <td>${s.count} 台</td>
+                <td>${formatTime(s.best)}</td>
+                <td><strong>${formatTime(s.avg)}</strong></td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    function switchTab(tabId, shouldSave = true) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        const targetBtn = document.getElementById('btn-' + tabId);
+        if (targetBtn) targetBtn.classList.add('active');
+        const targetPane = document.getElementById(tabId);
+        if (targetPane) targetPane.classList.add('active');
+        if (tabId === 'tab-scoreboard') updateScoreboard();
+        if (shouldSave) { config.activeTab = tabId; save(); }
+    }
+
+    function toggleCsvOptions() {
+        document.getElementById('csvOptionsBlock').style.display = document.getElementById('csvCustomEnable').checked ? 'block' : 'none';
+    }
+
+    function saveCsvConfig() {
+        config.csvConfig = {
+            custom: document.getElementById('csvCustomEnable').checked,
+            delimiter: document.getElementById('csvDelimiter').value,
+            timeFormat: document.getElementById('csvTimeFormat').value,
+            includeLaps: document.getElementById('csvIncludeLaps').checked,
+            includeMemo: document.getElementById('csvIncludeMemo').checked
+        };
+        save();
+    }
+
+    function adjustTimeOnReload() {
+        const now = Date.now();
+        timers.forEach(t => {
+            if (t.running) {
+                if (t.mode === 'countdown') {
+                    t.elapsed -= (now - t.updatedAt);
+                    if (t.elapsed <= 0) { t.elapsed = 0; t.running = false; }
+                } else {
+                    t.elapsed += (now - t.updatedAt);
+                }
+                t.updatedAt = now;
+            }
+            if (!t.laps) t.laps = [];
+            if (!t.group) t.group = groups[0] || "共通";
+            if (!t.mode) t.mode = "stopwatch";
+        });
+    }
+
+    function setupDefaultTimers() {
+        timers = [
+            { id: 1, name: "タイマー A", elapsed: 0, running: false, updatedAt: 0, laps: [], group: groups[0] || "A班", mode: "stopwatch", initialSec: 0, memo: "" },
+            { id: 2, name: "タイマー B", elapsed: 0, running: false, updatedAt: 0, laps: [], group: groups[1] || "B班", mode: "stopwatch", initialSec: 0, memo: "" }
+        ];
+    }
+
+    function save() {
+        localStorage.setItem(STORAGE_DATA_KEY, JSON.stringify(timers));
+        localStorage.setItem(STORAGE_CONFIG_KEY, JSON.stringify(config));
+    }
+
+    function syncState() {
+        save();
+        broadcastToClients({ type: 'STATE_UPDATE', timers, groups, config });
+    }
+
+    function configChanged() {
+        config.maxBars = Math.max(1, parseInt(document.getElementById('maxBars').value) || 10);
+        config.targetSec = Math.max(0, parseFloat(document.getElementById('targetSec').value) || 0);
+        config.handicapSec = Math.max(0, parseFloat(document.getElementById('handicapSec').value) || 0);
+        config.handicapTarget = document.getElementById('handicapTarget').value;
+        config.filterGroup = document.getElementById('filterGroup').value;
+        config.enableAudio = document.getElementById('enableAudio').checked;
+        config.enableSpeech = document.getElementById('enableSpeech').checked;
+        config.enableAutoSort = document.getElementById('enableAutoSort').checked;
+        syncState();
+        render();
+    }
+
+    /* ==========================================================================
+       ★ 確実に追加できる「タイマー追加 & 新規班自動追加」
+       ========================================================================== */
+    function addTimer() {
+        const nameInput = document.getElementById('newName');
+        const name = nameInput.value.trim() || `タイマー ${timers.length + 1}`;
+        
+        // 直接入力された班名があれば最優先、かつ班リストへ自動登録
+        const directGroup = document.getElementById('newGroupDirect').value.trim();
+        let group = directGroup || document.getElementById('newGroup').value || groups[0] || "共通";
+
+        if (directGroup && !groups.includes(directGroup)) {
+            if (groups.length < 1099) {
+                groups.push(directGroup);
+                saveGroups();
+            }
+        }
+
+        const mode = document.getElementById('newMode').value;
+        const parsedSec = parseFloat(document.getElementById('newInitSec').value);
+        const initSec = (!isNaN(parsedSec) && parsedSec > 0) ? parsedSec : 60;
+        
+        const newTimerObj = {
+            id: Date.now() + Math.floor(Math.random() * 10000),
+            name: name, group: group, mode: mode,
+            elapsed: mode === 'countdown' ? initSec * 1000 : 0,
+            initialSec: mode === 'countdown' ? initSec : 0,
+            running: false, updatedAt: 0, laps: [], memo: ""
+        };
+
+        // 子機の場合は親機へ追加送信
+        if (p2pRole === 'client') {
+            sendToHost({ type: 'ACTION_ADD_TIMER', timer: newTimerObj, newGroup: directGroup });
+        } else {
+            timers.push(newTimerObj);
+        }
+        
+        // 検索欄をクリアして必ず画面に表示
+        const searchInput = document.getElementById('searchKeyword');
+        if (searchInput && searchInput.value) searchInput.value = '';
+
+        if (config.filterGroup !== "全表示" && config.filterGroup !== group) {
+            config.filterGroup = "全表示";
+            document.getElementById('filterGroup').value = "全表示";
+        }
+        if (timers.length > config.maxBars) {
+            config.maxBars = timers.length;
+            document.getElementById('maxBars').value = config.maxBars;
+        }
+
+        nameInput.value = '';
+        document.getElementById('newGroupDirect').value = '';
+        syncState();
+        render();
+        showToast(`➕「${name}」(${group}) を追加しました`);
+    }
+
+    function toggleTimer(id, isHandicap = false, skipRender = false) {
+        if (p2pRole === 'client') {
+            sendToHost({ type: 'ACTION_TOGGLE', id, isHandicap });
+            return;
+        }
+
+        const timer = timers.find(t => t.id === id); 
+        if (!timer) return;
+        playAudio('click');
+        const now = Date.now();
+        if (timer.running) {
+            const diff = now - timer.updatedAt;
+            timer.elapsed = timer.mode === 'countdown' ? timer.elapsed - diff : timer.elapsed + diff;
+            if (timer.elapsed < 0) timer.elapsed = 0;
+            timer.running = false;
+        } else {
+            let isInitialStart = (timer.mode === 'countdown' && timer.elapsed === timer.initialSec * 1000) ||
+                                 (timer.mode === 'stopwatch' && timer.elapsed === 0);
+            let delay = (isHandicap && isInitialStart && timer.group === config.handicapTarget) ? config.handicapSec * 1000 : 0;
+            timer.running = true;
+            timer.updatedAt = now - delay;
+        }
+        syncState();
+        if (!skipRender) render();
+    }
+
+    function recordLap(id, skipRender = false) {
+        if (p2pRole === 'client') {
+            sendToHost({ type: 'ACTION_LAP', id });
+            return;
+        }
+
+        const timer = timers.find(t => t.id === id); 
+        if (!timer) return;
+        const current = getCurrentTime(timer);
+        playAudio('lap');
+        const lastLapTime = timer.laps.length > 0 ? timer.laps[timer.laps.length - 1].total : (timer.mode==='countdown' ? timer.initialSec * 1000 : 0);
+        const duration = Math.abs(current - lastLapTime);
+        timer.laps.push({ lapNum: timer.laps.length + 1, duration: duration, total: current, memo: "" });
+        syncState();
+        if (!skipRender) render();
+    }
+
+    function resetTimer(id) {
+        if (p2pRole === 'client') {
+            sendToHost({ type: 'ACTION_RESET', id });
+            return;
+        }
+        const timer = timers.find(t => t.id === id); 
+        if (!timer) return;
+        timer.elapsed = timer.mode === 'countdown' ? timer.initialSec * 1000 : 0;
+        timer.running = false; 
+        timer.updatedAt = 0;
+        timer.laps = []; 
+        syncState(); 
+        render(); 
+    }
+
+    function deleteTimer(id) { 
+        timers = timers.filter(t => t.id !== id); 
+        delete lastRanks.topId;
+        syncState(); 
+        render(); 
+    }
+
+    function updateName(id, val) { 
+        const t = timers.find(x => x.id === id); 
+        if (t) { t.name = val; syncState(); } 
+    }
+
+    function updateMemo(id, val) { 
+        const t = timers.find(x => x.id === id); 
+        if (t) { t.memo = val; syncState(); } 
+    }
+
+    function updateLapMemo(tId, lapNum, val) { 
+        const t = timers.find(x => x.id === tId); 
+        if (t && t.laps[lapNum-1]) { t.laps[lapNum-1].memo = val; syncState(); } 
+    }
+
+    function globalStart() { 
+        if (p2pRole === 'client') { sendToHost({ type: 'ACTION_GLOBAL_START' }); return; }
+        timers.forEach(t => { if(!t.running) toggleTimer(t.id, config.handicapSec > 0, true); }); 
+        syncState(); render();
+    }
+
+    function globalStop() { 
+        if (p2pRole === 'client') { sendToHost({ type: 'ACTION_GLOBAL_STOP' }); return; }
+        timers.forEach(t => { if(t.running) toggleTimer(t.id, false, true); }); 
+        syncState(); render();
+    }
+
+    function globalLap() { 
+        timers.forEach(t => { if(t.running) recordLap(t.id, true); }); 
+        syncState(); render();
+    }
+
+    function resetAllTimes() { 
+        if (p2pRole === 'client') { sendToHost({ type: 'ACTION_GLOBAL_RESET' }); return; }
+        isAnimating = false;
+        timers.forEach(t => {
+            t.running = false;
+            t.updatedAt = 0;
+            t.laps = [];
+            t.elapsed = (t.mode === 'countdown') ? t.initialSec * 1000 : 0;
+        }); 
+        lastRanks = {};
+        syncState(); 
+        render(); 
+        timers.forEach(t => {
+            const timeEl = document.getElementById(`time-${t.id}`);
+            if (timeEl) timeEl.innerText = formatTime(t.elapsed);
+            const barEl = document.getElementById(`bar-${t.id}`);
+            if (barEl) { barEl.style.width = '0%'; barEl.classList.remove('over-target'); }
+            const ghostEl = document.getElementById(`ghost-${t.id}`);
+            if (ghostEl) ghostEl.innerText = '';
+        });
+        showToast("🔄 全タイマーのタイムをリセットしました");
+    }
+
+    function factoryReset() {
+        if(confirm("【警告】追加したタイマー・班リスト・設定を全て消去し、初期化しますか？")) {
+            localStorage.removeItem(STORAGE_DATA_KEY);
+            localStorage.removeItem(STORAGE_CONFIG_KEY);
+            localStorage.removeItem(STORAGE_GROUPS_KEY);
+            localStorage.removeItem('multi_stopwatch_theme');
+            location.reload();
+        }
+    }
+
+    function setupKeybinds() {
+        document.addEventListener('keydown', e => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+            const key = e.key.toUpperCase();
+            if (e.key === 'Escape' && document.body.classList.contains('theater-mode')) toggleTheaterMode();
+            if (key === ' ') { e.preventDefault(); let anyR = timers.some(t => t.running); if (anyR) globalStop(); else globalStart(); }
+            if (key === 'R') { e.preventDefault(); resetAllTimes(); }
+            if (key === 'L') { e.preventDefault(); globalLap(); }
+            if (key >= '1' && key <= '9') {
+                let idx = parseInt(key) - 1;
+                const listDeco = document.getElementById('timerList');
+                if (listDeco && listDeco.children[idx]) {
+                    const timerId = parseInt(listDeco.children[idx].id.replace('item-', ''));
+                    const targetTimer = timers.find(t => t.id === timerId);
+                    if (targetTimer && targetTimer.running) recordLap(targetTimer.id);
+                }
+            }
+        });
+        document.addEventListener('click', e => { if (e.target.tagName === 'BUTTON') e.target.blur(); });
+    }
+
+    /* ==========================================================================
+       描画 & アニメーション
+       ========================================================================== */
+    function getCurrentTime(timer) {
+        if (!timer.running) return timer.elapsed;
+        const now = Date.now() + (p2pRole === 'client' ? clockOffset : 0);
+        const diff = now - timer.updatedAt;
+        if (timer.mode === 'countdown') {
+            let remain = timer.elapsed - diff;
+            return remain < 0 ? 0 : remain;
+        }
+        return timer.elapsed + diff;
+    }
+
+    function getProgressTime(timer) {
+        if (timer.mode === 'countdown') {
+            const remain = getCurrentTime(timer);
+            return Math.max(0, (timer.initialSec * 1000) - remain);
+        }
+        return getCurrentTime(timer);
+    }
+
+    function tick() {
+        let needRerender = false;
+        timers.forEach(t => { 
+            if (t.running && t.mode === 'countdown' && getCurrentTime(t) === 0) { 
+                t.running = false; 
+                t.elapsed = 0;
+                syncState();
+                playAudio('alarm'); 
+                needRerender = true;
+            }
+        });
+        if (needRerender) render();
+        else updateBars();
+    }
+
+    function buildLapListHtml(timer) {
+        if (!timer.laps || timer.laps.length === 0) return '';
+        let minTime = Infinity, maxTime = -Infinity;
+        timer.laps.forEach(l => { 
+            if (l.duration < minTime) minTime = l.duration; 
+            if (l.duration > maxTime) maxTime = l.duration; 
+        });
+        
+        let html = `<div class="lap-list">`;
+        for (let i = timer.laps.length - 1; i >= 0; i--) {
+            const lap = timer.laps[i];
+            let cls = '';
+            if (timer.laps.length > 1) {
+                if (lap.duration === minTime) cls = 'best-lap';
+                else if (lap.duration === maxTime) cls = 'worst-lap';
+            }
+            html += `
+                <div class="lap-item ${cls}">
+                    <span>Lap ${lap.lapNum}</span>
+                    <span>区間: ${formatTime(lap.duration)} (通算: ${formatTime(lap.total)})</span>
+                    <input type="text" class="memo-input" placeholder="メモ..." value="${lap.memo || ''}" oninput="updateLapMemo(${timer.id}, ${lap.lapNum}, this.value)">
+                </div>`;
+        }
+        return html + `</div>`;
+    }
+
+    function render() {
+        const listDeco = document.getElementById('timerList'); 
+        listDeco.innerHTML = '';
+        const searchWord = (document.getElementById('searchKeyword')?.value || '').toLowerCase();
+        
+        let visibleTimers = timers.filter(t => {
+            const matchGroup = config.filterGroup === "全表示" || t.group === config.filterGroup;
+            const matchSearch = !searchWord || t.name.toLowerCase().includes(searchWord) || t.group.toLowerCase().includes(searchWord);
+            return matchGroup && matchSearch;
+        });
+
+        if (visibleTimers.length === 0) {
+            listDeco.innerHTML = `<div style="text-align:center; padding:30px; color:#888;">該当するタイマーがありません。「➕ タイマー追加」から作成してください。</div>`;
+            return;
+        }
+
+        visibleTimers.forEach((t, index) => {
+            const current = getCurrentTime(t);
+            const item = document.createElement('div'); 
+            item.className = 'timer-item'; 
+            item.id = `item-${t.id}`;
+            item.innerHTML = `
+                <div class="timer-header">
+                    <div class="timer-title-area">
+                        <span class="rank-badge" id="rank-${t.id}" style="background:#aaa;">-位</span>
+                        <span class="group-badge" style="background:${getGroupColor(t.group)}">${t.group}</span>
+                        <span style="font-size:11px; padding:2px 5px; border-radius:3px; background:#e0e0e0; color:#333;">${t.mode==='countdown'?'減算':'加算'}</span>
+                        <input type="text" class="edit-name-input" value="${t.name}" oninput="updateName(${t.id}, this.value)">
+                        <input type="text" class="memo-input" placeholder="メモ書き..." value="${t.memo||''}" oninput="updateMemo(${t.id}, this.value)">
+                    </div>
+                    <div>
+                        <div class="timer-time" id="time-${t.id}">${formatTime(current)}</div>
+                        <div class="ghost-time" id="ghost-${t.id}"></div>
+                    </div>
+                </div>
+                <div class="bar-container"><div class="bar" id="bar-${t.id}"></div></div>
+                <div class="timer-actions-row" style="display: flex; gap: 5px; align-items: center;">
+                    <button class="${t.running ? 'stop' : 'primary'}" onclick="toggleTimer(${t.id})">${t.running ? '停止' : 'スタート'}</button>
+                    <button class="lap" onclick="recordLap(${t.id})" ${!t.running ? 'disabled' : ''}>ラップ</button>
+                    <button class="sec" onclick="resetTimer(${t.id})">リセット</button>
+                    <button class="sec" style="margin-left: auto; background:#aaa;" onclick="deleteTimer(${t.id})">削除</button>
+                    <span style="font-size:11px; color:#888; font-family:monospace;">[${index+1}]</span>
+                </div>
+                ${buildLapListHtml(t)}
+            `;
+            listDeco.appendChild(item);
+        });
+        updateBars();
+    }
+
+    function updateBars() {
+        const searchWord = (document.getElementById('searchKeyword')?.value || '').toLowerCase();
+        let visibleTimers = timers.filter(t => {
+            const matchGroup = config.filterGroup === "全表示" || t.group === config.filterGroup;
+            const matchSearch = !searchWord || t.name.toLowerCase().includes(searchWord) || t.group.toLowerCase().includes(searchWord);
+            return matchGroup && matchSearch;
+        });
+        if (visibleTimers.length === 0) return;
+        
+        let maxTime = config.targetSec > 0 ? config.targetSec * 1000 : 0;
+        const sorted = [...visibleTimers].map(t => {
+            const current = getCurrentTime(t);
+            const progress = getProgressTime(t);
+            if (config.targetSec === 0 && progress > maxTime) maxTime = progress;
+            return { id: t.id, time: current, progress: progress, name: t.name };
+        }).sort((a, b) => b.progress - a.progress);
+
+        if (maxTime === 0) maxTime = 1;
+
+        const listDeco = document.getElementById('timerList');
+        if (config.enableAutoSort && listDeco && !isAnimating) {
+            const currentDomIds = Array.from(listDeco.children).map(c => parseInt(c.id.replace('item-', '')));
+            const targetIds = sorted.map(s => s.id);
+            const isOrderChanged = targetIds.some((id, idx) => currentDomIds[idx] !== id);
+            
+            if (isOrderChanged) {
+                isAnimating = true;
+                const firstYMap = new Map();
+                targetIds.forEach(id => {
+                    const el = document.getElementById(`item-${id}`);
+                    if (el) firstYMap.set(id, el.getBoundingClientRect().top);
+                });
+
+                targetIds.forEach(id => {
+                    const el = document.getElementById(`item-${id}`);
+                    if (el) listDeco.appendChild(el);
+                });
+
+                targetIds.forEach(id => {
+                    const el = document.getElementById(`item-${id}`);
+                    if (!el || !firstYMap.has(id)) return;
+                    const firstY = firstYMap.get(id);
+                    const lastY = el.getBoundingClientRect().top;
+                    const deltaY = firstY - lastY;
+
+                    if (!isNaN(deltaY) && deltaY !== 0) {
+                        el.style.zIndex = deltaY > 0 ? '15' : '1';
+                        el.style.transition = 'none';
+                        el.style.transform = `translateY(${deltaY}px)`;
+
+                        requestAnimationFrame(() => {
+                            requestAnimationFrame(() => {
+                                el.style.transition = 'transform 0.5s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.5s ease';
+                                if (deltaY > 0) el.style.boxShadow = '0 10px 25px rgba(0,0,0,0.18)';
+                                el.style.transform = 'translateY(0)';
+
+                                setTimeout(() => {
+                                    if (el) { el.style.zIndex = ''; el.style.boxShadow = ''; el.style.transition = ''; }
+                                    isAnimating = false;
+                                }, 500);
+                            });
+                        });
+                    }
+                });
+            }
+        }
+
+        visibleTimers.forEach(t => {
+            const current = getCurrentTime(t);
+            const progress = getProgressTime(t);
+            const timeEl = document.getElementById(`time-${t.id}`); 
+            if (timeEl) timeEl.innerText = formatTime(current);
+            
+            const rankIndex = sorted.findIndex(s => s.id === t.id);
+            const itemEl = document.getElementById(`item-${t.id}`);
+            if (itemEl) itemEl.style.display = (rankIndex < config.maxBars) ? 'block' : 'none';
+            
+            const rankColor = rankIndex < colors.length ? colors[rankIndex] : '#6c757d';
+            const rankEl = document.getElementById(`rank-${t.id}`);
+            if (rankEl) {
+                rankEl.innerText = progress === 0 ? `-位` : `${rankIndex + 1}位`;
+                rankEl.style.background = progress === 0 ? '#aaa' : rankColor;
+            }
+
+            const barEl = document.getElementById(`bar-${t.id}`);
+            if (barEl) {
+                const pct = Math.min((progress / maxTime) * 100, 100);
+                barEl.style.width = `${pct}%`;
+                if (config.targetSec > 0 && progress >= config.targetSec * 1000) {
+                    barEl.classList.add('over-target');
+                } else {
+                    barEl.classList.remove('over-target');
+                    barEl.style.backgroundColor = rankColor;
+                }
+            }
+
+            const ghostEl = document.getElementById(`ghost-${t.id}`);
+            if (ghostEl) {
+                if (rankIndex > 0 && sorted[0].progress > 0) {
+                    const diff = Math.max(0, sorted[0].progress - progress);
+                    ghostEl.innerText = `+${formatTime(diff)}`;
+                } else if (rankIndex === 0 && sorted.length > 1 && sorted[0].progress > 0) {
+                    const lead = Math.max(0, sorted[0].progress - sorted[1].progress);
+                    ghostEl.innerText = `Lead: ${formatTime(lead)}`;
+                } else {
+                    ghostEl.innerText = '';
+                }
+            }
+        });
+
+        const now = Date.now();
+        if (config.enableSpeech && sorted.length > 0 && sorted[0].progress > 0) {
+            if (lastRanks.topId && lastRanks.topId !== sorted[0].id && (now - lastSpeechTime > 2000)) {
+                window.speechSynthesis.cancel();
+                let u = new SpeechSynthesisUtterance(`${sorted[0].name}がトップに入れ替わりました`);
+                u.lang = 'ja-JP'; u.rate = 1.2;
+                window.speechSynthesis.speak(u);
+                lastSpeechTime = now;
+            }
+            lastRanks.topId = sorted[0].id;
+        }
+    }
+
+    /* ==========================================================================
+       CSV / JSON / 音声
+       ========================================================================== */
+    function triggerDownload(content, filename, mimeType = 'text/csv;charset=utf-8;') {
+        const blob = new Blob([content], { type: mimeType });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url; a.download = filename;
+        document.body.appendChild(a); a.click();
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 1500);
+    }
+
+    function quickExportCSV() { generateAndDownloadCSV(',', 'formatted', true, true); }
+
+    function exportConfiguredCSV() {
+        const isCustom = document.getElementById('csvCustomEnable').checked;
+        if (!isCustom) { quickExportCSV(); return; }
+        generateAndDownloadCSV(
+            document.getElementById('csvDelimiter').value,
+            document.getElementById('csvTimeFormat').value,
+            document.getElementById('csvIncludeLaps').checked,
+            document.getElementById('csvIncludeMemo').checked
+        );
+    }
+
+    function generateAndDownloadCSV(delimiter, timeFormatType, includeLaps, includeMemo) {
+        const formatVal = (ms) => {
+            if (timeFormatType === 'seconds') return (ms / 1000).toFixed(2);
+            if (timeFormatType === 'millis') return ms;
+            return formatTime(ms);
+        };
+        const escapeCell = (val) => {
+            let str = String(val == null ? '' : val);
+            if (str.includes(delimiter) || str.includes('"') || str.includes('\n')) {
+                str = '"' + str.replace(/"/g, '""') + '"';
+            }
+            return str;
+        };
+
+        let headers = ['タイマー名', 'グループ', '方式', '現在のタイム'];
+        if (includeMemo) headers.push('メモ');
+        if (includeLaps) { headers.push('ラップ番号', '区間タイム', '累積タイム'); if (includeMemo) headers.push('ラップメモ'); }
+        let rows = [headers.map(escapeCell).join(delimiter)];
+
+        timers.forEach(t => {
+            const currentFormatted = formatVal(getCurrentTime(t));
+            const modeName = t.mode === 'countdown' ? '減算' : '加算';
+            if (!includeLaps || !t.laps || t.laps.length === 0) {
+                let r = [t.name, t.group, modeName, currentFormatted];
+                if (includeMemo) r.push(t.memo || '');
+                if (includeLaps) { r.push('', '', ''); if (includeMemo) r.push(''); }
+                rows.push(r.map(escapeCell).join(delimiter));
+            } else {
+                t.laps.forEach(l => {
+                    let r = [t.name, t.group, modeName, currentFormatted];
+                    if (includeMemo) r.push(t.memo || '');
+                    r.push(`Lap ${l.lapNum}`, formatVal(l.duration), formatVal(l.total));
+                    if (includeMemo) r.push(l.memo || '');
+                    rows.push(r.map(escapeCell).join(delimiter));
+                });
+            }
+        });
+
+        const csvString = '\uFEFF' + rows.join('\r\n');
+        const ext = delimiter === '\t' ? 'tsv' : 'csv';
+        const now = new Date();
+        const timestamp = `${now.getFullYear()}${String(now.getMonth()+1).padStart(2,'0')}${String(now.getDate()).padStart(2,'0')}_${String(now.getHours()).padStart(2,'0')}${String(now.getMinutes()).padStart(2,'0')}`;
+        triggerDownload(csvString, `stopwatch_export_${timestamp}.${ext}`);
+    }
+
+    function exportJSON() { 
+        const json = JSON.stringify({ timers, groups, config }, null, 2);
+        document.getElementById('jsonText').value = json; 
+        return json;
+    }
+
+    function copyJSONToClipboard() {
+        const json = exportJSON();
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(json).then(() => showToast("📋 JSONをコピーしました")).catch(() => fallbackCopy(json));
+        } else { fallbackCopy(json); }
+    }
+
+    function fallbackCopy(text) {
+        const ta = document.getElementById('jsonText');
+        ta.select(); document.execCommand('copy');
+        showToast("📋 JSONをコピーしました");
+    }
+
+    function importJSON(isOverwrite = false) {
+        const val = document.getElementById('jsonText').value.trim();
+        if (!val) { showToast("⚠️ JSONを入力してください"); return; }
+        try {
+            const parsed = JSON.parse(val);
+            if (isOverwrite) {
+                if (!confirm("現在のデータを全消去して上書き復元しますか？")) return;
+                if (parsed.timers) timers = parsed.timers;
+                if (parsed.groups) groups = parsed.groups;
+                if (parsed.config) Object.assign(config, parsed.config);
+                save(); saveGroups(); location.reload();
+            } else {
+                if (parsed.groups) {
+                    parsed.groups.forEach(g => { if (!groups.includes(g) && groups.length < 1099) groups.push(g); });
+                    saveGroups();
+                }
+                if (parsed.timers) {
+                    parsed.timers.forEach(t => {
+                        timers.push({ ...t, id: Date.now() + Math.floor(Math.random()*100000), running: false, updatedAt: 0 });
+                    });
+                    save(); render();
+                }
+                syncState();
+                showToast("➕ データを一括追加しました");
+            }
+        } catch (e) { showToast("⚠️ JSON解析に失敗しました"); }
+    }
+
+    function toggleDarkMode() { 
+        document.body.classList.toggle('dark-mode'); 
+        localStorage.setItem('multi_stopwatch_theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+    }
+
+    function toggleTheaterMode() {
+        document.body.classList.toggle('theater-mode');
+        if (document.body.classList.contains('theater-mode')) switchTab('tab-timers', false);
+        render();
+    }
+
+    function playAudio(type) {
+        if (!config.enableAudio) return;
+        try {
+            unlockAudio();
+            const osc = audioCtx.createOscillator(); 
+            const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            if (type === 'click') { 
+                osc.frequency.setValueAtTime(600, audioCtx.currentTime); 
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05); 
+                osc.start(); osc.stop(audioCtx.currentTime + 0.05); 
+            } else if (type === 'lap') { 
+                osc.frequency.setValueAtTime(880, audioCtx.currentTime); 
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime); 
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08); 
+                osc.start(); osc.stop(audioCtx.currentTime + 0.08); 
+            } else if (type === 'alarm') { 
+                osc.type = 'sawtooth'; osc.frequency.setValueAtTime(440, audioCtx.currentTime); 
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime); 
+                gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.3); 
+                osc.start(); osc.stop(audioCtx.currentTime + 0.3); 
+            }
+        } catch(e) {}
+    }
+</script>
+</body>
+</html>
