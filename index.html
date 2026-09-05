@@ -3748,66 +3748,6 @@ function getAnmomoRank(score) {
   return { rank: '級外', msg: '次回に期待！' };
 }
 
-// 4. HTML要素の自己修復＆自動生成（貼り忘れによる不具合を100%防止）
-function ensureAnmomoUIExists() {
-  // ダッシュボードモーダルがなければ自動注入
-  if (!document.getElementById('anmomo-modal')) {
-    const modalDiv = document.createElement('div');
-    modalDiv.className = 'modal-overlay';
-    modalDiv.id = 'anmomo-modal';
-    modalDiv.onclick = (e) => { if (e.target === modalDiv) closeAnmomoDashboard(); };
-    modalDiv.innerHTML = `
-      <div class="modal-content" style="max-width: 440px; text-align: center; border: 2px solid #f472b6;">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 0.8rem;">
-          <h3 style="margin: 0; color: #db2777;">🍑🇦🇮 ミニゲーム「アン桃」</h3>
-          <button type="button" class="btn" onclick="closeAnmomoDashboard()" style="height: 24px; padding: 0 6px;">✕</button>
-        </div>
-        <div style="display: flex; justify-content: center; gap: 1rem; align-items: center; margin-bottom: 0.8rem;">
-          <div style="text-align: center;">
-            <div style="font-size: 2rem;">🍑</div>
-            <div style="font-size: 0.75rem; font-weight: bold;">桃野 天然水</div>
-            <div style="font-size: 0.65rem; color: #64748b;">(生後2ヶ月)</div>
-          </div>
-          <div style="font-size: 1.2rem; font-weight: bold; color: #f43f5e;">VS</div>
-          <div style="text-align: center;">
-            <div style="font-size: 2rem;">🇦🇮</div>
-            <div style="font-size: 0.75rem; font-weight: bold;">ギラちゃん</div>
-            <div style="font-size: 0.65rem; color: #64748b;">(アンギラ島)</div>
-          </div>
-        </div>
-        <div style="background: var(--bg); padding: 0.6rem; border-radius: 6px; margin-bottom: 0.8rem; text-align: left; font-size: 0.8rem;">
-          <label style="font-weight: bold; display: block; margin-bottom: 0.2rem;">👤 プレイヤー名:</label>
-          <div style="display: flex; gap: 0.4rem;">
-            <input type="text" id="anmomo-player-name" placeholder="名前を入力..." style="flex: 1; padding: 0.3rem 0.5rem; font-size: 0.8rem; border: 1px solid var(--border); border-radius: 4px;">
-            <button type="button" class="btn" onclick="saveAnmomoName()" style="height: 30px; font-size: 0.75rem;">保存</button>
-          </div>
-        </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.8rem; font-size: 0.8rem;">
-          <div style="background: var(--bg); padding: 0.6rem; border-radius: 6px;">
-            <div style="color: #64748b; font-size: 0.7rem;">🏆 ハイスコア</div>
-            <div style="font-size: 1.2rem; font-weight: bold; color: #db2777;" id="anmomo-best-score">0 個</div>
-            <div style="font-size: 0.7rem; color: #d97706; font-weight: bold;" id="anmomo-best-rank">級外</div>
-          </div>
-          <div style="background: var(--bg); padding: 0.6rem; border-radius: 6px;">
-            <div style="color: #64748b; font-size: 0.7rem;">🎮 プレイ回数</div>
-            <div style="font-size: 1.2rem; font-weight: bold; color: var(--text);" id="anmomo-play-count">0 回</div>
-          </div>
-        </div>
-        <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 1rem; line-height: 1.5;">
-          上から降ってくる桃とアンギラ旗（計90個）を1分間で消そう！<br>
-          消費スタミナ: <strong style="color: var(--accent);">80,000 ST</strong>（毎分全回復）
-        </p>
-        <div style="display: flex; gap: 0.5rem; justify-content: center;">
-          <button type="button" class="btn" onclick="closeAnmomoDashboard()">閉じる</button>
-          <button type="button" class="btn btn-primary" onclick="startAnmomoGame()" style="background: linear-gradient(135deg, #ec4899, #f43f5e); border: none; padding: 0.5rem 1.5rem; font-size: 0.9rem;">
-            🎮 ゲーム開始！
-          </button>
-        </div>
-      </div>
-    `;
-    document.body.appendChild(modalDiv);
-  }
-
   // ゲームプレイ全画面オーバーレイがなければ自動注入
   if (!document.getElementById('anmomo-game-screen')) {
     const screenDiv = document.createElement('div');
