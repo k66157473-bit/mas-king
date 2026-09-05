@@ -2577,6 +2577,11 @@ if (data.gitHistory) {
       undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
       if (undoStack.length > MAX_UNDO) undoStack.shift();
 
+ redoStack = [];
+      if (imageList[activeImageIndex]) {
+        imageList[activeImageIndex].redo = redoStack;
+      }
+
       renderGitTree();
       debouncedSaveStateToLocal();
     }
@@ -2659,6 +2664,88 @@ if (data.gitHistory) {
     function pushUndo(actionMsg = '編集作業') {
       pushCommit(actionMsg);
     }
+// ==========================================
+    // ↩ Undo (元に戻す) / ↪ Redo (やり直す) / 🔄 リセット
+    // ==========================================
+    function undo() {
+      if (!canvas.width || undoStack.length <= 1) return;
+
+      // 現在の状態を取り出して Redo スタックへ退避
+      const currentState = undoStack.pop();
+      redoStack.push(currentState);
+
+      // 1つ前の状態を取得して Canvas に復元
+      const prevState = undoStack[undoStack.length - 1];
+      if (prevState) {
+        if (canvas.width !== prevState.width || canvas.height !== prevState.height) {
+          canvas.width = prevState.width;
+          canvas.height = prevState.height;
+        }
+        ctx.putImageData(prevState, 0, 0);
+        updateZoom(currentZoom);
+
+        // GitツリーのHEADも1つ前に戻す
+        if (gitCommits.length > 1) {
+          const currentIdx = gitCommits.findIndex(c => c.id === currentCommitId);
+          if (currentIdx > 0) {
+            currentCommitId = gitCommits[currentIdx - 1].id;
+            renderGitTree();
+          }
+        }
+        debouncedSaveStateToLocal();
+      }
+    }
+
+    function redo() {
+      if (!canvas.width || redoStack.length === 0) return;
+
+      // Redo スタックから次の状態を取り出して Canvas に復元
+      const nextState = redoStack.pop();
+      undoStack.push(nextState);
+
+      if (canvas.width !== nextState.width || canvas.height !== nextState.height) {
+        canvas.width = nextState.width;
+        canvas.height = nextState.height;
+      }
+      ctx.putImageData(nextState, 0, 0);
+      updateZoom(currentZoom);
+
+      // GitツリーのHEADも進める
+      if (gitCommits.length > 0) {
+        const currentIdx = gitCommits.findIndex(c => c.id === currentCommitId);
+        if (currentIdx >= 0 && currentIdx < gitCommits.length - 1) {
+          currentCommitId = gitCommits[currentIdx + 1].id;
+          renderGitTree();
+        }
+      }
+      debouncedSaveStateToLocal();
+    }
+
+    function resetImage() {
+      if (!canvas.width || undoStack.length <= 1) return;
+      if (!confirm('加工をすべて破棄して、読み込み時の初期状態に戻しますか？')) return;
+
+      // 一番最初の状態（オリジナル）を取得
+      const origState = undoStack[0];
+      undoStack = [origState];
+      redoStack = [];
+
+      canvas.width = origState.width;
+      canvas.height = origState.height;
+      ctx.putImageData(origState, 0, 0);
+      updateZoom(getFitZoomScale());
+
+      if (gitCommits.length > 0) {
+        currentCommitId = gitCommits[0].id;
+        renderGitTree();
+      }
+      debouncedSaveStateToLocal();
+    }
+
+    // ボタンのクリックイベントを登録
+    document.getElementById('undo-btn')?.addEventListener('click', undo);
+    document.getElementById('redo-btn')?.addEventListener('click', redo);
+    document.getElementById('clear-btn')?.addEventListener('click', resetImage);
     // キーボードショートカット
     window.addEventListener('keydown', (e) => {
       if (e.key === '?' || (e.shiftKey && e.key === '/')) {
