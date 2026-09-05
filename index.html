@@ -3643,7 +3643,6 @@ function getAnmomoRank(score) {
   if (score >= 10) return { rank: '6級', msg: 'おめでとう' };
   return { rank: '級外', msg: '次回に期待！' };
 }
-
 // 4. ゲームループ＆落下物理エンジン
 let anmomoItems = [];
 let anmomoScore = 0;
@@ -3653,31 +3652,68 @@ let anmomoSpawnInterval = null;
 let anmomoAnimId = null;
 let anmomoIsRunning = false;
 
-const anmomoGameScreen = document.getElementById('anmomo-game-screen');
-const anmomoCanvas = document.getElementById('anmomo-canvas');
-const anmomoCtx = anmomoCanvas.getContext('2d');
+let anmomoGameScreen = null;
+let anmomoCanvas = null;
+let anmomoCtx = null;
+let anmomoEventsBound = false;
+
+// HTML要素の安全取得＆イベント初期化
+function initAnmomoElements() {
+  if (!anmomoGameScreen) anmomoGameScreen = document.getElementById('anmomo-game-screen');
+  if (!anmomoCanvas) {
+    anmomoCanvas = document.getElementById('anmomo-canvas');
+    if (anmomoCanvas) {
+      anmomoCtx = anmomoCanvas.getContext('2d');
+      if (!anmomoEventsBound) {
+        anmomoCanvas.addEventListener('mousedown', (e) => onAnmomoTap(e.clientX, e.clientY));
+        anmomoCanvas.addEventListener('touchstart', (e) => {
+          e.preventDefault();
+          if (e.touches && e.touches.length > 0) {
+            onAnmomoTap(e.touches[0].clientX, e.touches[0].clientY);
+          }
+        }, { passive: false });
+        anmomoEventsBound = true;
+      }
+    }
+  }
+}
 
 function startAnmomoGame() {
   // スタミナ消費判定（80,000 ST）
-  if (currentStamina < 80000) {
+  if (typeof currentStamina !== 'undefined' && currentStamina < 80000) {
     alert(`⚡ スタミナが足りません！\n必要: 80,000 ST / 現在: ${Math.round(currentStamina).toLocaleString()} ST\n(約9秒で全回復します)`);
     return;
   }
-  consumeStamina(80000);
+  if (typeof consumeStamina === 'function') {
+    consumeStamina(80000);
+  }
+
+  // 要素を確実に初期化
+  initAnmomoElements();
+  if (!anmomoGameScreen || !anmomoCanvas) {
+    alert("⚠️ ゲーム画面の読み込みに失敗しました。HTML末尾にアン桃のタグがあるか確認してください。");
+    return;
+  }
 
   closeAnmomoDashboard();
   anmomoGameScreen.style.display = 'flex';
 
   // Canvasサイズ調整
   anmomoCanvas.width = window.innerWidth;
-  anmomoCanvas.height = window.innerHeight - 100;
+  anmomoCanvas.height = Math.max(300, window.innerHeight - 110);
 
   anmomoScore = 0;
   anmomoTimeLeft = 60;
   anmomoItems = [];
   anmomoIsRunning = true;
-  document.getElementById('anmomo-current-score').textContent = '0';
-  document.getElementById('anmomo-timer-text').textContent = '60';
+
+  const scoreEl = document.getElementById('anmomo-current-score');
+  const timerEl = document.getElementById('anmomo-timer-text');
+  if (scoreEl) scoreEl.textContent = '0';
+  if (timerEl) timerEl.textContent = '60';
+
+  clearInterval(anmomoSpawnInterval);
+  clearInterval(anmomoTimerInterval);
 
   // 90個を60秒間で均等かつランダムに降らせる (約620msごとに1個投下)
   let spawnedCount = 0;
@@ -3695,7 +3731,8 @@ function startAnmomoGame() {
   // 1秒タイマー
   anmomoTimerInterval = setInterval(() => {
     anmomoTimeLeft--;
-    document.getElementById('anmomo-timer-text').textContent = anmomoTimeLeft;
+    const tEl = document.getElementById('anmomo-timer-text');
+    if (tEl) tEl.textContent = anmomoTimeLeft;
     if (anmomoTimeLeft <= 0) {
       stopAnmomoGame(false);
     }
@@ -3706,10 +3743,11 @@ function startAnmomoGame() {
 
 // 落下アイテム生成
 function spawnAnmomoItem() {
+  if (!anmomoCanvas) return;
   const type = Math.random() < 0.5 ? 'peach' : 'anguilla';
   const size = Math.floor(Math.random() * 15) + 40; // 40px〜55px
-  const x = Math.random() * (anmomoCanvas.width - size - 20) + 10;
-  const speed = (Math.random() * 2) + 1.8; // 落下速度
+  const x = Math.random() * Math.max(10, anmomoCanvas.width - size - 20) + 10;
+  const speed = (Math.random() * 2) + 1.8;
 
   anmomoItems.push({
     type: type,
@@ -3725,7 +3763,7 @@ function spawnAnmomoItem() {
 
 // ゲーム描画フレーム
 function anmomoLoop() {
-  if (!anmomoIsRunning) return;
+  if (!anmomoIsRunning || !anmomoCtx || !anmomoCanvas) return;
 
   anmomoCtx.clearRect(0, 0, anmomoCanvas.width, anmomoCanvas.height);
 
@@ -3756,7 +3794,7 @@ function anmomoLoop() {
 
 // タップ・クリック消去判定
 function onAnmomoTap(clientX, clientY) {
-  if (!anmomoIsRunning) return;
+  if (!anmomoIsRunning || !anmomoCanvas) return;
   const rect = anmomoCanvas.getBoundingClientRect();
   const x = clientX - rect.left;
   const y = clientY - rect.top;
@@ -3766,7 +3804,7 @@ function onAnmomoTap(clientX, clientY) {
     const item = anmomoItems[i];
     if (!item.alive) continue;
 
-    const hitPadding = 12;
+    const hitPadding = 15;
     if (
       x >= item.x - hitPadding &&
       x <= item.x + item.size + hitPadding &&
@@ -3775,7 +3813,8 @@ function onAnmomoTap(clientX, clientY) {
     ) {
       item.alive = false;
       anmomoScore++;
-      document.getElementById('anmomo-current-score').textContent = anmomoScore;
+      const sEl = document.getElementById('anmomo-current-score');
+      if (sEl) sEl.textContent = anmomoScore;
       createPopEffect(item.x + item.size / 2, item.y + item.size / 2);
       break;
     }
@@ -3784,20 +3823,13 @@ function onAnmomoTap(clientX, clientY) {
 
 // 消去時の星屑エフェクト
 function createPopEffect(px, py) {
+  if (!anmomoCtx) return;
   anmomoCtx.save();
   anmomoCtx.fillStyle = '#facc15';
-  anmomoCtx.font = 'bold 20px sans-serif';
+  anmomoCtx.font = 'bold 22px sans-serif';
   anmomoCtx.fillText('★', px, py);
   anmomoCtx.restore();
 }
-
-anmomoCanvas.addEventListener('mousedown', (e) => onAnmomoTap(e.clientX, e.clientY));
-anmomoCanvas.addEventListener('touchstart', (e) => {
-  e.preventDefault();
-  if (e.touches && e.touches.length > 0) {
-    onAnmomoTap(e.touches[0].clientX, e.touches[0].clientY);
-  }
-}, { passive: false });
 
 // ゲーム終了処理
 function stopAnmomoGame(isManual = false) {
@@ -3805,7 +3837,7 @@ function stopAnmomoGame(isManual = false) {
   clearInterval(anmomoTimerInterval);
   clearInterval(anmomoSpawnInterval);
   cancelAnimationFrame(anmomoAnimId);
-  anmomoGameScreen.style.display = 'none';
+  if (anmomoGameScreen) anmomoGameScreen.style.display = 'none';
 
   if (isManual) {
     alert(`ゲームを中断しました。(記録: ${anmomoScore}個)`);
@@ -3830,15 +3862,454 @@ function stopAnmomoGame(isManual = false) {
   alert(`⏰ タイムアップ！\n\nプレイヤー: ${anmomoData.playerName}\n消去数: ${anmomoScore} / 90 個\n段位: 【${result.rank}】\n評価: ${result.msg}`);
   openAnmomoDashboard();
 }
+// ============================================================
+// 🍑🇦🇮 ミニゲーム「アン桃」完全統合ゲームエンジン (.mask自動保存対応)
+// ============================================================
 
-// 5. .mask プロジェクト連動フック
-// 既存の generateFullProjectJSON にアン桃の戦績を合流させる
-const originalGenerateFullProjectJSON = window.generateFullProjectJSON;
-window.generateFullProjectJSON = function() {
-  const data = originalGenerateFullProjectJSON ? originalGenerateFullProjectJSON() : {};
-  data.anmomo = anmomoData;
-  return data;
+// 1. キャラクター画像リソース (SVG Data-URL)
+const ANMOMO_IMG_PEACH = new Image();
+ANMOMO_IMG_PEACH.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 40"><path d="M12,18 C8,10 16,4 20,4 C20,12 16,18 12,18 Z" fill="%2315803d"/><path d="M20,10 C28,10 36,16 36,26 C36,34 28,38 20,38 C12,38 4,34 4,26 C4,16 12,10 20,10 Z" fill="%23fda4af"/><path d="M20,14 C26,14 32,19 32,26 C32,32 26,35 20,35 C14,35 8,32 8,26 C8,19 14,14 20,14 Z" fill="%23f43f5e"/></svg>';
+
+const ANMOMO_IMG_ANGUILLA = new Image();
+ANMOMO_IMG_ANGUILLA.src = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 30"><rect width="48" height="30" fill="%2300247d"/><rect width="24" height="15" fill="%2300247d"/><path d="M0,0 L24,15 M24,0 L0,15" stroke="%23fff" stroke-width="3"/><path d="M0,0 L24,15 M24,0 L0,15" stroke="%23cf142b" stroke-width="1.5"/><path d="M12,0 V15 M0,7.5 H24" stroke="%23fff" stroke-width="5"/><path d="M12,0 V15 M0,7.5 H24" stroke="%23cf142b" stroke-width="3"/><rect x="33" y="8" width="9" height="14" rx="2" fill="%23fff"/><circle cx="37.5" cy="14" r="3" fill="none" stroke="%23f97316" stroke-width="1.5"/></svg>';
+
+// 2. 状態管理（Cookie / LocalStorage / .mask 多重連動）
+let anmomoData = {
+  playerName: 'もも好き名無し',
+  bestScore: 0,
+  bestRank: '級外',
+  playCount: 0,
+  history: []
 };
+
+// Cookieヘルパー
+function setAnmomoCookie(name, val) {
+  document.cookie = `${name}=${encodeURIComponent(val)};path=/;max-age=31536000;SameSite=Lax`;
+}
+function getAnmomoCookie(name) {
+  const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+  return match ? decodeURIComponent(match[2]) : null;
+}
+
+// データ保存（Cookie・ローカル・.mask自動保存へ完全同期）
+function saveAnmomoDashboard() {
+  localStorage.setItem('anmomo_dashboard_data', JSON.stringify(anmomoData));
+  setAnmomoCookie('anmomo_player_name', anmomoData.playerName);
+
+  // マス王本体の自動保存（IndexedDB / .mask）を即時トリガー
+  if (typeof debouncedSaveStateToLocal === 'function') {
+    debouncedSaveStateToLocal();
+  }
+}
+
+// 起動時のデータ読み込み
+function loadAnmomoData() {
+  const savedName = getAnmomoCookie('anmomo_player_name');
+  if (savedName) anmomoData.playerName = savedName;
+
+  const savedData = localStorage.getItem('anmomo_dashboard_data');
+  if (savedData) {
+    try { Object.assign(anmomoData, JSON.parse(savedData)); } catch (e) {}
+  }
+}
+window.addEventListener('DOMContentLoaded', loadAnmomoData);
+
+// 3. 段位認定ロジック
+function getAnmomoRank(score) {
+  if (score >= 90) return { rank: '超特急', msg: '賞を上げます' };
+  if (score >= 80) return { rank: '1級', msg: '天才だ' };
+  if (score >= 70) return { rank: '準準一級', msg: 'がんばりましたね' };
+  if (score >= 60) return { rank: '準一級', msg: 'おおー！すげえ' };
+  if (score >= 50) return { rank: '2級', msg: '天才か' };
+  if (score >= 40) return { rank: '3級', msg: 'すばらしい！' };
+  if (score >= 30) return { rank: '4級', msg: 'すばらしい！おめでとう' };
+  if (score >= 20) return { rank: '5級', msg: 'おめでとう！' };
+  if (score >= 10) return { rank: '6級', msg: 'おめでとう' };
+  return { rank: '級外', msg: '次回に期待！' };
+}
+
+// 4. HTML要素の自己修復＆自動生成（貼り忘れによる不具合を100%防止）
+function ensureAnmomoUIExists() {
+  // ダッシュボードモーダルがなければ自動注入
+  if (!document.getElementById('anmomo-modal')) {
+    const modalDiv = document.createElement('div');
+    modalDiv.className = 'modal-overlay';
+    modalDiv.id = 'anmomo-modal';
+    modalDiv.onclick = (e) => { if (e.target === modalDiv) closeAnmomoDashboard(); };
+    modalDiv.innerHTML = `
+      <div class="modal-content" style="max-width: 440px; text-align: center; border: 2px solid #f472b6;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 0.8rem;">
+          <h3 style="margin: 0; color: #db2777;">🍑🇦🇮 ミニゲーム「アン桃」</h3>
+          <button type="button" class="btn" onclick="closeAnmomoDashboard()" style="height: 24px; padding: 0 6px;">✕</button>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 1rem; align-items: center; margin-bottom: 0.8rem;">
+          <div style="text-align: center;">
+            <div style="font-size: 2rem;">🍑</div>
+            <div style="font-size: 0.75rem; font-weight: bold;">桃野 天然水</div>
+            <div style="font-size: 0.65rem; color: #64748b;">(生後2ヶ月)</div>
+          </div>
+          <div style="font-size: 1.2rem; font-weight: bold; color: #f43f5e;">VS</div>
+          <div style="text-align: center;">
+            <div style="font-size: 2rem;">🇦🇮</div>
+            <div style="font-size: 0.75rem; font-weight: bold;">ギラちゃん</div>
+            <div style="font-size: 0.65rem; color: #64748b;">(アンギラ島)</div>
+          </div>
+        </div>
+        <div style="background: var(--bg); padding: 0.6rem; border-radius: 6px; margin-bottom: 0.8rem; text-align: left; font-size: 0.8rem;">
+          <label style="font-weight: bold; display: block; margin-bottom: 0.2rem;">👤 プレイヤー名:</label>
+          <div style="display: flex; gap: 0.4rem;">
+            <input type="text" id="anmomo-player-name" placeholder="名前を入力..." style="flex: 1; padding: 0.3rem 0.5rem; font-size: 0.8rem; border: 1px solid var(--border); border-radius: 4px;">
+            <button type="button" class="btn" onclick="saveAnmomoName()" style="height: 30px; font-size: 0.75rem;">保存</button>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.8rem; font-size: 0.8rem;">
+          <div style="background: var(--bg); padding: 0.6rem; border-radius: 6px;">
+            <div style="color: #64748b; font-size: 0.7rem;">🏆 ハイスコア</div>
+            <div style="font-size: 1.2rem; font-weight: bold; color: #db2777;" id="anmomo-best-score">0 個</div>
+            <div style="font-size: 0.7rem; color: #d97706; font-weight: bold;" id="anmomo-best-rank">級外</div>
+          </div>
+          <div style="background: var(--bg); padding: 0.6rem; border-radius: 6px;">
+            <div style="color: #64748b; font-size: 0.7rem;">🎮 プレイ回数</div>
+            <div style="font-size: 1.2rem; font-weight: bold; color: var(--text);" id="anmomo-play-count">0 回</div>
+          </div>
+        </div>
+        <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 1rem; line-height: 1.5;">
+          上から降ってくる桃とアンギラ旗（計90個）を1分間で消そう！<br>
+          消費スタミナ: <strong style="color: var(--accent);">80,000 ST</strong>（毎分全回復）
+        </p>
+        <div style="display: flex; gap: 0.5rem; justify-content: center;">
+          <button type="button" class="btn" onclick="closeAnmomoDashboard()">閉じる</button>
+          <button type="button" class="btn btn-primary" onclick="startAnmomoGame()" style="background: linear-gradient(135deg, #ec4899, #f43f5e); border: none; padding: 0.5rem 1.5rem; font-size: 0.9rem;">
+            🎮 ゲーム開始！
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modalDiv);
+  }
+
+  // ゲームプレイ全画面オーバーレイがなければ自動注入
+  if (!document.getElementById('anmomo-game-screen')) {
+    const screenDiv = document.createElement('div');
+    screenDiv.id = 'anmomo-game-screen';
+    screenDiv.style.cssText = 'display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.94); z-index: 9999999; touch-action: none; user-select: none; flex-direction: column;';
+    screenDiv.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1.2rem; background: rgba(0,0,0,0.5); color: white; font-family: monospace;">
+        <div style="font-size: 1.1rem; font-weight: bold; color: #34d399;">
+          消した数: <span id="anmomo-current-score" style="font-size: 1.5rem; color: #fbbf24;">0</span> / 90
+        </div>
+        <div style="font-size: 1.1rem; font-weight: bold; color: #38bdf8;">
+          ⏱️ 残り: <span id="anmomo-timer-text" style="font-size: 1.5rem; color: #f43f5e;">60</span>s
+        </div>
+      </div>
+      <canvas id="anmomo-canvas" style="flex: 1; width: 100%; display: block; cursor: crosshair; touch-action: none;"></canvas>
+      <div style="padding: 0.6rem; text-align: center; background: rgba(0,0,0,0.6);">
+        <button type="button" class="btn" onclick="stopAnmomoGame(true)" style="background: #e11d48; color: white; border: none; padding: 0.4rem 1.5rem; font-size: 0.85rem;">
+          🛑 終了する
+        </button>
+      </div>
+    `;
+    document.body.appendChild(screenDiv);
+  }
+}
+
+// 5. ダッシュボード操作
+function openAnmomoDashboard() {
+  ensureAnmomoUIExists();
+  loadAnmomoData();
+
+  const nameEl = document.getElementById('anmomo-player-name');
+  const scoreEl = document.getElementById('anmomo-best-score');
+  const rankEl = document.getElementById('anmomo-best-rank');
+  const countEl = document.getElementById('anmomo-play-count');
+
+  if (nameEl) nameEl.value = anmomoData.playerName;
+  if (scoreEl) scoreEl.textContent = `${anmomoData.bestScore} 個`;
+  if (rankEl) rankEl.textContent = anmomoData.bestRank;
+  if (countEl) countEl.textContent = `${anmomoData.playCount} 回`;
+
+  document.getElementById('anmomo-modal').style.display = 'flex';
+}
+
+function closeAnmomoDashboard() {
+  const modal = document.getElementById('anmomo-modal');
+  if (modal) modal.style.display = 'none';
+}
+
+function saveAnmomoName() {
+  const inp = document.getElementById('anmomo-player-name');
+  const val = inp ? inp.value.trim() : '';
+  anmomoData.playerName = val || 'もも好き名無し';
+  saveAnmomoDashboard();
+  alert(`プレイヤー名を「${anmomoData.playerName}」に保存しました！`);
+}
+
+// 6. ゲーム実行＆落下物理エンジン
+let anmomoItems = [];
+let anmomoScore = 0;
+let anmomoTimeLeft = 60;
+let anmomoTimerInterval = null;
+let anmomoSpawnInterval = null;
+let anmomoAnimId = null;
+let anmomoIsRunning = false;
+
+let anmomoGameScreen = null;
+let anmomoCanvas = null;
+let anmomoCtx = null;
+let anmomoEventsBound = false;
+
+function initAnmomoEngine() {
+  ensureAnmomoUIExists();
+  anmomoGameScreen = document.getElementById('anmomo-game-screen');
+  anmomoCanvas = document.getElementById('anmomo-canvas');
+
+  if (anmomoCanvas) {
+    anmomoCtx = anmomoCanvas.getContext('2d');
+    if (!anmomoEventsBound) {
+      // マウスクリック
+      anmomoCanvas.addEventListener('mousedown', (e) => {
+        onAnmomoTap(e.clientX, e.clientY);
+      });
+      // スマホタッチ
+      anmomoCanvas.addEventListener('touchstart', (e) => {
+        e.preventDefault();
+        if (e.touches && e.touches.length > 0) {
+          onAnmomoTap(e.touches[0].clientX, e.touches[0].clientY);
+        }
+      }, { passive: false });
+      anmomoEventsBound = true;
+    }
+  }
+}
+
+function startAnmomoGame() {
+  // スタミナ消費判定（80,000 ST）
+  if (typeof currentStamina !== 'undefined' && currentStamina < 80000) {
+    alert(`⚡ スタミナが足りません！\n必要: 80,000 ST / 現在: ${Math.round(currentStamina).toLocaleString()} ST\n(約9秒で全回復します)`);
+    return;
+  }
+  if (typeof consumeStamina === 'function') {
+    consumeStamina(80000);
+  }
+
+  initAnmomoEngine();
+  closeAnmomoDashboard();
+
+  if (!anmomoGameScreen || !anmomoCanvas) {
+    alert("⚠️ ゲーム画面の初期化に失敗しました。再読み込みしてください。");
+    return;
+  }
+
+  anmomoGameScreen.style.display = 'flex';
+
+  // Canvasの解像度調整
+  anmomoCanvas.width = window.innerWidth;
+  anmomoCanvas.height = Math.max(300, window.innerHeight - 110);
+
+  anmomoScore = 0;
+  anmomoTimeLeft = 60;
+  anmomoItems = [];
+  anmomoIsRunning = true;
+
+  const scoreEl = document.getElementById('anmomo-current-score');
+  const timerEl = document.getElementById('anmomo-timer-text');
+  if (scoreEl) scoreEl.textContent = '0';
+  if (timerEl) timerEl.textContent = '60';
+
+  clearInterval(anmomoSpawnInterval);
+  clearInterval(anmomoTimerInterval);
+
+  // 60秒間で計90個を均等落下（約620msごとに1個投下）
+  let spawnedCount = 0;
+  const TOTAL_ITEMS = 90;
+
+  anmomoSpawnInterval = setInterval(() => {
+    if (spawnedCount >= TOTAL_ITEMS || !anmomoIsRunning) {
+      clearInterval(anmomoSpawnInterval);
+      return;
+    }
+    spawnAnmomoItem();
+    spawnedCount++;
+  }, 620);
+
+  // 1秒カウントダウン
+  anmomoTimerInterval = setInterval(() => {
+    anmomoTimeLeft--;
+    const tEl = document.getElementById('anmomo-timer-text');
+    if (tEl) tEl.textContent = anmomoTimeLeft;
+    if (anmomoTimeLeft <= 0) {
+      stopAnmomoGame(false);
+    }
+  }, 1000);
+
+  anmomoLoop();
+}
+
+function spawnAnmomoItem() {
+  if (!anmomoCanvas) return;
+  const type = Math.random() < 0.5 ? 'peach' : 'anguilla';
+  const size = Math.floor(Math.random() * 15) + 42; // 42px〜57px
+  const x = Math.random() * Math.max(10, anmomoCanvas.width - size - 20) + 10;
+  const speed = (Math.random() * 2.2) + 2.0;
+
+  anmomoItems.push({
+    type: type,
+    x: x,
+    y: -size,
+    size: size,
+    speed: speed,
+    rotation: Math.random() * 360,
+    rotSpeed: (Math.random() - 0.5) * 3.5,
+    alive: true
+  });
+}
+
+function anmomoLoop() {
+  if (!anmomoIsRunning || !anmomoCtx || !anmomoCanvas) return;
+
+  anmomoCtx.clearRect(0, 0, anmomoCanvas.width, anmomoCanvas.height);
+
+  for (let i = anmomoItems.length - 1; i >= 0; i--) {
+    const item = anmomoItems[i];
+    if (!item.alive) continue;
+
+    item.y += item.speed;
+    item.rotation += item.rotSpeed;
+
+    if (item.y > anmomoCanvas.height + item.size) {
+      item.alive = false;
+      continue;
+    }
+
+    anmomoCtx.save();
+    anmomoCtx.translate(item.x + item.size / 2, item.y + item.size / 2);
+    anmomoCtx.rotate((item.rotation * Math.PI) / 180);
+    const img = item.type === 'peach' ? ANMOMO_IMG_PEACH : ANMOMO_IMG_ANGUILLA;
+    anmomoCtx.drawImage(img, -item.size / 2, -item.size / 2, item.size, item.size);
+    anmomoCtx.restore();
+  }
+
+  anmomoAnimId = requestAnimationFrame(anmomoLoop);
+}
+
+function onAnmomoTap(clientX, clientY) {
+  if (!anmomoIsRunning || !anmomoCanvas) return;
+  const rect = anmomoCanvas.getBoundingClientRect();
+  const x = clientX - rect.left;
+  const y = clientY - rect.top;
+
+  // タッチしやすいよう当たり判定を広めに確保
+  const hitPadding = 18;
+
+  for (let i = anmomoItems.length - 1; i >= 0; i--) {
+    const item = anmomoItems[i];
+    if (!item.alive) continue;
+
+    if (
+      x >= item.x - hitPadding &&
+      x <= item.x + item.size + hitPadding &&
+      y >= item.y - hitPadding &&
+      y <= item.y + item.size + hitPadding
+    ) {
+      item.alive = false;
+      anmomoScore++;
+      const sEl = document.getElementById('anmomo-current-score');
+      if (sEl) sEl.textContent = anmomoScore;
+      createPopEffect(item.x + item.size / 2, item.y + item.size / 2);
+      break;
+    }
+  }
+}
+
+function createPopEffect(px, py) {
+  if (!anmomoCtx) return;
+  anmomoCtx.save();
+  anmomoCtx.fillStyle = '#facc15';
+  anmomoCtx.font = 'bold 24px sans-serif';
+  anmomoCtx.textAlign = 'center';
+  anmomoCtx.textBaseline = 'middle';
+  anmomoCtx.fillText('★', px, py);
+  anmomoCtx.restore();
+}
+
+function stopAnmomoGame(isManual = false) {
+  anmomoIsRunning = false;
+  clearInterval(anmomoTimerInterval);
+  clearInterval(anmomoSpawnInterval);
+  cancelAnimationFrame(anmomoAnimId);
+
+  if (anmomoGameScreen) anmomoGameScreen.style.display = 'none';
+
+  if (isManual) {
+    alert(`ゲームを中断しました。(消した数: ${anmomoScore} 個)`);
+    openAnmomoDashboard();
+    return;
+  }
+
+  const result = getAnmomoRank(anmomoScore);
+  anmomoData.playCount++;
+  if (anmomoScore > anmomoData.bestScore) {
+    anmomoData.bestScore = anmomoScore;
+    anmomoData.bestRank = result.rank;
+  }
+  anmomoData.history.push({
+    date: new Date().toLocaleString('ja-JP'),
+    score: anmomoScore,
+    rank: result.rank
+  });
+
+  // ★ ここで .mask / LocalStorage / Cookie に完全自動保存！
+  saveAnmomoDashboard();
+
+  alert(`⏰ タイムアップ！\n\nプレイヤー: ${anmomoData.playerName}\n消去数: ${anmomoScore} / 90 個\n段位: 【${result.rank}】\n評価: ${result.msg}`);
+  openAnmomoDashboard();
+}
+
+// ============================================================
+// 📦 7. .mask プロジェクト保存・復元フック (完全自動連携)
+// ============================================================
+
+// マス王本体の .mask 生成関数を拡張して anmomoData を必ず含める
+if (typeof generateFullProjectJSON === 'function') {
+  const original_generateFullProjectJSON = generateFullProjectJSON;
+  generateFullProjectJSON = function() {
+    const project = original_generateFullProjectJSON();
+    project.anmomo = anmomoData; // .mask にスコア・履歴・名前を完全同梱
+    return project;
+  };
+}
+
+// .mask 読み込み時フック（復元処理）
+if (typeof loadMaskProjectFile === 'function') {
+  const original_loadMaskProjectFile = loadMaskProjectFile;
+  loadMaskProjectFile = function(file) {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (data.anmomo) {
+          anmomoData = Object.assign(anmomoData, data.anmomo);
+          saveAnmomoDashboard();
+        }
+      } catch (e) {}
+    };
+    reader.readAsText(file);
+    original_loadMaskProjectFile(file);
+  };
+}
+
+// 起動時（IndexedDBからの自動復元フック）
+window.addEventListener('DOMContentLoaded', async () => {
+  if (typeof idbGet === 'function') {
+    try {
+      const data = await idbGet('maskou_project_autosave');
+      if (data && data.anmomo) {
+        anmomoData = Object.assign(anmomoData, data.anmomo);
+        saveAnmomoDashboard();
+      }
+    } catch (e) {}
+  }
+});
 // --- Web Share Target から共有された画像の自動読み込み ---
     async function checkSharedImage() {
       const urlParams = new URLSearchParams(window.location.search);
