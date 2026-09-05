@@ -101,25 +101,13 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       background: var(--bg);
       color: var(--text);
-      height: 100vh;
+      height: 100dvh; 
       display: flex;
       flex-direction: column;
       overflow: hidden;
     }
 
-    /* ヘッダー */
-    header {
-      background: var(--panel);
-      border-bottom: 1px solid var(--border);
-      padding: 0.4rem 1rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-shrink: 0;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      z-index: 30;
-    }
+    
     .logo-area { display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap; }
     .badge { background: #dcfce7; color: #166534; font-size: 0.7rem; padding: 0.15rem 0.4rem; border-radius: 999px; }
     
@@ -445,14 +433,27 @@
 ============================================================ */
 @media (max-width: 768px) {
   /* 1. ヘッダー：横スクロールをやめてスッキリ2段組み */
+  /* 1. ヘッダー */
   header {
     flex-direction: column;
     align-items: stretch;
     gap: 0.3rem;
     padding: 0.3rem 0.5rem;
-    overflow-x: visible; /* 横スクロール禁止 */
+    padding-top: calc(0.3rem + env(safe-area-inset-top)); /* ★ スマホ時の上部セーフエリア */
+    padding-left: calc(0.5rem + env(safe-area-inset-left));
+    padding-right: calc(0.5rem + env(safe-area-inset-right));
+    overflow-x: visible;
   }
 
+  /* 2. スタミナフッター */
+  .stamina-footer {
+    overflow-x: hidden;
+    padding: 0.2rem 0.6rem;
+    padding-bottom: calc(0.3rem + env(safe-area-inset-bottom)); /* ★ スマホ時の下部セーフエリア */
+    padding-left: calc(0.6rem + env(safe-area-inset-left));
+    padding-right: calc(0.6rem + env(safe-area-inset-right));
+    gap: 0.5rem;
+  }
   .logo-area {
     display: flex;
     justify-content: space-between;
@@ -479,12 +480,7 @@
     height: 28px;
   }
 
-  /* 2. スタミナフッター：横スクロールをやめて1行にコンパクト収納 */
-  .stamina-footer {
-    overflow-x: hidden;
-    padding: 0.2rem 0.6rem;
-    gap: 0.5rem;
-  }
+  
   .stamina-text {
     font-size: 0.7rem;
     white-space: nowrap;
