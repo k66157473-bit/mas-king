@@ -8,13 +8,13 @@
   <meta name="format-detection" content="telephone=no">
 
   <!-- 1. マニフェストファイルの読み込み -->
-  <link rel="manifest" href="./manifest.json">
+  <link rel="manifest" href="/manifest.json">
 
   <!-- 2. サービスワーカーの登録スクリプト -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
+        navigator.serviceWorker.register('/sw.js')
           .then((registration) => {
             console.log('マス王 PWA: サービスワーカー登録成功！スコープ:', registration.scope);
           })
@@ -419,13 +419,11 @@
     .cl-type-feat { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
     .cl-type-fix { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
     .cl-type-remove { background: #fef3c7; color: #b45309; border: 1px solid #fde68a; }
-    .cl-type-change { background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe; }
     .cl-type-other { background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; }
 
     body.dark-mode .cl-type-feat { background: #14532d; color: #86efac; border-color: #166534; }
     body.dark-mode .cl-type-fix { background: #7f1d1d; color: #fca5a5; border-color: #991b1b; }
     body.dark-mode .cl-type-remove { background: #78350f; color: #fde68a; border-color: #92400e; }
-    body.dark-mode .cl-type-change { background: #312e81; color: #c7d2fe; border-color: #4338ca; }
     body.dark-mode .cl-type-other { background: #334155; color: #cbd5e1; border-color: #475569; }
 /* ============================================================
    📱 スマホ向け 自動縮小＆横スクロール最適化レスポンシブコード
@@ -532,7 +530,7 @@
   <style>
     .sparkle-toggle-container {
       position: fixed;
-      z-index: 900;
+      z-index: 2147483647;
       background: rgba(255, 255, 255, 0.85);
       padding: 5px 10px;
       border-radius: 20px;
@@ -564,7 +562,7 @@
     .internet-sparkle {
       position: fixed;
       pointer-events: none;
-      z-index: 899;
+      z-index: 2147483646;
       line-height: 1;
       user-select: none;
       animation: sparkle-fade 0.8s linear forwards;
@@ -966,7 +964,7 @@
           <button type="button" class="btn cl-filter-btn" data-filter="feat">✨ 追加</button>
           <button type="button" class="btn cl-filter-btn" data-filter="fix">🐛 バグ修正</button>
           <button type="button" class="btn cl-filter-btn" data-filter="remove">🗑️ 削除</button>
-          <button type="button" class="btn cl-filter-btn" data-filter="change">🔄 変更</button>
+          <button type="button" class="btn cl-filter-btn" data-filter="change">変更</button>
           <button type="button" class="btn cl-filter-btn" data-filter="other">⚙️ その他</button>
         </div>
 
@@ -1534,7 +1532,7 @@
     function generateFullProjectJSON() {
       return {
         app: "Mas-King",
-        version: "4.2.0",
+        version: "2.9.2",
         timestamp: new Date().toISOString(),
         stamina: {
           current: currentStamina,
@@ -1548,7 +1546,7 @@
           feather: document.getElementById('feather-chk')?.checked || false
         },
         sparkle: getSparkleState(),
-        gitHistory: {
+  gitHistory: {
           commits: gitCommits,
           currentCommitId: currentCommitId,
           currentBranch: currentBranch,
@@ -1619,7 +1617,6 @@
     // --- 複数画像管理 & 自動復元 ---
     function addImageFile(src, name = `画像 ${imageList.length + 1}`) {
       consumeStamina(CONSUME_PER_ACTION);
-      stampCounter = 1;
       const img = new Image();
       img.onload = () => {
         const item = {
@@ -1653,7 +1650,6 @@
     function selectImage(idx, loadedImg = null) {
       if (!imageList[idx]) return;
       activeImageIndex = idx;
-      stampCounter = 1;
       renderImageTabs();
       const item = imageList[idx];
 
@@ -1681,7 +1677,6 @@
             ctx.drawImage(img, 0, 0);
             item.undo = [ctx.getImageData(0, 0, canvas.width, canvas.height)];
           }
-          item.redo = item.redo || [];
           undoStack = item.undo;
           redoStack = item.redo;
           updateZoom(getFitZoomScale());
@@ -1704,8 +1699,6 @@
       imageList.splice(idx, 1);
       if (imageList.length === 0) {
         activeImageIndex = -1;
-        undoStack = [];
-        redoStack = [];
         canvas.width = 0; canvas.height = 0;
         container.style.display = 'none';
         dropzone.style.display = 'flex';
@@ -1761,7 +1754,7 @@
             if (data.settings.maskColor && maskColorPicker) maskColorPicker.value = data.settings.maskColor;
           }
 
-          if (data.gitHistory) {
+if (data.gitHistory) {
             gitCommits = data.gitHistory.commits || [];
             currentCommitId = data.gitHistory.currentCommitId || null;
             currentBranch = data.gitHistory.currentBranch || 'main';
@@ -2014,7 +2007,7 @@
     window.addEventListener('touchend', onPointerUp, { passive: false });
     window.addEventListener('touchcancel', () => { isInteracting = false; selectionBox.style.display = 'none'; loupe.style.display = 'none'; });
 
-    // ルーペ（高速GPU配置＆キャンバス外クランプ）
+    // ルーペ（高速GPU配置）
     let loupeThrottle = 0;
     function showLoupe(coords) {
       const now = performance.now();
@@ -2034,9 +2027,7 @@
       loupeCanvas.width = 90;
       loupeCanvas.height = 90;
       loupeCtx.imageSmoothingEnabled = false;
-      const srcX = Math.max(0, Math.min(canvas.width - 40, Math.round(coords.x - 20)));
-      const srcY = Math.max(0, Math.min(canvas.height - 40, Math.round(coords.y - 20)));
-      loupeCtx.drawImage(canvas, srcX, srcY, 40, 40, 0, 0, 90, 90);
+      loupeCtx.drawImage(canvas, Math.round(coords.x - 20), Math.round(coords.y - 20), 40, 40, 0, 0, 90, 90);
       
       loupeCtx.strokeStyle = '#ef4444';
       loupeCtx.lineWidth = 1.5;
@@ -2118,7 +2109,7 @@
       }
 
       ctx.restore();
-      const toolNames = {
+　      const toolNames = {
         'black': '⬛ 黒塗り適用',
         'white': '⬜ 白塗り適用',
         'color': '🎨 カラー塗り適用',
@@ -2133,8 +2124,7 @@
         'highlighter': '🖍 蛍光ペン',
         'crop': '✂️ 切り抜き'
       };
-      pushUndo(toolNames[currentMode] || '画像加工');
-    }
+      pushUndo(toolNames[currentMode] || '画像加工');    }
 
     // 円形マスク（カラーピッカー＆スポイト連動）
     function applyCircleMask(x, y, w, h, color = '#000000') {
@@ -2146,28 +2136,15 @@
       ctx.fillRect(x, y, w, h);
       ctx.restore();
     }
-
-    // 消しゴム（元画像ピクセル復元・サイズ不一致対応）
+// 消しゴム（元画像ピクセル復元：回転・切り抜き・リサイズ完全対応版）
     function applyEraser(x, y, w, h) {
-      if (undoStack.length === 0) return;
-      const origData = undoStack[0];
-      if (!origData) return;
-      if (origData.width === canvas.width && origData.height === canvas.height) {
-        ctx.putImageData(origData, 0, 0, x, y, w, h);
-      } else if (imageList[activeImageIndex]?.originalSrc) {
-        const tempImg = new Image();
-        tempImg.onload = () => {
-          ctx.save();
-          ctx.beginPath();
-          ctx.rect(x, y, w, h);
-          ctx.clip();
-          ctx.drawImage(tempImg, 0, 0, canvas.width, canvas.height);
-          ctx.restore();
-        };
-        tempImg.src = imageList[activeImageIndex].originalSrc;
+      if (!undoStack || undoStack.length === 0) return;
+      // 現在のキャンバスサイズと一致する最も古いベース履歴を自動検索して復元
+      const baseData = undoStack.find(data => data && data.width === canvas.width && data.height === canvas.height);
+      if (baseData) {
+        ctx.putImageData(baseData, 0, 0, x, y, w, h);
       }
     }
-
     // --- 選択範囲の移動・複製ツール ---
     function startMoveOverlay(x, y, w, h) {
       if (w <= 0 || h <= 0) return;
@@ -2237,7 +2214,7 @@
       e.stopPropagation();
       if (moveState.imgData) {
         ctx.putImageData(moveState.imgData, Math.round(moveState.x), Math.round(moveState.y));
-        pushUndo('🔀 選択移動配置');
+        pushUndo();
       }
       moveOverlay.style.display = 'none';
     });
@@ -2343,7 +2320,7 @@
       ctx.fillText(stampCounter, x, y);
       ctx.restore();
       stampCounter++;
-      pushUndo('① 連番スタンプ');
+      pushUndo();
     }
 
     function applyText(x, y) {
@@ -2356,7 +2333,7 @@
         ctx.textBaseline = 'top';
         ctx.fillText(text, x, y);
         ctx.restore();
-        pushUndo('🔤 文字配置');
+        pushUndo();
       }
     }
 
@@ -2378,7 +2355,7 @@
       canvas.height = h;
       ctx.putImageData(cropped, 0, 0);
       updateZoom(currentZoom);
-      pushUndo('✂️ 切り抜き');
+      pushUndo();
     }
 
     document.getElementById('rotate-btn').addEventListener('click', () => {
@@ -2391,7 +2368,7 @@
       ctx.rotate(Math.PI / 2);
       ctx.drawImage(tCanvas, 0, 0);
       updateZoom(currentZoom);
-      pushUndo('↻ 90度回転');
+      pushUndo();
     });
 
     document.getElementById('flip-btn').addEventListener('click', () => {
@@ -2401,7 +2378,7 @@
       ctx.translate(canvas.width, 0);
       ctx.scale(-1, 1);
       ctx.drawImage(tCanvas, 0, 0);
-      pushUndo('⇆ 左右反転');
+      pushUndo();
     });
 
     document.getElementById('watermark-btn').addEventListener('click', () => {
@@ -2416,7 +2393,7 @@
       ctx.rotate(-Math.PI / 6);
       ctx.fillText(text, 0, 0);
       ctx.restore();
-      pushUndo('🏷️ 透かし文字');
+      pushUndo();
     });
 
     document.getElementById('template-btn').addEventListener('click', () => {
@@ -2436,7 +2413,7 @@
       } else if (type === 'insurance') {
         ctx.fillRect(w * 0.15, h * 0.18, w * 0.5, h * 0.15);
       }
-      pushUndo(`🪪 定型マスク(${type})`);
+      pushUndo();
     }
 
     document.getElementById('resize-modal-btn').addEventListener('click', () => {
@@ -2451,7 +2428,7 @@
       canvas.height = Math.round(canvas.height * scale);
       ctx.drawImage(tCanvas, 0, 0, canvas.width, canvas.height);
       updateZoom(currentZoom);
-      pushUndo(`📏 リサイズ(${Math.round(scale*100)}%)`);
+      pushUndo();
     }
     function applyResizeWidth(targetW) {
       applyResize(targetW / canvas.width);
@@ -2483,7 +2460,7 @@
       dummyState.size = parseInt(document.getElementById('dummy-size').value, 10);
 
       dummyOverlayText.textContent = dummyState.text;
-      dummyOverlay.style.fontSize = `${dummyState.size * currentZoom}px`;
+      dummyOverlay.style.fontSize = `${dummyState.size}px`;
       dummyOverlay.style.background = dummyState.bg;
       dummyOverlay.style.color = dummyState.color;
 
@@ -2500,7 +2477,6 @@
       const rect = canvas.getBoundingClientRect();
       dummyOverlay.style.left = `${(dummyState.x / canvas.width) * rect.width}px`;
       dummyOverlay.style.top = `${(dummyState.y / canvas.height) * rect.height}px`;
-      dummyOverlay.style.fontSize = `${dummyState.size * currentZoom}px`;
     }
 
     let isDraggingDummy = false;
@@ -2561,7 +2537,7 @@
       ctx.restore();
 
       dummyOverlay.style.display = 'none';
-      pushUndo('👤 ダミー置換確定');
+      pushUndo();
     });
 
     document.getElementById('dummy-cancel-btn').addEventListener('click', (e) => {
@@ -2601,9 +2577,8 @@
       undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
       if (undoStack.length > MAX_UNDO) undoStack.shift();
 
-      redoStack = [];
+ redoStack = [];
       if (imageList[activeImageIndex]) {
-        imageList[activeImageIndex].undo = undoStack;
         imageList[activeImageIndex].redo = redoStack;
       }
 
@@ -2625,9 +2600,6 @@
         canvas.height = target.height;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0);
-        undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-        if (undoStack.length > MAX_UNDO) undoStack.shift();
-        redoStack = [];
         renderGitTree();
         debouncedSaveStateToLocal();
       };
@@ -2774,12 +2746,8 @@
     document.getElementById('undo-btn')?.addEventListener('click', undo);
     document.getElementById('redo-btn')?.addEventListener('click', redo);
     document.getElementById('clear-btn')?.addEventListener('click', resetImage);
-
     // キーボードショートカット
     window.addEventListener('keydown', (e) => {
-      const typingOverlay = document.getElementById('welcome-typing-overlay');
-      if (typingOverlay && typingOverlay.style.display !== 'none') return;
-
       if (e.key === '?' || (e.shiftKey && e.key === '/')) {
         document.getElementById('shortcut-modal').style.display = 'flex';
       } else if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
@@ -2832,22 +2800,28 @@
       }
     });
 
-    // 更新履歴データ（カテゴリ分別 type: feat=追加, fix=バグ修正, remove=削除, change=変更, other=その他）
+    // 更新履歴データ
+  // 更新履歴データ（カテゴリ分別 type: feat=追加, fix=バグ修正, remove=削除, other=その他 change=変更）
     const changelogData = [
-      {
-        version: 'v4.2.0',
-        date: '2026-09-05 15:30',
-        type: 'fix',
-        title: 'Undo/Redo・アン桃DOM重複・消しゴム等の総合バグ完全修正',
-        items: [
-          'Undo/Redo/リセット機能のイベントリスナーおよび関数を完全修復しました',
-          'アン桃ミニゲームのHTML要素二重生成を解消し、履歴タイムライン表示を完全安定化しました',
-          '画像の回転・切り抜き・リサイズ後も消しゴム復元が正常に機能するよう修正しました',
-          'WebP/AVIF一括圧縮でフォールバック時に拡張子が正しく設定されるよう修正しました',
-          'ズーム時のダミー文字・選択移動の配置ズレおよびスマホでの誤爆描画を防止しました'
-        ]
-      },
-      {
+{
+      version: 'v4.2.0',
+      date: '2026-09-05 15:42',
+      type: 'fix',
+      title: '更新履歴のカテゴリー別ボタンに変更がないのを直しました',
+      items: [
+        '更新履歴のカテゴリー別ボタンに変更がないのを直しました'
+      ]
+    },
+{
+      version: 'v4.2.0',
+      date: '2026-09-05 15:40',
+      type: 'fix',
+      title: '回転・切り抜き・リサイズ後の消しゴム復元バグを修正',
+      items: [
+        '画像の回転・反転・切り抜き・リサイズを行った後でも、消しゴム（選択範囲の復元）が正常に機能するよう修正しました'
+      ]
+    },
+    {
         version: 'v4.1.0',
         date: '2026-09-05 14:50',
         type: 'change',
@@ -2856,17 +2830,17 @@
           '消した個数を全部刻んで表示される形式に変更しました'
         ]
       },
-      {
+    {
         version: 'v4.0.0',
         date: '2026-09-05 13:00',
         type: 'feat',
         title: 'ミニゲームアン桃を追加しました',
         items: [
-          '桃野天然水/アンギラのギラちゃんが出てくるミニゲーム アン桃を追加しました',
+          '桃野天然水/アンギラのギラちゃんが出てくるミニゲーム　アン桃を追加しました',
           'タップ/クリックで60秒の間にランダムに90個降ってくる桃野天然水とギラちゃんを消すゲームです。1回ごとに8万スタミナ消費'
         ]
       },
-      {
+    {
         version: 'v3.9.0',
         date: '2026-09-05 09:20',
         type: 'change',
@@ -2876,9 +2850,9 @@
           'スマホ画面ではヘッダーのはみ出しを防ぐため、ボタンをタップしてモーダルで確認・消去できる省スペース設計にしました'
         ]
       },
-      {
+    {
         version: 'v3.8.0',
-        date: '2026-09-05 08:35',
+        date: '2026-09-05 8:35',
         type: 'change',
         title: '超軽量 WebP / AVIF 一括コンバーターへの変更&更新履歴のカテゴリに変更を追加しました',
         items: [
@@ -2886,7 +2860,7 @@
           '更新履歴のカテゴリに変更を追加しました'
         ]
       },
-      {
+{
         version: 'v3.7.0',
         date: '2026-09-04 16:40',
         type: 'feat',
@@ -2912,7 +2886,7 @@
         type: 'feat',
         title: '更新履歴のカテゴリ分別・絞り込みフィルターを追加しました',
         items: [
-          '「追加 / バグ修正 / 削除 / 変更 / その他」のボタンで更新履歴を瞬時に絞り込み表示可能にしました'
+          '「追加 / バグ修正 / 削除 / その他」のボタンで更新履歴を瞬時に絞り込み表示可能にしました'
         ]
       },
       {
@@ -3115,7 +3089,7 @@
       'feat':   { label: '✨ 追加',   className: 'cl-type-feat' },
       'fix':    { label: '🐛 バグ修正', className: 'cl-type-fix' },
       'remove': { label: '🗑️ 削除',   className: 'cl-type-remove' },
-      'change': { label: '🔄 変更',   className: 'cl-type-change' },
+      'change': { label: '変更',   className: 'cl-type-change' },
       'other':  { label: '⚙️ その他', className: 'cl-type-other' }
     };
 
@@ -3341,7 +3315,7 @@
       const format = compFormat.value;
       const quality = parseInt(compQuality.value, 10) / 100;
       const maxW = parseInt(compResize.value, 10);
-      let ext = format === 'image/webp' ? 'webp' : (format === 'image/avif' ? 'avif' : (format === 'image/jpeg' ? 'jpg' : 'png'));
+      const ext = format === 'image/webp' ? 'webp' : (format === 'image/avif' ? 'avif' : (format === 'image/jpeg' ? 'jpg' : 'png'));
 
       consumeStamina(imageFiles.length * 3000);
 
@@ -3367,9 +3341,8 @@
         
         if (!blob || blob.type !== format) {
           blob = await new Promise(resolve => tCanvas.toBlob(resolve, 'image/webp', quality));
-          ext = 'webp';
         }
-        const compressedSize = blob.size;
+const compressedSize = blob.size;
         const savedPercent = Math.round(((originalSize - compressedSize) / originalSize) * 100);
         const baseName = file.name.replace(/\.[^/.]+$/, "");
         const convertedName = `${baseName}.${ext}`; // 変換後の拡張子（.webp / .avif 等）
@@ -3514,8 +3487,7 @@
         container.style.transition = 'none';
 
         const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
-        const clientY =
-const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
+        const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
 
         startX = clientX;
         startY = clientY;
@@ -3624,14 +3596,15 @@ const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.c
         }
       }, { passive: true });
     })();
-
-    // --- 🚨 センシティブ自動シールド（流血・閲覧注意検知＆極厚モザイク＋警告帯） ---
+// --- 🚨 センシティブ自動シールド（流血・閲覧注意検知＆極厚モザイク＋警告帯） ---
     document.getElementById('sensitive-shield-btn').addEventListener('click', () => {
       if (!canvas.width) { alert('先に画像を開いてください'); return; }
       applySensitiveShield();
     });
 
     function applySensitiveShield() {
+      consumeStamina(CONSUME_PER_ACTION * 2);
+
       const w = canvas.width;
       const h = canvas.height;
       const imgData = ctx.getImageData(0, 0, w, h);
@@ -3669,7 +3642,6 @@ const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.c
 
       // 2. 該当領域に「極厚モザイク（強度40）」を適用
       if (dangerBlocks.length > 0) {
-        consumeStamina(CONSUME_PER_ACTION * 2);
         dangerBlocks.forEach(b => {
           applyMosaic(b.x, b.y, b.w, b.h, 40); // 超分厚いモザイク
         });
@@ -3678,7 +3650,6 @@ const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.c
         if (!confirm('明確な流血・危険領域は検知されませんでした。画像全体にセンシティブ警告ガードを適用しますか？')) {
           return;
         }
-        consumeStamina(CONSUME_PER_ACTION * 2);
         applyMosaic(0, 0, w, h, 35);
       }
 
@@ -3708,10 +3679,9 @@ const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.c
 
       ctx.restore();
 
-      pushUndo('🚨 センシティブシールド適用');
+      pushUndo();
       alert(`🚨 センシティブシールド適用完了: ${dangerBlocks.length > 0 ? `${dangerBlocks.length} 箇所の危険領域を` : '全体を'}極厚モザイク＋警告帯で保護しました。`);
     }
-
 // ============================================================
 // 🍑🇦🇮 ミニゲーム「アン桃」完全統合ゲームエンジン (.mask自動保存対応)
 // ============================================================
@@ -3778,7 +3748,93 @@ function getAnmomoRank(score) {
   return { rank: '級外', msg: '次回に期待！' };
 }
 
+// 4. HTML要素の自己修復＆自動生成（貼り忘れによる不具合を100%防止）
+function ensureAnmomoUIExists() {
+  // ダッシュボードモーダルがなければ自動注入
+  if (!document.getElementById('anmomo-modal')) {
+    const modalDiv = document.createElement('div');
+    modalDiv.className = 'modal-overlay';
+    modalDiv.id = 'anmomo-modal';
+    modalDiv.onclick = (e) => { if (e.target === modalDiv) closeAnmomoDashboard(); };
+    modalDiv.innerHTML = `
+      <div class="modal-content" style="max-width: 440px; text-align: center; border: 2px solid #f472b6;">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.5rem; margin-bottom: 0.8rem;">
+          <h3 style="margin: 0; color: #db2777;">🍑🇦🇮 ミニゲーム「アン桃」</h3>
+          <button type="button" class="btn" onclick="closeAnmomoDashboard()" style="height: 24px; padding: 0 6px;">✕</button>
+        </div>
+        <div style="display: flex; justify-content: center; gap: 1rem; align-items: center; margin-bottom: 0.8rem;">
+          <div style="text-align: center;">
+            <div style="font-size: 2rem;">🍑</div>
+            <div style="font-size: 0.75rem; font-weight: bold;">桃野 天然水</div>
+            <div style="font-size: 0.65rem; color: #64748b;">(生後2ヶ月)</div>
+          </div>
+          <div style="font-size: 1.2rem; font-weight: bold; color: #f43f5e;">VS</div>
+          <div style="text-align: center;">
+            <div style="font-size: 2rem;">🇦🇮</div>
+            <div style="font-size: 0.75rem; font-weight: bold;">ギラちゃん</div>
+            <div style="font-size: 0.65rem; color: #64748b;">(アンギラ島)</div>
+          </div>
+        </div>
+        <div style="background: var(--bg); padding: 0.6rem; border-radius: 6px; margin-bottom: 0.8rem; text-align: left; font-size: 0.8rem;">
+          <label style="font-weight: bold; display: block; margin-bottom: 0.2rem;">👤 プレイヤー名:</label>
+          <div style="display: flex; gap: 0.4rem;">
+            <input type="text" id="anmomo-player-name" placeholder="名前を入力..." style="flex: 1; padding: 0.3rem 0.5rem; font-size: 0.8rem; border: 1px solid var(--border); border-radius: 4px;">
+            <button type="button" class="btn" onclick="saveAnmomoName()" style="height: 30px; font-size: 0.75rem;">保存</button>
+          </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.8rem; font-size: 0.8rem;">
+          <div style="background: var(--bg); padding: 0.6rem; border-radius: 6px;">
+            <div style="color: #64748b; font-size: 0.7rem;">🏆 ハイスコア</div>
+            <div style="font-size: 1.2rem; font-weight: bold; color: #db2777;" id="anmomo-best-score">0 個</div>
+            <div style="font-size: 0.7rem; color: #d97706; font-weight: bold;" id="anmomo-best-rank">級外</div>
+          </div>
+          <div style="background: var(--bg); padding: 0.6rem; border-radius: 6px;">
+            <div style="color: #64748b; font-size: 0.7rem;">🎮 プレイ回数</div>
+            <div style="font-size: 1.2rem; font-weight: bold; color: var(--text);" id="anmomo-play-count">0 回</div>
+          </div>
+        </div>
+        <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 1rem; line-height: 1.5;">
+          上から降ってくる桃とアンギラ旗（計90個）を1分間で消そう！<br>
+          消費スタミナ: <strong style="color: var(--accent);">80,000 ST</strong>（毎分全回復）
+        </p>
+        <div style="display: flex; gap: 0.5rem; justify-content: center;">
+          <button type="button" class="btn" onclick="closeAnmomoDashboard()">閉じる</button>
+          <button type="button" class="btn btn-primary" onclick="startAnmomoGame()" style="background: linear-gradient(135deg, #ec4899, #f43f5e); border: none; padding: 0.5rem 1.5rem; font-size: 0.9rem;">
+            🎮 ゲーム開始！
+          </button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modalDiv);
+  }
+
+  // ゲームプレイ全画面オーバーレイがなければ自動注入
+  if (!document.getElementById('anmomo-game-screen')) {
+    const screenDiv = document.createElement('div');
+    screenDiv.id = 'anmomo-game-screen';
+    screenDiv.style.cssText = 'display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.94); z-index: 9999999; touch-action: none; user-select: none; flex-direction: column;';
+    screenDiv.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1.2rem; background: rgba(0,0,0,0.5); color: white; font-family: monospace;">
+        <div style="font-size: 1.1rem; font-weight: bold; color: #34d399;">
+          消した数: <span id="anmomo-current-score" style="font-size: 1.5rem; color: #fbbf24;">0</span> / 90
+        </div>
+        <div style="font-size: 1.1rem; font-weight: bold; color: #38bdf8;">
+          ⏱️ 残り: <span id="anmomo-timer-text" style="font-size: 1.5rem; color: #f43f5e;">60</span>s
+        </div>
+      </div>
+      <canvas id="anmomo-canvas" style="flex: 1; width: 100%; display: block; cursor: crosshair; touch-action: none;"></canvas>
+      <div style="padding: 0.6rem; text-align: center; background: rgba(0,0,0,0.6);">
+        <button type="button" class="btn" onclick="stopAnmomoGame(true)" style="background: #e11d48; color: white; border: none; padding: 0.4rem 1.5rem; font-size: 0.85rem;">
+          🛑 終了する
+        </button>
+      </div>
+    `;
+    document.body.appendChild(screenDiv);
+  }
+}
+
 function openAnmomoDashboard() {
+  ensureAnmomoUIExists();
   loadAnmomoData();
 
   const nameEl = document.getElementById('anmomo-player-name');
@@ -3791,7 +3847,7 @@ function openAnmomoDashboard() {
   if (rankEl) rankEl.textContent = anmomoData.bestRank;
   if (countEl) countEl.textContent = `${anmomoData.playCount} 回`;
 
-  // 全スコア履歴タイムラインの描画
+  // ★ 全スコア履歴タイムラインの描画
   renderAnmomoHistory();
 
   document.getElementById('anmomo-modal').style.display = 'flex';
@@ -3812,7 +3868,7 @@ function renderAnmomoHistory() {
   }
 
   // 新しい記録順（最新が一番上）に全件展開
-  listEl.innerHTML = [...history].reverse().map((item) => {
+  listEl.innerHTML = [...history].reverse().map((item, idx) => {
     const isBest = (item.score === anmomoData.bestScore && item.score > 0);
     return `
       <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.3rem 0.5rem; background: var(--panel); border: 1px solid var(--border); border-radius: 4px; font-size: 0.75rem;">
@@ -3861,6 +3917,7 @@ let anmomoCtx = null;
 let anmomoEventsBound = false;
 
 function initAnmomoEngine() {
+  ensureAnmomoUIExists();
   anmomoGameScreen = document.getElementById('anmomo-game-screen');
   anmomoCanvas = document.getElementById('anmomo-canvas');
 
@@ -4059,7 +4116,7 @@ function stopAnmomoGame(isManual = false) {
     rank: result.rank
   });
 
-  // ここで .mask / LocalStorage / Cookie に完全自動保存！
+  // ★ ここで .mask / LocalStorage / Cookie に完全自動保存！
   saveAnmomoDashboard();
 
   alert(`⏰ タイムアップ！\n\nプレイヤー: ${anmomoData.playerName}\n消去数: ${anmomoScore} / 90 個\n段位: 【${result.rank}】\n評価: ${result.msg}`);
@@ -4111,7 +4168,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     } catch (e) {}
   }
 });
-
 // --- Web Share Target から共有された画像の自動読み込み ---
     async function checkSharedImage() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -4146,7 +4202,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     // ページ読み込み時に実行
     window.addEventListener('DOMContentLoaded', checkSharedImage);
 </script>
-
 <!-- ① HTML（オーバーレイ画面） -->
 <div id="welcome-typing-overlay" style="display: none; position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); z-index: 999999; justify-content: center; align-items: center; padding: 1rem; backdrop-filter: blur(4px);">
   <div style="background: #202020; border: 2px solid #00ff00; border-radius: 8px; padding: 1.2rem; max-width: 460px; width: 100%; box-shadow: 0 0 20px rgba(0, 255, 0, 0.4); font-family: monospace;">
@@ -4243,7 +4298,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
   });
 </script>
-
 <!-- 🍑 アン桃：ダッシュボードモーダル -->
 <div class="modal-overlay" id="anmomo-modal" onclick="if(event.target===this) closeAnmomoDashboard()">
   <div class="modal-content" style="max-width: 440px; text-align: center; border: 2px solid #f472b6;">
@@ -4288,7 +4342,7 @@ window.addEventListener('DOMContentLoaded', async () => {
       </div>
     </div>
 
-    <!-- 📜 全スコア履歴タイムライン -->
+<!-- 📜 全スコア履歴タイムライン -->
     <div style="text-align: left; margin-bottom: 0.8rem;">
       <div style="font-size: 0.75rem; font-weight: bold; color: #64748b; margin-bottom: 0.3rem; display: flex; justify-content: space-between;">
         <span>📜 全プレイ履歴 (最新順):</span>
@@ -4336,6 +4390,5 @@ window.addEventListener('DOMContentLoaded', async () => {
     </button>
   </div>
 </div>
-
 </body>
 </html>
