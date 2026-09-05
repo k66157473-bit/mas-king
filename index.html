@@ -24,7 +24,6 @@
       });
     }
   </script>
-  
 
   <style>
 /* Git風コミットツリー＆ブランチUI */
@@ -441,163 +440,85 @@
 /* ============================================================
    📱 スマホ向け 自動縮小＆横スクロール最適化レスポンシブコード
 ============================================================ */
-
-/* 1. 横スクロール可能コンテナの統一タッチ挙動 */
-.toolbar-row,
-.nav-tabs,
-.image-tabs-bar,
-.pagination-container,
-.chip-container,
-.comp-btn-group,
-.modal-actions {
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
-  overscroll-behavior-x: contain;
-}
-
-/* 2. ボタンの自動文字サイズ縮小・はみ出し防止 */
-.btn {
-  /* 画面幅に合わせて最小10px〜最大13pxで滑らかに自動縮小 */
-  font-size: clamp(0.68rem, 2.5vw, 0.8rem);
-  padding: clamp(0.25rem, 1.2vw, 0.4rem) clamp(0.35rem, 1.8vw, 0.65rem);
-  white-space: nowrap;
-  flex-shrink: 0;
-  max-width: 100%;
-}
-
-/* 3. モバイル画面（768px以下）での徹底調整 */
+/* ============================================================
+   📱 スマホ向け 安全レスポンシブ（横スクロールなしで綺麗に収める）
+============================================================ */
 @media (max-width: 768px) {
-  /* ヘッダー全体の横スクロール化＆はみ出し抑止 */
+  /* 1. ヘッダー：横スクロールをやめてスッキリ2段組み */
   header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.3rem;
     padding: 0.3rem 0.5rem;
-    gap: 0.4rem;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
+    overflow-x: visible; /* 横スクロール禁止 */
   }
-  header::-webkit-scrollbar { display: none; }
 
   .logo-area {
-    flex-shrink: 0;
-    gap: 0.4rem;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
   }
 
-  .logo {
-    font-size: clamp(0.85rem, 3.5vw, 1rem);
-  }
-
-  /* カウンター・時計の自動縮小 */
+  /* スマホでは邪魔になる長い時計・カウンターを非表示にして幅を確保 */
   .counter-badge {
-    font-size: clamp(0.62rem, 2.2vw, 0.72rem);
-    padding: 0.1rem 0.35rem;
-    white-space: nowrap;
-    flex-shrink: 0;
+    display: none !important;
   }
 
-  /* ヘッダータブの横スクロール対応 */
+  /* ナビタブをきれいに折り返し並べ */
   .nav-tabs {
-    flex-shrink: 0;
-    overflow-x: auto;
-    white-space: nowrap;
+    display: flex;
+    flex-wrap: wrap;
     gap: 0.2rem;
+    width: 100%;
+    justify-content: flex-start;
   }
   .tab-btn {
-    font-size: clamp(0.7rem, 2.6vw, 0.8rem);
-    padding: 0.3rem 0.5rem;
-    min-height: 32px;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  /* ツールバーの余白とボタン高さの最適化 */
-  .toolbar-row {
-    padding: 0.3rem 0.5rem;
-    gap: 0.3rem;
-  }
-  .tool-group {
-    padding-right: 0.4rem;
-    margin-right: 0.15rem;
-    gap: 0.25rem;
-  }
-  .btn {
-    height: 32px;
-  }
-
-  /* モーダル内部のボタングループのはみ出し防止＆横スクロール */
-  .modal-content {
-    padding: 1rem;
-    max-width: 95vw;
-  }
-
-  /* ダミー置換・定型マスク・リサイズのボタン群 */
-  #dummy-modal .btn,
-  #template-modal .btn,
-  #resize-modal .btn {
-    font-size: clamp(0.7rem, 2.8vw, 0.82rem);
-    white-space: normal; /* モーダルの長い選択肢は改行を許容 */
-    text-align: left;
-    height: auto;
-    min-height: 34px;
-    padding: 0.4rem 0.6rem;
-    word-break: break-all;
-  }
-
-  /* プリセットボタン一覧を横スクロール化 */
-  #dummy-modal > div[style*="flex-wrap: wrap;"] {
-    flex-wrap: nowrap !important;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    padding-bottom: 0.3rem;
-  }
-  #dummy-modal > div[style*="flex-wrap: wrap;"] .btn {
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-
-  /* 更新履歴の絞り込みボタン列 */
-  .cl-filter-btn {
-    font-size: clamp(0.68rem, 2.5vw, 0.75rem);
-    padding: 0.2rem 0.45rem;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.45rem;
+    min-height: 28px;
     height: 28px;
   }
 
-  /* ページネーションが小画面端末でもはみ出さないように自動縮小 */
-  .pagination-container {
-    gap: 0.25rem;
-  }
-  .pagination-container .btn {
-    height: 30px;
-    padding: 0 0.4rem;
-  }
-  .pagination-container span {
-    font-size: clamp(0.68rem, 2.4vw, 0.78rem) !important;
-  }
-
-  /* スタミナバーのテキスト自動縮小 */
+  /* 2. スタミナフッター：横スクロールをやめて1行にコンパクト収納 */
   .stamina-footer {
-    padding: 0.25rem 0.6rem;
+    overflow-x: hidden;
+    padding: 0.2rem 0.6rem;
     gap: 0.5rem;
   }
   .stamina-text {
-    font-size: clamp(0.62rem, 2vw, 0.72rem);
-    gap: 0.4rem;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  /* スマホでは長すぎる回復速度などの補足を非表示 */
+  .stamina-text span:nth-child(2),
+  .stamina-text span:nth-child(3),
+  .stamina-text span:nth-child(4) {
+    display: none !important;
+  }
+
+  /* 3. モーダル内のボタンのはみ出し防止 */
+  .modal-content {
+    max-width: 92vw;
+    padding: 1rem;
+  }
+  #dummy-modal .btn,
+  #template-modal .btn,
+  #resize-modal .btn {
+    white-space: normal;
+    height: auto;
+    min-height: 32px;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.75rem;
   }
 }
+/* PCでは通常表示、スマホではモーダルボタンに自動切り替え */
+.pc-only-stats { display: inline-flex !important; }
+.sp-only-stats { display: none !important; }
 
-/* 4. 極小画面（iPhone SE / 375px以下）用の超省スペース設定 */
-@media (max-width: 375px) {
-  .tool-group {
-    padding-right: 0.25rem;
-    margin-right: 0.1rem;
-  }
-  .btn {
-    padding: 0.2rem 0.35rem;
-    font-size: 0.68rem;
-  }
-  #zoom-val {
-    min-width: 28px !important;
-    font-size: 0.68rem !important;
-  }
+@media (max-width: 768px) {
+  .pc-only-stats { display: none !important; }
+  .sp-only-stats { display: inline-flex !important; }
 }
   </style>
 </head>
@@ -624,13 +545,18 @@
         <span class="badge">完全安全ローカル</span>
       </div>
 
-      <!-- アクセスカウンター ＆ リアルタイム現地時計 -->
-      <div class="counter-badge" title="訪問者カウンターと現地時間">
+<!-- パソコン用：常時表示バッジ -->
+      <div class="counter-badge pc-only-stats" title="訪問者カウンターと現地時間">
         👥 訪問: <span class="counter-num" id="d1-counter">...</span>
         <span style="opacity:0.4;">|</span>
         🕒 <span id="live-local-clock">時刻取得中...</span>
       </div>
-    </div>
+
+      <!-- スマホ用：省スペースモーダルボタン -->
+      <button type="button" class="btn sp-only-stats" id="stats-modal-btn" style="height: 28px; padding: 0 0.5rem; font-size: 0.75rem;">
+        📊 訪問数・時計
+      </button>
+      
 
     <div class="nav-tabs">
       <button type="button" class="tab-btn active" onclick="switchTab('tool')">ツール</button>
@@ -1118,6 +1044,31 @@
     </div>
   </div>
 
+<!-- 訪問数・現地時計モーダル（スマホ用） -->
+  <div class="modal-overlay" id="stats-modal" onclick="if(event.target===this) this.style.display='none'">
+    <div class="modal-content" style="max-width: 360px; text-align: center;">
+      <h3 style="margin-bottom: 1rem;">📊 アクセス情報 ＆ 現地時計</h3>
+      
+      <div style="background: var(--bg); padding: 0.8rem; border-radius: 8px; margin-bottom: 0.8rem; border: 1px solid var(--border);">
+        <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.2rem;">👥 累計訪問者数</div>
+        <div style="font-size: 1.5rem; font-weight: bold; color: var(--primary);">
+          <span id="d1-counter-modal">...</span> <span style="font-size: 0.85rem; font-weight: normal; color: var(--text);">人</span>
+        </div>
+      </div>
+
+      <div style="background: var(--bg); padding: 0.8rem; border-radius: 8px; margin-bottom: 1.2rem; border: 1px solid var(--border);">
+        <div style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.2rem;">🕒 現地時刻（リアルタイム）</div>
+        <div id="live-local-clock-modal" style="font-size: 1rem; font-weight: bold; font-family: monospace; color: var(--text);">
+          時刻取得中...
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: center;">
+        <button type="button" class="btn btn-primary" onclick="document.getElementById('stats-modal').style.display='none'" style="min-width: 100px;">閉じる</button>
+      </div>
+    </div>
+  </div>
+  
   <!-- リサイズモーダル -->
   <div class="modal-overlay" id="resize-modal">
     <div class="modal-content">
@@ -1301,14 +1252,10 @@
         req.onerror = () => reject(req.error);
       });
     }
-
-    // --- Cloudflare Workers D1 アクセスカウンター取得 ---
+    // --- Cloudflare Workers D1 アクセスカウンター取得（PC・スマホ両対応） ---
     const WORKERS_URL = 'https://bold-lake-8147.k66157473.workers.dev/';
 
     async function fetchCounter() {
-      const counterElement = document.getElementById('d1-counter');
-      if (!counterElement) return;
-
       try {
         const res = await fetch(WORKERS_URL);
         if (!res.ok) throw new Error('Network response was not ok');
@@ -1316,18 +1263,23 @@
         const data = await res.json();
         if (data.count !== undefined) {
           const num = parseInt(data.count, 10);
-          counterElement.innerText = isNaN(num) ? data.count : num.toLocaleString();
-        } else {
-          throw new Error('Invalid data format');
+          const val = isNaN(num) ? data.count : num.toLocaleString();
+          ['d1-counter', 'd1-counter-modal'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerText = val;
+          });
         }
       } catch (err) {
         console.error('カウンターの取得に失敗しました:', err);
-        counterElement.innerText = '---';
+        ['d1-counter', 'd1-counter-modal'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.innerText = '---';
+        });
       }
     }
     window.addEventListener('DOMContentLoaded', fetchCounter);
 
-    // --- 訪問者の国・端末に合わせたリアルタイム秒単位時計 (純粋JS) ---
+    // --- リアルタイム秒単位時計（PC・スマホ両対応） ---
     function updateClientClock() {
       const now = new Date();
       const options = {
@@ -1337,14 +1289,22 @@
       };
       const formatter = new Intl.DateTimeFormat('ja-JP', options);
       const tzName = Intl.DateTimeFormat().resolvedOptions().timeZone || 'Local';
-      const clockEl = document.getElementById('live-local-clock');
-      if (clockEl) {
-        clockEl.textContent = `${formatter.format(now)} (${tzName})`;
-      }
+      const timeStr = `${formatter.format(now)} (${tzName})`;
+
+      ['live-local-clock', 'live-local-clock-modal'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = timeStr;
+      });
     }
     setInterval(updateClientClock, 1000);
     updateClientClock();
 
+    // 訪問数・時計モーダル開閉（スマホ用）
+    document.getElementById('stats-modal-btn')?.addEventListener('click', () => {
+      document.getElementById('stats-modal').style.display = 'flex';
+    });
+
+    
     // --- スタミナシステム（毎分520,000回復 / 1枚8,500消費 / 超軽量） ---
     const MAX_STAMINA = 520000;
     const RECOVER_PER_SEC = 520000 / 60;
@@ -2683,6 +2643,16 @@ if (data.gitHistory) {
   // 更新履歴データ（カテゴリ分別 type: feat=追加, fix=バグ修正, remove=削除, other=その他 change=変更）
     const changelogData = [
     {
+        version: 'v3.9.0',
+        date: '2026-09-05 09:20',
+        type: 'change',
+        title: '訪問数・現地時計のレスポンシブ最適化（PC常時表示・スマホモーダル化）',
+        items: [
+          'PC画面では今まで通りヘッダーに訪問者数と現地時計を常時表示するようにしました',
+          'スマホ画面ではヘッダーのはみ出しを防ぐため、ボタンをタップしてモーダルで確認・消去できる省スペース設計にしました'
+        ]
+      },
+    {
         version: 'v3.8.0',
         date: '2026-09-05 8:35',
         type: 'change',
@@ -3712,4 +3682,3 @@ const compressedSize = blob.size;
 </script>
 </body>
 </html>
-
