@@ -2718,6 +2718,15 @@ if (data.gitHistory) {
     const changelogData = [
 
     {
+        version: 'v4.1.0',
+        date: '2026-09-05 14:50',
+        type: 'change',
+        title: 'アン桃のダッシュボードについて変更を行いました',
+        items: [
+          '消した個数を全部刻んで表示される形式に変更しました'
+        ]
+      },
+    {
         version: 'v4.0.0',
         date: '2026-09-05 13:00',
         type: 'feat',
@@ -3720,7 +3729,6 @@ function ensureAnmomoUIExists() {
   }
 }
 
-// 5. ダッシュボード操作
 function openAnmomoDashboard() {
   ensureAnmomoUIExists();
   loadAnmomoData();
@@ -3735,7 +3743,46 @@ function openAnmomoDashboard() {
   if (rankEl) rankEl.textContent = anmomoData.bestRank;
   if (countEl) countEl.textContent = `${anmomoData.playCount} 回`;
 
+  // ★ 全スコア履歴タイムラインの描画
+  renderAnmomoHistory();
+
   document.getElementById('anmomo-modal').style.display = 'flex';
+}
+
+// 履歴一覧を描画する関数
+function renderAnmomoHistory() {
+  const listEl = document.getElementById('anmomo-history-list');
+  const countEl = document.getElementById('anmomo-history-count');
+  if (!listEl) return;
+
+  const history = anmomoData.history || [];
+  if (countEl) countEl.textContent = `${history.length}件`;
+
+  if (history.length === 0) {
+    listEl.innerHTML = '<div style="text-align:center; color:#94a3b8; font-size:0.75rem; padding:0.8rem;">まだプレイ記録がありません</div>';
+    return;
+  }
+
+  // 新しい記録順（最新が一番上）に全件展開
+  listEl.innerHTML = [...history].reverse().map((item, idx) => {
+    const isBest = (item.score === anmomoData.bestScore && item.score > 0);
+    return `
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.3rem 0.5rem; background: var(--panel); border: 1px solid var(--border); border-radius: 4px; font-size: 0.75rem;">
+        <div>
+          <span style="color: #64748b; font-size: 0.7rem;">🕒 ${item.date || '---'}</span>
+          <div style="font-weight: bold; color: var(--text);">
+            消去: <span style="color:#db2777; font-size:0.85rem;">${item.score}</span> / 90 個
+            ${isBest ? '<span style="background:#fef3c7; color:#b45309; font-size:0.65rem; padding:1px 4px; border-radius:3px; margin-left:4px;">👑 自己ベスト</span>' : ''}
+          </div>
+        </div>
+        <div style="text-align: right;">
+          <span class="badge" style="background: rgba(236,72,153,0.1); color: #db2777; border: 1px solid rgba(236,72,153,0.3); font-size: 0.75rem;">
+            ${item.rank}
+          </span>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 function closeAnmomoDashboard() {
@@ -4191,6 +4238,16 @@ window.addEventListener('DOMContentLoaded', async () => {
       </div>
     </div>
 
+<!-- 📜 全スコア履歴タイムライン -->
+    <div style="text-align: left; margin-bottom: 0.8rem;">
+      <div style="font-size: 0.75rem; font-weight: bold; color: #64748b; margin-bottom: 0.3rem; display: flex; justify-content: space-between;">
+        <span>📜 全プレイ履歴 (最新順):</span>
+        <span id="anmomo-history-count" style="color: var(--primary);">0件</span>
+      </div>
+      <div id="anmomo-history-list" style="max-height: 130px; overflow-y: auto; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.4rem; display: flex; flex-direction: column; gap: 0.35rem;">
+        <!-- ここに全スコアが刻まれます -->
+      </div>
+    </div>
     <p style="font-size: 0.75rem; color: #64748b; margin-bottom: 1rem; line-height: 1.5;">
       上から降ってくる桃とアンギラ旗（計90個）を1分間で消そう！<br>
       消費スタミナ: <strong style="color: var(--accent);">80,000 ST</strong>（毎分全回復）
