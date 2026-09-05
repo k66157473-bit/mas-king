@@ -2804,6 +2804,15 @@ if (data.gitHistory) {
   // 更新履歴データ（カテゴリ分別 type: feat=追加, fix=バグ修正, remove=削除, other=その他 change=変更）
     const changelogData = [
 {
+{
+      version: 'v4.2.2',
+      date: '2026-09-05 16:40',
+      type: 'fix',
+      title: 'アン桃モーダルの二重生成バグを修正',
+      items: [
+        'アン桃のモーダルおよびゲーム画面がDOM内で重複生成される問題を解消し、プレイ履歴タイムラインの表示を完全安定化しました'
+      ]
+    },
       version: 'v4.2.0',
       date: '2026-09-05 15:42',
       type: 'fix',
@@ -3747,7 +3756,10 @@ function getAnmomoRank(score) {
   if (score >= 10) return { rank: '6級', msg: 'おめでとう' };
   return { rank: '級外', msg: '次回に期待！' };
 }
-
+// 4. HTML要素の確認（HTML末尾の静的要素を使用し、二重生成を完全防止）
+function ensureAnmomoUIExists() {
+  // HTML内にすでに #anmomo-modal と #anmomo-game-screen が存在するため動的生成をスキップ
+}
   // ゲームプレイ全画面オーバーレイがなければ自動注入
   if (!document.getElementById('anmomo-game-screen')) {
     const screenDiv = document.createElement('div');
