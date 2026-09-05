@@ -2804,8 +2804,7 @@ if (data.gitHistory) {
   // 更新履歴データ（カテゴリ分別 type: feat=追加, fix=バグ修正, remove=削除, other=その他 change=変更）
     const changelogData = [
 {
-{
-      version: 'v4.2.2',
+      version: 'v4.3.0',
       date: '2026-09-05 16:40',
       type: 'fix',
       title: 'アン桃モーダルの二重生成バグを修正',
@@ -3760,31 +3759,6 @@ function getAnmomoRank(score) {
 function ensureAnmomoUIExists() {
   // HTML内にすでに #anmomo-modal と #anmomo-game-screen が存在するため動的生成をスキップ
 }
-  // ゲームプレイ全画面オーバーレイがなければ自動注入
-  if (!document.getElementById('anmomo-game-screen')) {
-    const screenDiv = document.createElement('div');
-    screenDiv.id = 'anmomo-game-screen';
-    screenDiv.style.cssText = 'display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.94); z-index: 9999999; touch-action: none; user-select: none; flex-direction: column;';
-    screenDiv.innerHTML = `
-      <div style="display: flex; justify-content: space-between; align-items: center; padding: 0.8rem 1.2rem; background: rgba(0,0,0,0.5); color: white; font-family: monospace;">
-        <div style="font-size: 1.1rem; font-weight: bold; color: #34d399;">
-          消した数: <span id="anmomo-current-score" style="font-size: 1.5rem; color: #fbbf24;">0</span> / 90
-        </div>
-        <div style="font-size: 1.1rem; font-weight: bold; color: #38bdf8;">
-          ⏱️ 残り: <span id="anmomo-timer-text" style="font-size: 1.5rem; color: #f43f5e;">60</span>s
-        </div>
-      </div>
-      <canvas id="anmomo-canvas" style="flex: 1; width: 100%; display: block; cursor: crosshair; touch-action: none;"></canvas>
-      <div style="padding: 0.6rem; text-align: center; background: rgba(0,0,0,0.6);">
-        <button type="button" class="btn" onclick="stopAnmomoGame(true)" style="background: #e11d48; color: white; border: none; padding: 0.4rem 1.5rem; font-size: 0.85rem;">
-          🛑 終了する
-        </button>
-      </div>
-    `;
-    document.body.appendChild(screenDiv);
-  }
-}
-
 function openAnmomoDashboard() {
   ensureAnmomoUIExists();
   loadAnmomoData();
