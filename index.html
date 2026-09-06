@@ -1646,15 +1646,22 @@
         list.appendChild(tab);
       });
     }
-
-    function selectImage(idx, loadedImg = null) {
+function selectImage(idx, loadedImg = null) {
       if (!imageList[idx]) return;
       activeImageIndex = idx;
+      stampCounter = 1;
       renderImageTabs();
       const item = imageList[idx];
 
       dropzone.style.display = 'none';
       container.style.display = 'inline-block';
+
+      // ★ 4位の修正：タブ切り替え時にその画像専用のGitツリーを復元
+      gitCommits = item.gitCommits || [];
+      currentCommitId = item.currentCommitId || null;
+      currentBranch = item.currentBranch || 'main';
+      branches = item.branches || { 'main': null };
+      renderGitTree();
 
       if (loadedImg) {
         canvas.width = loadedImg.width;
@@ -1677,6 +1684,7 @@
             ctx.drawImage(img, 0, 0);
             item.undo = [ctx.getImageData(0, 0, canvas.width, canvas.height)];
           }
+          item.redo = item.redo || [];
           undoStack = item.undo;
           redoStack = item.redo;
           updateZoom(getFitZoomScale());
@@ -1685,7 +1693,6 @@
         img.src = item.src;
       }
     }
-
     function getFitZoomScale() {
       const ws = document.getElementById('workspace');
       if (!canvas.width || !ws) return 1.0;
@@ -2145,7 +2152,7 @@ if (data.gitHistory) {
         ctx.putImageData(baseData, 0, 0, x, y, w, h);
       }
     }
-    // --- 選択範囲の移動・複製ツール ---
+// --- 選択範囲の移動・複製ツール（ズーム完全連動版） ---
     function startMoveOverlay(x, y, w, h) {
       if (w <= 0 || h <= 0) return;
       moveState = {
@@ -2169,6 +2176,8 @@ if (data.gitHistory) {
 
       moveOverlay.style.left = `${moveState.x * scaleX}px`;
       moveOverlay.style.top = `${moveState.y * scaleY}px`;
+      moveOverlay.style.width = `${moveState.w * scaleX}px`;
+      moveOverlay.style.height = `${moveState.h * scaleY}px`;
       moveCanvas.style.width = `${moveState.w * scaleX}px`;
       moveCanvas.style.height = `${moveState.h * scaleY}px`;
     }
@@ -2177,9 +2186,14 @@ if (data.gitHistory) {
       isDraggingMove = true;
       const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
       const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
-      const rect = moveOverlay.getBoundingClientRect();
-      moveDragOffset.x = clientX - rect.left;
-      moveDragOffset.y = clientY - rect.top;
+      const canvasRect = canvas.getBoundingClientRect();
+
+      // Canvasピクセル単位でのドラッグオフセット計算
+      const curCanvasX = ((clientX - canvasRect.left) / canvasRect.width) * canvas.width;
+      const curCanvasY = ((clientY - canvasRect.top) / canvasRect.height) * canvas.height;
+
+      moveDragOffset.x = curCanvasX - moveState.x;
+      moveDragOffset.y = curCanvasY - moveState.y;
       e.stopPropagation();
     }
 
@@ -2190,11 +2204,11 @@ if (data.gitHistory) {
       const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
       const canvasRect = canvas.getBoundingClientRect();
 
-      const currentCssX = clientX - canvasRect.left - moveDragOffset.x;
-      const currentCssY = clientY - canvasRect.top - moveDragOffset.y;
+      const curCanvasX = ((clientX - canvasRect.left) / canvasRect.width) * canvas.width;
+      const curCanvasY = ((clientY - canvasRect.top) / canvasRect.height) * canvas.height;
 
-      moveState.x = (currentCssX / canvasRect.width) * canvas.width;
-      moveState.y = (currentCssY / canvasRect.height) * canvas.height;
+      moveState.x = curCanvasX - moveDragOffset.x;
+      moveState.y = curCanvasY - moveDragOffset.y;
       updateMoveOverlayPosition();
     }
 
@@ -2214,7 +2228,7 @@ if (data.gitHistory) {
       e.stopPropagation();
       if (moveState.imgData) {
         ctx.putImageData(moveState.imgData, Math.round(moveState.x), Math.round(moveState.y));
-        pushUndo();
+        pushUndo('🔀 選択移動配置');
       }
       moveOverlay.style.display = 'none';
     });
@@ -2222,7 +2236,7 @@ if (data.gitHistory) {
     document.getElementById('move-cancel-btn').addEventListener('click', (e) => {
       e.stopPropagation();
       moveOverlay.style.display = 'none';
-    });
+    });   
 
     // 高速・安定モザイク処理（整数インデックス化）
     function applyMosaic(rx, ry, rw, rh, size) {
@@ -2547,14 +2561,14 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
       dummyOverlay.style.display = 'none';
     });
 // ==========================================
-    // 🌿 Git風コミット履歴・ブランチ分岐エンジン
+    // 🌿 Git風コミット履歴・ブランチ分岐エンジン（画像完全分離＆Undo同期版）
     // ==========================================
-    let gitCommits = [];          // 全コミット（DAGツリー）
-    let currentCommitId = null;   // 現在チェックアウト中のコミットID
-    let currentBranch = 'main';   // 現在のブランチ名
-    let branches = { 'main': null }; // ブランチごとのHEAD
+    let gitCommits = [];
+    let currentCommitId = null;
+    let currentBranch = 'main';
+    let branches = { 'main': null };
 
-// 1. 自動コミット作成関数（JSONシリアライズ対応）
+    // 1. 自動コミット作成関数（画像ごとに分離して記録）
     function pushCommit(message = '作業更新') {
       if (!canvas.width) return;
 
@@ -2567,7 +2581,7 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
         branch: currentBranch,
         message: message,
         timestamp: timestamp,
-        src: canvas.toDataURL('image/png'), // ★JSONに保存できるBase64形式で記録
+        src: canvas.toDataURL('image/png'),
         width: canvas.width,
         height: canvas.height
       };
@@ -2579,16 +2593,22 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
       undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
       if (undoStack.length > MAX_UNDO) undoStack.shift();
 
- redoStack = [];
+      redoStack = [];
       if (imageList[activeImageIndex]) {
+        imageList[activeImageIndex].undo = undoStack;
         imageList[activeImageIndex].redo = redoStack;
+        // 画像ごとにGitツリーを保存
+        imageList[activeImageIndex].gitCommits = gitCommits;
+        imageList[activeImageIndex].currentCommitId = currentCommitId;
+        imageList[activeImageIndex].currentBranch = currentBranch;
+        imageList[activeImageIndex].branches = branches;
       }
 
       renderGitTree();
       debouncedSaveStateToLocal();
     }
 
-    // 2. 任意のコミットへタイムトラベル（チェックアウト）
+    // 2. 任意のコミットへタイムトラベル（Undoスタックも完全同期）
     function checkoutCommit(commitId) {
       const target = gitCommits.find(c => c.id === commitId);
       if (!target) return;
@@ -2602,6 +2622,19 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
         canvas.height = target.height;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.drawImage(img, 0, 0);
+
+        // ★ 5位の修正：チェックアウトした時点の状態をUndoスタックに同期
+        undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
+        if (undoStack.length > MAX_UNDO) undoStack.shift();
+        redoStack = [];
+
+        if (imageList[activeImageIndex]) {
+          imageList[activeImageIndex].undo = undoStack;
+          imageList[activeImageIndex].redo = redoStack;
+          imageList[activeImageIndex].currentCommitId = currentCommitId;
+          imageList[activeImageIndex].currentBranch = currentBranch;
+        }
+
         renderGitTree();
         debouncedSaveStateToLocal();
       };
@@ -2805,6 +2838,42 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
     // 更新履歴データ
   // 更新履歴データ（カテゴリ分別 type: feat=追加, fix=バグ修正, remove=削除, other=その他 change=変更）
     const changelogData = [
+{
+      version: 'v4.5.3',
+      date: '2026-09-06 16:38',
+      type: 'fix',
+      title: 'センシティブシールドのキャンセル時スタミナ消費を防止',
+      items: [
+        'センシティブ警告ガードの確認ダイアログで「キャンセル」を選択した際、スタミナが誤って消費されないよう処理順を修正しました'
+      ]
+    },
+    {
+      version: 'v4.5.2',
+      date: '2026-09-06 16:35',
+      type: 'fix',
+      title: 'ズーム表示時における「選択移動」の配置精度向上',
+      items: [
+        '画像を拡大・縮小ズームした状態で選択範囲をドラッグ移動した際、プレビュー枠のサイズおよび配置位置がズレる問題を解消しました'
+      ]
+    },
+    {
+      version: 'v4.5.1',
+      date: '2026-09-06 16:31',
+      type: 'fix',
+      title: 'Gitタイムトラベル後のUndo履歴自動同期に対応',
+      items: [
+        'Git履歴ツリーから過去のコミットにチェックアウトした直後でも、元に戻す(Undo)操作が破綻せず正確に同期するよう改善しました'
+      ]
+    },
+    {
+      version: 'v4.5.0',
+      date: '2026-09-06 16:30',
+      type: 'fix',
+      title: '複数画像タブごとのGit履歴ツリー完全分離',
+      items: [
+        '複数の画像を開いている際、Gitコミット履歴がタブごとに独立して保持されるよう修正し、他画像への意図しないデータ上書きを防止しました'
+      ]
+    },
     {
       version: 'v4.4.0',
       date: '2026-09-06 10:30',
@@ -3627,10 +3696,7 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
       if (!canvas.width) { alert('先に画像を開いてください'); return; }
       applySensitiveShield();
     });
-    
-    function applySensitiveShield() {
-      consumeStamina(CONSUME_PER_ACTION * 2);
-
+function applySensitiveShield() {
       const w = canvas.width;
       const h = canvas.height;
       const imgData = ctx.getImageData(0, 0, w, h);
@@ -3653,13 +3719,11 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
               const idx = (py * w + px) * 4;
               const r = d[idx], g = d[idx + 1], b = d[idx + 2];
 
-              // 流血・鮮血・暗赤色の判定アルゴリズム
               const isBlood = (r > 100) && (r > g * 1.5) && (r > b * 1.5) && (Math.abs(g - b) < 50);
               if (isBlood) bloodPixelCount++;
             }
           }
 
-          // ブロック内の血液ピクセル密度が一定以上の場合は危険領域に指定
           if (bloodPixelCount > (blockSize * blockSize) / 60) {
             dangerBlocks.push({ x: startX, y: startY, w: blockSize, h: blockSize });
           }
@@ -3668,35 +3732,36 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
 
       // 2. 該当領域に「極厚モザイク（強度40）」を適用
       if (dangerBlocks.length > 0) {
+        // ★ 7位の修正：適用確定時にのみスタミナ消費
+        consumeStamina(CONSUME_PER_ACTION * 2);
         dangerBlocks.forEach(b => {
-          applyMosaic(b.x, b.y, b.w, b.h, 40); // 超分厚いモザイク
+          applyMosaic(b.x, b.y, b.w, b.h, 40);
         });
       } else {
         // 検出されなかった場合は画面中央を安全ガードするか確認
         if (!confirm('明確な流血・危険領域は検知されませんでした。画像全体にセンシティブ警告ガードを適用しますか？')) {
-          return;
+          return; // キャンセル時はスタミナ消費ゼロで終了
         }
+        // ★ 7位の修正：OKを押した時のみスタミナ消費
+        consumeStamina(CONSUME_PER_ACTION * 2);
         applyMosaic(0, 0, w, h, 35);
       }
 
       // 3. 画像中央に「⚠️ 閲覧注意 / SENSITIVE」警戒テープ（帯）を描画
       ctx.save();
       ctx.translate(w / 2, h / 2);
-      ctx.rotate(-Math.PI / 12); // 斜め15度
+      ctx.rotate(-Math.PI / 12);
 
       const bannerH = Math.max(45, h / 8);
       const bannerW = Math.max(w, h) * 1.5;
 
-      // 黒背景の帯
       ctx.fillStyle = 'rgba(15, 23, 42, 0.92)';
       ctx.fillRect(-bannerW / 2, -bannerH / 2, bannerW, bannerH);
 
-      // 上下の黄色い警戒ボーダー
       ctx.strokeStyle = '#eab308';
       ctx.lineWidth = Math.max(3, bannerH / 12);
       ctx.strokeRect(-bannerW / 2, -bannerH / 2, bannerW, bannerH);
 
-      // 警告テキスト
       ctx.fillStyle = '#facc15';
       ctx.font = `bold ${Math.max(16, bannerH * 0.45)}px sans-serif`;
       ctx.textAlign = 'center';
@@ -3705,10 +3770,9 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
 
       ctx.restore();
 
-      pushUndo();
+      pushUndo('🚨 センシティブシールド適用');
       alert(`🚨 センシティブシールド適用完了: ${dangerBlocks.length > 0 ? `${dangerBlocks.length} 箇所の危険領域を` : '全体を'}極厚モザイク＋警告帯で保護しました。`);
-    }
-// ============================================================
+    }// ============================================================
 // 🍑🇦🇮 ミニゲーム「アン桃」完全統合ゲームエンジン (.mask自動保存対応)
 // ============================================================
 
