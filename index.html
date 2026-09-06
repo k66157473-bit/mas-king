@@ -2453,14 +2453,14 @@ if (data.gitHistory) {
       document.getElementById('dummy-size-val').textContent = `${e.target.value}px`;
     });
 
-    document.getElementById('dummy-start-btn').addEventListener('click', () => {
+document.getElementById('dummy-start-btn').addEventListener('click', () => {
       dummyState.text = document.getElementById('dummy-input').value || 'ダミー';
       dummyState.bg = document.getElementById('dummy-bg').value;
       dummyState.color = dummyState.bg === '#000000' ? '#ffffff' : '#000000';
       dummyState.size = parseInt(document.getElementById('dummy-size').value, 10);
 
       dummyOverlayText.textContent = dummyState.text;
-      dummyOverlay.style.fontSize = `${dummyState.size}px`;
+      dummyOverlay.style.fontSize = `${dummyState.size * currentZoom}px`;
       dummyOverlay.style.background = dummyState.bg;
       dummyOverlay.style.color = dummyState.color;
 
@@ -2477,7 +2477,9 @@ if (data.gitHistory) {
       const rect = canvas.getBoundingClientRect();
       dummyOverlay.style.left = `${(dummyState.x / canvas.width) * rect.width}px`;
       dummyOverlay.style.top = `${(dummyState.y / canvas.height) * rect.height}px`;
+      dummyOverlay.style.fontSize = `${dummyState.size * currentZoom}px`;
     }
+    
 
     let isDraggingDummy = false;
     let dragOffset = { x: 0, y: 0 };
@@ -2803,6 +2805,17 @@ if (data.gitHistory) {
     // 更新履歴データ
   // 更新履歴データ（カテゴリ分別 type: feat=追加, fix=バグ修正, remove=削除, other=その他 change=変更）
     const changelogData = [
+    {
+      version: 'v4.4.0',
+      date: '2026-09-06 10:30',
+      type: 'fix',
+      title: 'Undo/Redo実装・ズーム時ダミー配置・圧縮拡張子バグの重要修正',
+      items: [
+        '元に戻す(Undo)・やり直す(Redo)・リセット機能およびショートカットキーを完全実装しました',
+        '拡大縮小ズーム時におけるダミー置換文字のプレビューおよび焼き付けサイズのズレを解消しました',
+        'WebP/AVIF一括圧縮機において、ブラウザ非対応時のフォールバックで拡張子が正常に保存されるよう修正しました'
+      ]
+    },
       {
         version: 'v4.3.0',
         date: '2026-09-05 16:40',
@@ -3324,11 +3337,11 @@ if (data.gitHistory) {
       const format = compFormat.value;
       const quality = parseInt(compQuality.value, 10) / 100;
       const maxW = parseInt(compResize.value, 10);
-      const ext = format === 'image/webp' ? 'webp' : (format === 'image/avif' ? 'avif' : (format === 'image/jpeg' ? 'jpg' : 'png'));
 
       consumeStamina(imageFiles.length * 3000);
 
       for (const file of imageFiles) {
+        let ext = format === 'image/webp' ? 'webp' : (format === 'image/avif' ? 'avif' : (format === 'image/jpeg' ? 'jpg' : 'png'));
         const originalSize = file.size;
         const imgBitmap = await createImageBitmap(file);
 
@@ -3348,14 +3361,17 @@ if (data.gitHistory) {
 
         let blob = await new Promise(resolve => tCanvas.toBlob(resolve, format, quality));
         
+        // AVIF非対応ブラウザの場合はWebPにフォールバックし、拡張子もwebpに更新
         if (!blob || blob.type !== format) {
           blob = await new Promise(resolve => tCanvas.toBlob(resolve, 'image/webp', quality));
+          ext = 'webp';
         }
-const compressedSize = blob.size;
+
+        const compressedSize = blob.size;
         const savedPercent = Math.round(((originalSize - compressedSize) / originalSize) * 100);
         const baseName = file.name.replace(/\.[^/.]+$/, "");
-        const convertedName = `${baseName}.${ext}`; // 変換後の拡張子（.webp / .avif 等）
-        const newName = `${baseName}_compressed.${ext}`; // ダウンロード用
+        const convertedName = `${baseName}.${ext}`;
+        const newName = `${baseName}_compressed.${ext}`;
         const blobUrl = URL.createObjectURL(blob);
 
         const item = {
@@ -3374,6 +3390,7 @@ const compressedSize = blob.size;
       renderCompressionList();
       compFileInput.value = '';
     }
+    
 
     function renderCompressionList() {
       compResultList.innerHTML = '';
