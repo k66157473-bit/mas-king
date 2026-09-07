@@ -8,7 +8,7 @@
   <meta name="format-detection" content="telephone=no">
 
   <!-- 1. マニフェストファイルの読み込み -->
-  <link rel="manifest" href="/manifest.json">
+  <link rel="manifest" href="./manifest.json">
 
   <!-- 2. サービスワーカーの登録スクリプト -->
   <script>
@@ -1496,6 +1496,13 @@
       });
     });
 
+       maskColorPicker?.addEventListener('input', () => {
+      currentMode = 'color';
+      document.querySelectorAll('.mode-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === 'color');
+      });
+    });
+
     // --- マウスストーカー設定の取得・適用ヘルパー ---
     function getSparkleState() {
       const toggle = document.getElementById('sparkleToggle');
@@ -1820,20 +1827,47 @@ if (data.gitHistory) {
       }
     });
 
+    
+    document.getElementById('file-input').addEventListener('change', async (e) => {
+      const files = Array.from(e.target.files);
+      for (const file of files) {
+        if (file.name.endsWith('.mask') || file.name.endsWith('.json')) {
+          loadMaskProjectFile(file);
+        } else {
+          await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = (ev) => {
+              addImageFile(ev.target.result, file.name);
+              resolve();
+            };
+            reader.readAsDataURL(file);
+          });
+        }
+      }
+    });
+
+    // ドラッグ＆ドロップ（★ 11位の修正：ファイル順序を完全保証）
     window.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
     window.addEventListener('dragleave', (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); });
-    window.addEventListener('drop', (e) => {
-      e.preventDefault(); dropzone.classList.remove('dragover');
+    window.addEventListener('drop', async (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('dragover');
       if (e.dataTransfer && e.dataTransfer.files) {
-        Array.from(e.dataTransfer.files).forEach(file => {
+        const files = Array.from(e.dataTransfer.files);
+        for (const file of files) {
           if (file.name.endsWith('.mask') || file.name.endsWith('.json')) {
             loadMaskProjectFile(file);
           } else if (file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = (ev) => addImageFile(ev.target.result, file.name);
-            reader.readAsDataURL(file);
+            await new Promise((resolve) => {
+              const reader = new FileReader();
+              reader.onload = (ev) => {
+                addImageFile(ev.target.result, file.name);
+                resolve();
+              };
+              reader.readAsDataURL(file);
+            });
           }
-        });
+        }
       }
     });
 
@@ -2014,7 +2048,7 @@ if (data.gitHistory) {
     window.addEventListener('touchend', onPointerUp, { passive: false });
     window.addEventListener('touchcancel', () => { isInteracting = false; selectionBox.style.display = 'none'; loupe.style.display = 'none'; });
 
-    // ルーペ（高速GPU配置）
+ // ルーペ（高速GPU配置＆四隅クランプ完全対応版）
     let loupeThrottle = 0;
     function showLoupe(coords) {
       const now = performance.now();
@@ -2034,7 +2068,13 @@ if (data.gitHistory) {
       loupeCanvas.width = 90;
       loupeCanvas.height = 90;
       loupeCtx.imageSmoothingEnabled = false;
-      loupeCtx.drawImage(canvas, Math.round(coords.x - 20), Math.round(coords.y - 20), 40, 40, 0, 0, 90, 90);
+
+      const srcX = Math.max(0, Math.min(canvas.width - 40, Math.round(coords.x - 20)));
+      const srcY = Math.max(0, Math.min(canvas.height - 40, Math.round(coords.y - 20)));
+      const clipW = Math.min(40, canvas.width);
+      const clipH = Math.min(40, canvas.height);
+
+      loupeCtx.drawImage(canvas, srcX, srcY, clipW, clipH, 0, 0, 90, 90);
       
       loupeCtx.strokeStyle = '#ef4444';
       loupeCtx.lineWidth = 1.5;
@@ -2043,6 +2083,7 @@ if (data.gitHistory) {
       loupeCtx.moveTo(35, 45); loupeCtx.lineTo(55, 45);
       loupeCtx.stroke();
     }
+    
 
     // 各機能の描画処理
     function executeToolAction(x, y, w, h, sx, sy, ex, ey) {
@@ -2337,20 +2378,20 @@ if (data.gitHistory) {
       pushUndo();
     }
 
+    // 文字挿入ツール（★ 13位の修正：キャンセル・空文字時の空コミットを防止）
     function applyText(x, y) {
       const text = prompt('挿入する文字を入力してください:', '注記テキスト');
-      if (text) {
+      if (text && text.trim().length > 0) {
         const chosenColor = maskColorPicker ? maskColorPicker.value : '#ef4444';
         ctx.save();
         ctx.fillStyle = chosenColor;
         ctx.font = 'bold 20px sans-serif';
         ctx.textBaseline = 'top';
-        ctx.fillText(text, x, y);
+        ctx.fillText(text.trim(), x, y);
         ctx.restore();
-        pushUndo();
+        pushUndo('🔤 文字配置');
       }
     }
-
     function applyDropper(x, y) {
       const pixel = ctx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
       const hex = "#" + ((1 << 24) + (pixel[0] << 16) + (pixel[1] << 8) + pixel[2]).toString(16).slice(1);
@@ -2782,7 +2823,13 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
     document.getElementById('redo-btn')?.addEventListener('click', redo);
     document.getElementById('clear-btn')?.addEventListener('click', resetImage);
     // キーボードショートカット
+    // キーボードショートカット（★ 10位の修正：オープニング中ガード付き）
     window.addEventListener('keydown', (e) => {
+      const typingOverlay = document.getElementById('welcome-typing-overlay');
+      if (typingOverlay && typingOverlay.style.display !== 'none' && window.getComputedStyle(typingOverlay).display !== 'none') {
+        return; // オープニング表示中はすべてのショートカットを無効化
+      }
+
       if (e.key === '?' || (e.shiftKey && e.key === '/')) {
         document.getElementById('shortcut-modal').style.display = 'flex';
       } else if ((e.ctrlKey || e.metaKey) && e.key === 'z') {
@@ -2838,6 +2885,60 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
     // 更新履歴データ
   // 更新履歴データ（カテゴリ分別 type: feat=追加, fix=バグ修正, remove=削除, other=その他 change=変更）
     const changelogData = [
+    {
+      version: 'v4.5.9',
+      date: '2026-09-06 17:50',
+      type: 'fix',
+      title: '文字挿入ツールのキャンセル時における空履歴生成を防止',
+      items: [
+        '文字挿入ダイアログで「キャンセル」または空文字で確定した際、不要な空のUndoコミットが積まれないようガードを追加しました'
+      ]
+    },
+    {
+      version: 'v4.5.8',
+      date: '2026-09-06 17:45',
+      type: 'fix',
+      title: 'PWAマニフェストおよびService Worker登録パスを相対パスに修正',
+      items: [
+        'GitHub Pages等のサブディレクトリ環境でホストした場合でも、PWAのインストールとオフライン機能が正常に動作するようパス指定を修正しました'
+      ]
+    },
+    {
+      version: 'v4.5.7',
+      date: '2026-09-06 17:40',
+      type: 'fix',
+      title: '複数画像一括ドロップ時におけるタブ読み込み順序の保証',
+      items: [
+        '複数の画像ファイルを一度にドラッグ＆ドロップした際、非同期読み込みによってタブの並び順が狂わないよう順序制御を追加しました'
+      ]
+    },
+    {
+      version: 'v4.5.6',
+      date: '2026-09-06 17:35',
+      type: 'fix',
+      title: 'オープニングアニメーション表示中のキーボード誤爆を防止',
+      items: [
+        '起動時のターミナルメッセージが表示されている間、裏でショートカットキー（Ctrl+V/Ctrl+S等）が誤作動しないようキー入力をブロックしました'
+      ]
+    },
+    {
+      version: 'v4.5.5',
+      date: '2026-09-06 17:30',
+      type: 'change',
+      title: 'カラーピッカー色変更時における「カラー塗りモード」自動切替',
+      items: [
+        'カラーピッカーで色を選択した際、直感的に操作できるよう自動的に「🎨 カラー塗り」モードへと切り替わるように改善しました'
+      ]
+    },
+    {
+      version: 'v4.5.4',
+      date: '2026-09-06 17:25',
+      type: 'fix',
+      title: 'キャンバス四隅（端座標）でのルーペ描画クランプ処理を追加',
+      items: [
+        '画像の左上や右下など端付近をマスキングする際、ルーペ（拡大鏡）の表示がキャンバス外を参照して黒く乱れる問題を解消しました'
+      ]
+    },
 {
       version: 'v4.5.3',
       date: '2026-09-06 16:38',
