@@ -861,7 +861,7 @@
           <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; background: rgba(0,0,0,0.03); padding: 0.8rem; border-radius: 6px;">
             <!-- 88x31 ピクセルバナー（クリックで拡大なし・原寸大表示） -->
             <div style="image-rendering: pixelated; border: 1px solid var(--border); line-height: 0; background: #fff;">
-              <img src="バナー.png" alt="マス王 福島桃好 Since 2026" width="88" height="31" style="display: block; image-rendering: pixelated;">
+              <img src="バナー.png" alt="マス王 福島桃好 Since 2026" width="88" height="31" style="display: block; image-rendering: pixelated;" onerror="this.style.display='none'; this.parentElement.style.padding='4px'; this.parentElement.innerHTML='<span style=\'font-size:10px;font-weight:bold;color:#f59e0b;\'>👑 マス王 88x31</span>';">
             </div>
             
             <!-- リンク用HTMLコード -->
@@ -1411,15 +1411,14 @@
       const usedText = document.getElementById('stamina-used-text');
       const barFill = document.getElementById('stamina-bar-fill');
       
-      if (curText) curText.textContent = Math.round(currentStamina).toLocaleString();
+      if (curText) curText.textContent = Math.min(MAX_STAMINA, Math.max(0, Math.round(currentStamina))).toLocaleString();
       if (usedText) usedText.textContent = Math.round(totalUsedStamina).toLocaleString();
       if (barFill) {
         const percent = Math.min(100, Math.max(0, (currentStamina / MAX_STAMINA) * 100));
         barFill.style.width = `${percent}%`;
       }
     }
-    setInterval(updateStaminaLoop, 200);
-
+    
     // --- 状態管理 ---
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -1975,13 +1974,16 @@ if (data.gitHistory) {
 
     // ポインタームーブ（rAFによる高速・なめらか描画）
     function onPointerMove(e) {
-      if (isPinching && e.touches && e.touches.length >= 2) {
-        e.preventDefault();
+ if (e.touches && e.touches.length >= 2) {
+        isPinching = true;
+        isInteracting = false;
+        selectionBox.style.display = 'none';
+        loupe.style.display = 'none';
         const dist = getTouchDistance(e.touches);
         const scale = dist / initialPinchDistance;
         updateZoom(initialPinchZoom * scale);
         return;
-      }
+      }      
 
       if (!isInteracting) return;
       if (e.cancelable) e.preventDefault();
@@ -2042,7 +2044,13 @@ if (data.gitHistory) {
     canvas.addEventListener('mousedown', onPointerDown);
     window.addEventListener('mousemove', onPointerMove);
     window.addEventListener('mouseup', onPointerUp);
-
+   window.addEventListener('mouseleave', () => {
+      if (isInteracting) {
+        isInteracting = false;
+        selectionBox.style.display = 'none';
+        loupe.style.display = 'none';
+      }
+    });
     canvas.addEventListener('touchstart', onPointerDown, { passive: false });
     window.addEventListener('touchmove', onPointerMove, { passive: false });
     window.addEventListener('touchend', onPointerUp, { passive: false });
@@ -2435,10 +2443,10 @@ if (data.gitHistory) {
       ctx.drawImage(tCanvas, 0, 0);
       pushUndo();
     });
-
+    
     document.getElementById('watermark-btn').addEventListener('click', () => {
       const text = prompt('透かし文字を入力:', '社外秘 / CONFIDENTIAL');
-      if (!text) return;
+      if (!text || text.trim().length === 0) return;
       ctx.save();
       ctx.font = `bold ${Math.max(24, canvas.width / 15)}px sans-serif`;
       ctx.fillStyle = 'rgba(239, 68, 68, 0.25)';
@@ -2446,10 +2454,12 @@ if (data.gitHistory) {
       ctx.textBaseline = 'middle';
       ctx.translate(canvas.width / 2, canvas.height / 2);
       ctx.rotate(-Math.PI / 6);
-      ctx.fillText(text, 0, 0);
+      ctx.fillText(text.trim(), 0, 0);
       ctx.restore();
-      pushUndo();
+      pushUndo('🏷️ 透かし文字');
     });
+
+   
 
     document.getElementById('template-btn').addEventListener('click', () => {
       document.getElementById('template-modal').style.display = 'flex';
@@ -2506,6 +2516,18 @@ if (data.gitHistory) {
 
     document.getElementById('dummy-size').addEventListener('input', (e) => {
       document.getElementById('dummy-size-val').textContent = `${e.target.value}px`;
+    });
+    
+     document.getElementById('dummy-bg').addEventListener('change', (e) => {
+      const bg = e.target.value;
+      const input = document.getElementById('dummy-input');
+      if (bg === '#000000') {
+        input.style.background = '#000000';
+        input.style.color = '#ffffff';
+      } else {
+        input.style.background = '#ffffff';
+        input.style.color = '#000000';
+      }
     });
 
 document.getElementById('dummy-start-btn').addEventListener('click', () => {
@@ -2801,7 +2823,6 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
       if (!canvas.width || undoStack.length <= 1) return;
       if (!confirm('加工をすべて破棄して、読み込み時の初期状態に戻しますか？')) return;
 
-      // 一番最初の状態（オリジナル）を取得
       const origState = undoStack[0];
       undoStack = [origState];
       redoStack = [];
@@ -2811,13 +2832,15 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
       ctx.putImageData(origState, 0, 0);
       updateZoom(getFitZoomScale());
 
+      currentBranch = 'main';
       if (gitCommits.length > 0) {
         currentCommitId = gitCommits[0].id;
-        renderGitTree();
+        branches = { 'main': currentCommitId };
       }
+      renderGitTree();
       debouncedSaveStateToLocal();
     }
-
+    
     // ボタンのクリックイベントを登録
     document.getElementById('undo-btn')?.addEventListener('click', undo);
     document.getElementById('redo-btn')?.addEventListener('click', redo);
@@ -2869,13 +2892,13 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
       document.getElementById('save-modal').style.display = 'none';
     });
 
-    // クリップボードコピー
+    // クリップボードコピー（★ 30位の修正：アラート停止を廃止しトースト化）
     document.getElementById('copy-btn').addEventListener('click', async () => {
       if (!canvas.width) return;
       try {
         canvas.toBlob(async (blob) => {
           await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-          alert('クリップボードにコピーしました！そのまま貼り付けできます。');
+          showAutoSaveToast('📋 クリップボードに画像をコピーしました！');
         });
       } catch(e) {
         alert('ブラウザ非対応のため保存メニューをご利用ください。');
@@ -2886,8 +2909,40 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
   // 更新履歴データ（カテゴリ分別 type: feat=追加, fix=バグ修正, remove=削除, other=その他 change=変更）
     const changelogData = [
     {
+      version: 'v4.6.8',
+      date: '2026-09-09 07:28',
+      type: 'change',
+      title: '画像コピー完了通知のトースト化による操作テンポ向上',
+      items: [
+        'クリップボードコピー時の画面一時停止アラートを廃止し、非同期トースト通知へ変更して連続作業をスムーズにしました'
+      ]
+    },
+    {
+      version: 'v4.6.7',
+      date: '2026-09-09 07:27',
+      type: 'fix',
+      title: 'リンク集公式バナー画像の読み込みフォールバック対応',
+      items: [
+        'オフライン時や画像読み込み失敗時でもリンク集のデザインが崩れないよう代替テキスト枠の表示処理を追加しました'
+      ]
+    },
+    {
+      version: 'v4.6.6',
+      date: '2026-09-09 07:26',
+      type: 'fix',
+      title: 'スタミナ数値表示の浮動小数点オーバーフロー防止',
+      items: [
+        'スタミナ回復計算時の丸め誤差により表示数値が一瞬だけ上限値を超過する現象を防止しました'
+      ]
+    },
+    {
+      version: 'v4.6.5',
+      date: '2026-09-09 07:25',
+      type: 'fix',
+      title: '画面外マウス離脱時におけるドラッグ描画の安全
+    {
       version: 'v4.5.9',
-      date: '2026-09-06 17:50',
+      date: '2026-09-07 17:50',
       type: 'fix',
       title: '文字挿入ツールのキャンセル時における空履歴生成を防止',
       items: [
@@ -2896,7 +2951,7 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
     },
     {
       version: 'v4.5.8',
-      date: '2026-09-06 17:45',
+      date: '2026-09-07 17:45',
       type: 'fix',
       title: 'PWAマニフェストおよびService Worker登録パスを相対パスに修正',
       items: [
@@ -2905,7 +2960,7 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
     },
     {
       version: 'v4.5.7',
-      date: '2026-09-06 17:40',
+      date: '2026-09-07 17:40',
       type: 'fix',
       title: '複数画像一括ドロップ時におけるタブ読み込み順序の保証',
       items: [
@@ -2914,7 +2969,7 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
     },
     {
       version: 'v4.5.6',
-      date: '2026-09-06 17:35',
+      date: '2026-09-07 17:35',
       type: 'fix',
       title: 'オープニングアニメーション表示中のキーボード誤爆を防止',
       items: [
@@ -2923,7 +2978,7 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
     },
     {
       version: 'v4.5.5',
-      date: '2026-09-06 17:30',
+      date: '2026-09-07 17:30',
       type: 'change',
       title: 'カラーピッカー色変更時における「カラー塗りモード」自動切替',
       items: [
@@ -2932,7 +2987,7 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
     },
     {
       version: 'v4.5.4',
-      date: '2026-09-06 17:25',
+      date: '2026-09-07 17:25',
       type: 'fix',
       title: 'キャンバス四隅（端座標）でのルーペ描画クランプ処理を追加',
       items: [
@@ -2941,7 +2996,7 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
     },
 {
       version: 'v4.5.3',
-      date: '2026-09-06 16:38',
+      date: '2026-09-07 16:38',
       type: 'fix',
       title: 'センシティブシールドのキャンセル時スタミナ消費を防止',
       items: [
@@ -2950,7 +3005,7 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
     },
     {
       version: 'v4.5.2',
-      date: '2026-09-06 16:35',
+      date: '2026-09-07 16:35',
       type: 'fix',
       title: 'ズーム表示時における「選択移動」の配置精度向上',
       items: [
@@ -3290,11 +3345,11 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
       const listEl = document.getElementById('changelog-list');
       const selectEl = document.getElementById('cl-page-select');
 
-      // 検索 ＆ カテゴリ絞り込みフィルター
+          const queries = query.split(/\s+/).filter(q => q.length > 0);
       let filtered = changelogData.filter(item => {
         const matchesCategory = (clActiveFilter === 'all') || (item.type === clActiveFilter);
         const full = `${item.version} ${item.date} ${item.title} ${item.items.join(' ')}`.toLowerCase();
-        const matchesQuery = full.includes(query);
+        const matchesQuery = queries.length === 0 || queries.every(q => full.includes(q));
         return matchesCategory && matchesQuery;
       });
 
@@ -4048,6 +4103,12 @@ function initAnmomoEngine() {
     }
   }
 }
+window.addEventListener('resize', () => {
+        if (anmomoIsRunning && anmomoCanvas) {
+          anmomoCanvas.width = window.innerWidth;
+          anmomoCanvas.height = Math.max(300, window.innerHeight - 110);
+        }
+      });
 
 function startAnmomoGame() {
   // スタミナ消費判定（80,000 ST）
