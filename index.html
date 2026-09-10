@@ -662,7 +662,7 @@
         <div class="toolbar-row">
           <input type="file" id="file-input" accept="image/*" style="display: none;" multiple>
           <button type="button" class="btn" onclick="document.getElementById('file-input').click()">📁 開く</button>
-
+          <button type="button" class="btn" id="camera-open-btn" style="background: #ec4899; color: white; border-color: #db2777; font-weight: bold;">📷 撮影</button>
           <!-- .mask プロジェクト入出力 -->
           <input type="file" id="mask-file-input" accept=".mask,.json" style="display: none;">
           <div class="tool-group">
@@ -806,6 +806,7 @@
         <h3>1. 基本操作・画像読み込み・.maskファイル</h3>
         <ul>
           <li><strong>画像の追加:</strong> 画面中央タップ、ドラッグ＆ドロップ、または <kbd>Ctrl</kbd>+<kbd>V</kbd> で即座に展開。</li>
+　　   <li><strong>カメラで写真を取ってすぐ加工:</strong>撮影ボタンをおし被写体を取るだけですぐ加工できる </li>
           <li><strong>📦 .mask 保存 / 📂 .mask 読込:</strong> 作業中の全画像・全履歴・スタミナ・設定・マウスストーカー位置を独自の <code>data.mask</code>（JSON形式）として手元に書き出し・復元可能。</li>
           <li><strong>📱 スマホ最適化:</strong> 2本指ピンチで拡大縮小、パン移動、1本指での滑らかな高速マスキングに対応。</li>
         </ul>
@@ -1077,6 +1078,37 @@
         <button type="button" class="btn" onclick="document.getElementById('dummy-modal').style.display='none'">キャンセル</button>
         <button type="button" class="btn btn-primary" id="dummy-start-btn">位置を調整する ➔</button>
       </div>
+    </div>
+  </div>
+  
+  <!-- 📷 カメラ撮影モーダル -->
+  <div class="modal-overlay" id="camera-modal">
+    <div class="modal-content" style="max-width: 500px; text-align: center; background: #000; color: #fff; padding: 1rem; border-radius: 12px; position: relative;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+        <span style="font-size: 0.9rem; font-weight: bold;">📷 カメラで撮影</span>
+        <button type="button" class="btn" onclick="closeCameraModal()" style="height: 26px; padding: 0 6px; background: #333; color: #fff; border: none;">✕</button>
+      </div>
+
+      <!-- カメラ映像プレビュー -->
+      <div style="position: relative; width: 100%; height: 320px; background: #111; border-radius: 8px; overflow: hidden; display: flex; justify-content: center; align-items: center;">
+        <video id="camera-video" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+        <div id="camera-flash" style="position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; transition: opacity 0.15s ease;"></div>
+      </div>
+
+      <!-- コントロールバー -->
+      <div style="display: flex; justify-content: space-around; align-items: center; margin-top: 1rem;">
+        <button type="button" class="btn" id="camera-switch-btn" style="background: #333; color: #fff; border: 1px solid #555; font-size: 0.75rem;">🔄 切替</button>
+        
+        <!-- シャッターボタン -->
+        <button type="button" id="camera-shutter-btn" style="width: 56px; height: 56px; border-radius: 50%; background: #fff; border: 4px solid #ec4899; cursor: pointer; display: flex; justify-content: center; align-items: center; box-shadow: 0 0 15px rgba(236,72,153,0.6);">
+          <div style="width: 42px; height: 42px; border-radius: 50%; background: #ec4899;"></div>
+        </button>
+
+        <button type="button" class="btn" onclick="closeCameraModal()" style="background: #333; color: #fff; border: 1px solid #555; font-size: 0.75rem;">閉じる</button>
+      </div>
+      <p style="font-size: 0.7rem; color: #888; margin-top: 0.6rem; margin-bottom: 0;">
+        ※写真は外部サーバーに送信されず、端末内だけで安全に処理されます
+      </p>
     </div>
   </div>
 
@@ -1799,6 +1831,95 @@ if (data.gitHistory) {
       reader.readAsText(file);
     }
 
+// ==========================================
+    // 📷 完全ローカル・カメラ撮影＆即座マスキングエンジン
+    // ==========================================
+    let cameraStream = null;
+    let currentFacingMode = 'environment'; // 'environment'(外カメラ) or 'user'(内カメラ)
+
+    const cameraModal = document.getElementById('camera-modal');
+    const cameraVideo = document.getElementById('camera-video');
+    const cameraFlash = document.getElementById('camera-flash');
+
+    // カメラモーダルを開く
+    document.getElementById('camera-open-btn')?.addEventListener('click', async () => {
+      cameraModal.style.display = 'flex';
+      await startCamera();
+    });
+
+    // カメラ映像の開始
+    async function startCamera() {
+      stopCamera();
+      try {
+        cameraStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: currentFacingMode,
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
+          audio: false
+        });
+        cameraVideo.srcObject = cameraStream;
+      } catch (err) {
+        console.warn('カメラの起動に失敗しました:', err);
+        alert('カメラへのアクセスが拒否されたか、カメラが見つかりません。');
+        closeCameraModal();
+      }
+    }
+
+    // カメラ映像の停止
+    function stopCamera() {
+      if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+      }
+    }
+
+    // モーダルを閉じる
+    function closeCameraModal() {
+      stopCamera();
+      cameraModal.style.display = 'none';
+    }
+
+    // 外カメラ / 内カメラの切り替え
+    document.getElementById('camera-switch-btn')?.addEventListener('click', async () => {
+      currentFacingMode = (currentFacingMode === 'environment') ? 'user' : 'environment';
+      await startCamera();
+    });
+
+    // 📸 シャッターを押して撮影！
+    document.getElementById('camera-shutter-btn')?.addEventListener('click', () => {
+      if (!cameraVideo.videoWidth) return;
+
+      // 触覚フィードバック（ブルッ！）
+      if ('vibrate' in navigator) navigator.vibrate(50);
+
+      // ホワイトフラッシュ演出
+      cameraFlash.style.opacity = '0.9';
+      setTimeout(() => { cameraFlash.style.opacity = '0'; }, 150);
+
+      // Canvasに静止画をキャプチャ
+      const snapCanvas = document.createElement('canvas');
+      snapCanvas.width = cameraVideo.videoWidth;
+      snapCanvas.height = cameraVideo.videoHeight;
+      const snapCtx = snapCanvas.getContext('2d');
+
+      // 内カメラ時は左右反転（鏡像補正）
+      if (currentFacingMode === 'user') {
+        snapCtx.translate(snapCanvas.width, 0);
+        snapCtx.scale(-1, 1);
+      }
+      snapCtx.drawImage(cameraVideo, 0, 0);
+
+      const photoDataUrl = snapCanvas.toDataURL('image/png');
+      const photoName = `撮影写真_${new Date().toLocaleTimeString('ja-JP').replace(/:/g, '')}`;
+
+      // 即座にマス王の編集キャンバスに展開！
+      addImageFile(photoDataUrl, photoName);
+      closeCameraModal();
+
+      showAutoSaveToast('📸 写真を撮影してマス王に読み込みました！');
+    });
     // ファイル入力 & D&D & コピペ
     document.getElementById('file-input').addEventListener('change', (e) => {
       Array.from(e.target.files).forEach(file => {
@@ -2907,6 +3028,26 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
 
     // 更新履歴データ
     const changelogData = [
+    {
+      version: 'v4.9.0',
+      date: '2026-09-10 18:30',
+      type: 'feat',
+      title: 'カメラ撮影＆即座マスキング機能の搭載',
+      items: [
+        'スマホやPCのカメラで写真をパシャッと撮影し、その場ですぐにマスキング編集を開始できる「📷 撮影」機能を追加しました',
+        '外カメラ/内カメラの切り替えやフラッシュ演出・振動フィードバックを搭載（※撮影データは外部サーバーに一切送信されません）'
+      ]
+    },
+    {
+      version: 'v4.8.0',
+      date: '2026-09-10 18:25',
+      type: 'feat',
+      title: 'リアルタイム・バッテリー監視＆ユニーク通知機能の追加',
+      items: [
+        '端末のバッテリー残量をリアルタイムで自動監視し、残量に応じたユニークなセリフ（100%〜1%の全8段階）をトースト通知する親切機能を追加しました',
+        '作業中の突然のバッテリー切れを防ぐための安心設計です（※ブラウザ標準のnavigator.getBattery()を使用・サーバー送信ゼロ）'
+      ]
+    },
     {
       version: 'v4.6.8',
       date: '2026-09-09 07:28',
@@ -4386,6 +4527,99 @@ window.addEventListener('DOMContentLoaded', async () => {
     } catch (e) {}
   }
 });
+// 🔋 リアルタイム・バッテリー監視＆ユニーク通知エンジン
+(function checkBatteryStatus() {
+  if (!('getBattery' in navigator)) return;
+
+  let toastTimeout = null;
+
+  navigator.getBattery().then((battery) => {
+    // 💬 バッテリー残量に応じたセリフ判定
+    function getBatteryMessage(percent, isCharging) {
+      let quote = '';
+      if (percent === 100) {
+        quote = '元気満タンだな';
+      } else if (percent >= 50) {
+        quote = 'まあいいじゃん';
+      } else if (percent >= 40) {
+        quote = 'おっと　危険ゾーン';
+      } else if (percent >= 30) {
+        quote = '充電器指したらどう?';
+      } else if (percent >= 20) {
+        quote = '充電器貸すから早く刺しな刺しな';
+      } else if (percent >= 10) {
+        quote = '充電切れるで。急ぎな';
+      } else if (percent >= 5) {
+        quote = 'ヤバいって早くしろ';
+      } else {
+        quote = 'もう終わるよ';
+      }
+
+      const icon = isCharging ? '⚡ 充電中' : '🔋 バッテリー';
+      return `${icon}: ${percent}%\n💬「${quote}」\n(※navigator.getBattery() で見てるだけですよ)`;
+    }
+
+    // 画面にトーストを通知する処理
+    function onBatteryUpdate() {
+      const percent = Math.round(battery.level * 100);
+      const msg = getBatteryMessage(percent, battery.charging);
+      showBatteryToast(msg);
+    }
+
+    // 1. ページを開いた時に初回チェック表示
+    onBatteryUpdate();
+
+    // 2. リアルタイム監視（残量が変わった時＆充電器を抜き差しした時）
+    battery.addEventListener('levelchange', onBatteryUpdate);
+    battery.addEventListener('chargingchange', onBatteryUpdate);
+  }).catch(() => {});
+
+  // 🍞 トーストを画面に出す関数（連続通知もバグらないタイマー管理付き）
+  function showBatteryToast(msg) {
+    let toast = document.getElementById('battery-toast');
+    if (!toast) {
+      toast = document.createElement('div');
+      toast.id = 'battery-toast';
+      toast.style.cssText = `
+        position: fixed;
+        bottom: 70px;
+        right: 20px;
+        background: rgba(15, 23, 42, 0.94);
+        color: #facc15;
+        border: 2px solid #eab308;
+        padding: 10px 16px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-family: monospace;
+        white-space: pre-line;
+        z-index: 999999;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+        transition: opacity 0.4s ease, transform 0.4s ease;
+        transform: translateY(20px);
+        opacity: 0;
+        pointer-events: none;
+      `;
+      document.body.appendChild(toast);
+    }
+
+    toast.textContent = msg;
+
+    // 前のタイマーがあればリセット
+    if (toastTimeout) clearTimeout(toastTimeout);
+
+    // 下からフワッと飛び出す
+    requestAnimationFrame(() => {
+      toast.style.opacity = '1';
+      toast.style.transform = 'translateY(0)';
+    });
+
+    // 2秒後に自動でフワッと隠れる
+    toastTimeout = setTimeout(() => {
+      toast.style.opacity = '0';
+      toast.style.transform = 'translateY(20px)';
+    }, 2000);
+  }
+})();
 // --- Web Share Target から共有された画像の自動読み込み ---
     async function checkSharedImage() {
       const urlParams = new URLSearchParams(window.location.search);
