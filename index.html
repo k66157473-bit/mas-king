@@ -4642,6 +4642,24 @@ window.addEventListener('DOMContentLoaded', async () => {
     }, 2000);
   }
 })();
+// 👑 ページ内の「R̄」を自動で安全な数値参照に置換する処理
+document.addEventListener('DOMContentLoaded', () => {
+  // タイトルタグの置換
+  if (document.title.includes('R̄') || document.title.includes('R\u0304')) {
+    document.title = document.title.replace(/R\u0304|R̄/g, 'R\u0304');
+  }
+
+  // 画面全体のテキスト内の R̄ を置換
+  const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, null, false);
+  let node;
+  while (node = walker.nextNode()) {
+    if (node.nodeValue && (node.nodeValue.includes('R̄') || node.nodeValue.includes('R\u0304'))) {
+      const span = document.createElement('span');
+      span.innerHTML = node.nodeValue.replace(/R\u0304|R̄/g, 'R&#772;');
+      node.parentNode.replaceChild(span, node);
+    }
+  }
+});
 // --- Web Share Target から共有された画像の自動読み込み ---
     async function checkSharedImage() {
       const urlParams = new URLSearchParams(window.location.search);
