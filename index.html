@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>【サーバー送信なし】ローカル完結の画像マスキングツール「マス王」| 写真のモザイク・個人情報保護に</title>
+  <title>【サーバー送信なし】ローカル完結の画像マスキングツール「マス王   R̄」| 写真のモザイク・個人情報保護に</title>
   <meta name="description" content="サーバーに画像を一切送信しない安全・超高機能な画像マスキング＆注釈ツールです。" >
   <meta name="format-detection" content="telephone=no">
 
@@ -590,85 +591,6 @@
         opacity: 0;
       }
     }
-    
-    /* ============================================================
-       🗂️ カテゴリ別カスタムツールバー＆タブスタイル
-    ============================================================ */
-    .cat-tabs-bar {
-      display: flex;
-      align-items: center;
-      gap: 0.3rem;
-      background: var(--bg);
-      padding: 0.3rem 0.6rem;
-      border-bottom: 1px solid var(--border);
-      overflow-x: auto;
-      touch-action: pan-x;
-      user-select: none;
-    }
-    .cat-tab-btn {
-      background: var(--panel);
-      color: var(--text);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 0.3rem 0.7rem;
-      font-size: 0.75rem;
-      font-weight: bold;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.3rem;
-      white-space: nowrap;
-      height: 30px;
-      transition: all 0.15s ease;
-      position: relative;
-    }
-    .cat-tab-btn.active {
-      background: var(--primary);
-      color: #fff;
-      border-color: var(--primary);
-      box-shadow: 0 2px 6px rgba(37,99,235,0.3);
-    }
-    .cat-tab-btn.drag-over {
-      border: 2px dashed #ec4899 !important;
-      background: rgba(236,72,153,0.15) !important;
-      transform: scale(1.05);
-    }
-    .cat-tab-btn.dragging {
-      opacity: 0.4;
-    }
-
-    /* 長押しツールチップ吹き出し */
-    .cat-tooltip {
-      position: absolute;
-      top: 38px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(15, 23, 42, 0.95);
-      color: #38bdf8;
-      border: 1px solid rgba(56,189,248,0.4);
-      padding: 6px 10px;
-      border-radius: 6px;
-      font-size: 0.7rem;
-      font-family: sans-serif;
-      white-space: nowrap;
-      z-index: 1000;
-      pointer-events: none;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-      animation: catTooltipPop 0.2s ease-out;
-    }
-    @keyframes catTooltipPop {
-      0% { opacity: 0; transform: translate(-50%, -5px); }
-      100% { opacity: 1; transform: translate(-50%, 0); }
-    }
-
-    /* ボタン移動用のドラッグスタイル */
-    .draggable-tool-btn {
-      cursor: grab;
-      touch-action: none;
-    }
-    .draggable-tool-btn:active {
-      cursor: grabbing;
-    }
   </style>
 
 
@@ -681,13 +603,13 @@
       <div class="logo">
         🛡️ 
         <ruby>
-          マス王 
+          マス王   R̄
           <rp>(</rp>
           <rt>
             <span class="rt-marquee-container">
               <span class="rt-marquee-track">
-                <span>マスキング</span>
-                <span aria-hidden="true">マスキング</span>
+                <span>マスキング Royal edition</span>
+                <span aria-hidden="true">マスキング Royal edition</span>
               </span>
             </span>
           </rt>
@@ -735,32 +657,91 @@
         <button type="button" class="btn" style="height:28px; padding:0 0.5rem; font-size:0.75rem;" onclick="document.getElementById('file-input').click()">＋ 追加</button>
       </div>
 
-      
-      
       <!-- ツールバー -->
       <div class="toolbar-wrapper">
-        <!-- 🗂️ カテゴリタブバー -->
-        <div class="cat-tabs-bar" id="cat-tabs-bar">
-          <div id="cat-tab-list" style="display: flex; gap: 0.3rem; align-items: center;"></div>
-          
-          <div style="margin-left: auto; display: flex; gap: 0.3rem; align-items: center;">
-            <button type="button" class="btn" id="toggle-layout-btn" style="height: 28px; padding: 0 0.5rem; font-size: 0.75rem;" title="昔のレイアウトと切り替え">⚙️ クラシック表示</button>
-            <button type="button" class="btn" id="help-modal-open-btn" style="height: 28px; padding: 0 0.5rem; font-size: 0.75rem; background: #3b82f6; color:#fff; border-color:#3b82f6;" title="使い方ヘルプ (Ctrl+T+?)">❓ 使い方</button>
+        <!-- 1段目: 主要マスキング＆描画モード -->
+        <div class="toolbar-row">
+          <input type="file" id="file-input" accept="image/*" style="display: none;" multiple>
+          <button type="button" class="btn" onclick="document.getElementById('file-input').click()">📁 開く</button>
+          <button type="button" class="btn" id="camera-open-btn" style="background: #ec4899; color: white; border-color: #db2777; font-weight: bold;">📷 撮影</button>
+          <!-- .mask プロジェクト入出力 -->
+          <input type="file" id="mask-file-input" accept=".mask,.json" style="display: none;">
+          <div class="tool-group">
+            <button type="button" class="btn" onclick="document.getElementById('mask-file-input').click()" title=".mask プロジェクトファイルを読み込み">📂 .mask 読込</button>
+            <button type="button" class="btn" id="export-mask-btn" title="編集状態とスタミナを .mask に保存">📦 .mask 保存</button>
+          </div>
+
+          <div class="tool-group">
+            <button type="button" class="btn active mode-btn" data-mode="black">⬛ 黒塗り</button>
+            <button type="button" class="btn mode-btn" data-mode="white">⬜ 白塗り</button>
+            <button type="button" class="btn mode-btn" data-mode="color" title="選択した色で四角く塗りつぶし">🎨 カラー塗り</button>
+            <button type="button" class="btn mode-btn" data-mode="circle">⭕ 円形マスク</button>
+            <div style="display:inline-flex; align-items:center; gap:0.2rem; background:rgba(0,0,0,0.04); padding:2px 6px; border-radius:4px;" title="カラー塗り・円形マスク・枠・矢印・文字の色">
+              <label for="mask-color-picker" style="font-size:0.75rem; cursor:pointer;">🎨 色:</label>
+              <input type="color" id="mask-color-picker" value="#000000" style="width:24px; height:24px; border:none; cursor:pointer; background:none; border-radius:4px;">
+            </div>
+            <button type="button" class="btn mode-btn" data-mode="mosaic">▦ モザイク</button>
+            <button type="button" class="btn mode-btn" data-mode="glass">🧊 すりガラス</button>
+            <button type="button" class="btn mode-btn" data-mode="blur">💧 ぼかし</button>
+            <button type="button" class="btn mode-btn" data-mode="spotlight">🔦 スポット</button>
+          </div>
+
+          <div class="tool-group">
+            <button type="button" class="btn mode-btn" data-mode="eraser" title="ドラッグした部分の加工を消して元の画像に復元" style="color:var(--accent); font-weight:bold;">🧹 消しゴム</button>
+            <button type="button" class="btn mode-btn" data-mode="move" title="選択した範囲をドラッグで別の場所に移動・複製" style="color:var(--primary); font-weight:bold;">🔀 選択移動</button>
+            <button type="button" class="btn mode-btn" data-mode="redframe">🔲 枠</button>
+            <button type="button" class="btn mode-btn" data-mode="arrow">↗ 矢印</button>
+            <button type="button" class="btn mode-btn" data-mode="stamp">① 連番</button>
+            <button type="button" class="btn mode-btn" data-mode="text">🔤 文字</button>
+            <button type="button" class="btn mode-btn" id="dummy-btn">👤 ダミー置換</button>
+            <button type="button" class="btn mode-btn" data-mode="highlighter">🖍 蛍光ペン</button>
+            <button type="button" class="btn mode-btn" data-mode="dropper">🧪 スポイト</button>
+            <button type="button" class="btn" id="sensitive-shield-btn" title="流血・ショッキング領域を自動検知して極厚モザイク＋閲覧注意帯を適用" style="background:#fee2e2; color:#991b1b; border-color:#fca5a5; font-weight:bold;">🚨 センシティブシールド</button>
           </div>
         </div>
 
-        <!-- 🛠️ カテゴリ表示用ツール行（JSで動的に表示） -->
-        <div class="toolbar-row" id="category-tool-row"></div>
+        <!-- 2段目: 各種編集ツール・設定・保存 -->
+        <div class="toolbar-row">
+          <div class="tool-group">
+            <button type="button" class="btn mode-btn" data-mode="crop">✂️ 切り抜き</button>
+            <button type="button" class="btn" id="rotate-btn" title="右90度回転">↻ 90°</button>
+            <button type="button" class="btn" id="flip-btn" title="左右反転">⇆ 反転</button>
+          </div>
 
-        <!-- 🏛️ 昔のクラシック2段表示用コンテナ（初期非表示） -->
-        <div id="classic-toolbar-container" style="display: none; flex-direction: column;">
-          <!-- 1段目 -->
-          <div class="toolbar-row" id="classic-row-1"></div>
-          <!-- 2段目 -->
-          <div class="toolbar-row" id="classic-row-2"></div>
+          <div class="tool-group">
+            <button type="button" class="btn" id="template-btn">🪪 定型マスク▼</button>
+            <button type="button" class="btn" id="watermark-btn">🏷️ 透かし文字</button>
+            <button type="button" class="btn" id="resize-modal-btn">📏 リサイズ</button>
+          </div>
+
+          <div class="tool-group">
+            <label style="font-size:0.75rem;">強度/サイズ:</label>
+            <input type="range" id="strength-slider" min="4" max="50" value="14" style="width:60px;">
+            <label style="font-size:0.75rem; margin-left:0.3rem;"><input type="checkbox" id="feather-chk"> 境界ぼかし</label>
+          </div>
+
+          <div class="tool-group">
+            <button type="button" class="btn" id="undo-btn" title="元に戻す (Ctrl+Z)">↩</button>
+            <button type="button" class="btn" id="redo-btn" title="やり直す (Ctrl+Y)">↪</button>
+            <button type="button" class="btn" id="clear-btn">🔄 リセット</button>
+            <button type="button" class="btn" id="git-tree-btn" title="GitHub風コミット履歴・ブランチ分岐ツリーを開く" style="color:var(--primary); font-weight:bold;">🌿 Git履歴ツリー</button>
+          </div>
+
+          <div class="tool-group">
+            <button type="button" class="btn" id="zoom-out-btn">➖</button>
+            <span id="zoom-val" style="font-size: 0.75rem; min-width:35px; text-align:center;">100%</span>
+            <button type="button" class="btn" id="zoom-in-btn">➕</button>
+            <button type="button" class="btn" id="zoom-fit-btn">全体</button>
+          </div>
+
+          <div style="margin-left: auto; display: flex; gap: 0.3rem;">
+            <button type="button" class="btn" id="copy-btn">📋 コピー</button>
+            <button type="button" class="btn btn-primary" id="save-modal-btn">💾 保存...</button>
+            <button type="button" class="btn" id="shortcut-help-btn">❓</button>
+            <button type="button" class="btn" id="compressor-modal-btn" title="画像をドラッグしてWebP/AVIFに一括圧縮">🗜️ 一括圧縮・変換</button>
+          </div>
         </div>
       </div>
-        
 
       <!-- 作業キャンバス領域 -->
       <div class="workspace" id="workspace">
@@ -814,14 +795,14 @@
     <div id="guide-view" class="view-panel">
       <div class="guide-container">
         <div class="security-banner">
-          <h2>マス王は、ローカル マスキング 無料で非常にセキュアなサイトです。</h2>
+          <h2> マス王   R̄は、ローカル マスキング 無料で非常にセキュアなサイトです。</h2>
           <p>🔒 <strong>完全ローカル処理・Exif自動消去保証:</strong> 画像データは外部サーバーに1バイトも送信されません。位置情報や撮影日時のExifデータも保存時に自動完全削除されます。</p>
           <p><strong>.maskファイルで復元可能:</strong> .maskファイルを保存し、別の端末でmaskファイルをアップロードすれば、サーバーを介さずに安全に復元・同期ができます。</p>
           <p><strong>アカウント登録はいりません:</strong> 面倒なアカウント登録はいりません。すぐ使えます。また、サーバーからパスワードやメールアドレスなどが流出する心配もありません。</p>
           <p><strong>右クリック完全対応:</strong> 画像の右クリック保存やコピーも制限なく快適にご利用いただけます。</p>
         </div>
 
-        <h2>📖 マスキングツール「<ruby>マス王 <rp>(</rp><rt>マスキング</rt><rp>)</rp></ruby>」の使い方</h2>
+        <h2>📖 マスキングツール「<ruby> マス王   R̄ <rp>(</rp><rt>マスキング Royal edition</rt><rp>)</rp></ruby>」の使い方</h2>
         
         <h3>1. 基本操作・画像読み込み・.maskファイル</h3>
         <ul>
@@ -874,7 +855,7 @@
 
         <!-- 当サイトのリンク用バナー（88x31） -->
         <div class="changelog-item" style="padding: 1.2rem; border-left: 4px solid #f59e0b; margin-bottom: 1.5rem;">
-          <h3 style="margin: 0 0 0.6rem; font-size: 1rem; color: #d97706;">👑 マス王 公式バナー（リンクフリー）</h3>
+          <h3 style="margin: 0 0 0.6rem; font-size: 1rem; color: #d97706;">👑           マス王   R̄ 公式バナー（リンクフリー）</h3>
           <p style="font-size: 0.8rem; color: #64748b; margin-bottom: 0.8rem;">
             当サイトはリンクフリーです。Webサイトやブログでのご紹介大歓迎です！（直リンク推奨・保存してお持ち帰りも可）
           </p>
@@ -882,13 +863,13 @@
           <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; background: rgba(0,0,0,0.03); padding: 0.8rem; border-radius: 6px;">
             <!-- 88x31 ピクセルバナー（クリックで拡大なし・原寸大表示） -->
             <div style="image-rendering: pixelated; border: 1px solid var(--border); line-height: 0; background: #fff;">
-              <img src="バナー.png" alt="マス王 福島桃好 Since 2026" width="88" height="31" style="display: block; image-rendering: pixelated;" onerror="this.style.display='none'; this.parentElement.style.padding='4px'; this.parentElement.innerHTML='<span style=\'font-size:10px;font-weight:bold;color:#f59e0b;\'>👑 マス王 88x31</span>';">
+              <img src="バナー.png" alt=" マス王   R̄ 福島桃好 Since 2026" width="88" height="31" style="display: block; image-rendering: pixelated;" onerror="this.style.display='none'; this.parentElement.style.padding='4px'; this.parentElement.innerHTML='<span style=\'font-size:10px;font-weight:bold;color:#f59e0b;\'>👑 マス王   R̄ 88x31</span>';">
             </div>
             
             <!-- リンク用HTMLコード -->
             <div style="flex: 1; min-width: 200px;">
               <label style="font-size: 0.75rem; font-weight: bold; color: var(--text);">貼り付け用HTMLコード:</label>
-              <input type="text" readonly value='<a href="https://mas-king.pages.dev/"><img src="https://mas-king.pages.dev/banner.png" alt="マス王" width="88" height="31"></a>' style="width: 100%; font-size: 0.75rem; font-family: monospace; padding: 0.3rem 0.5rem; border: 1px solid var(--border); border-radius: 4px; background: var(--panel); margin-top: 0.2rem;" onclick="this.select();">
+              <input type="text" readonly value='<a href="https://mas-king.pages.dev/"><img src="https://mas-king.pages.dev/banner.png" alt=" マス王   R̄" width="88" height="31"></a>' style="width: 100%; font-size: 0.75rem; font-family: monospace; padding: 0.3rem 0.5rem; border: 1px solid var(--border); border-radius: 4px; background: var(--panel); margin-top: 0.2rem;" onclick="this.select();">
             </div>
           </div>
         </div>
@@ -1017,7 +998,7 @@
               <h3 style="margin: 0; font-size: 1.3rem; color: var(--text);">
                 <ruby>福島 桃好<rp>(</rp><rt style="font-size:0.75rem; color:var(--primary);">フゥー ディン タオ ハオ</rt><rp>)</rp></ruby>
               </h3>
-              <span class="badge" style="margin-top: 0.3rem;">マス王 開発者</span>
+              <span class="badge" style="margin-top: 0.3rem;"> マス王   R̄ 開発者</span>
             </div>
           </div>
 
@@ -1209,26 +1190,6 @@
       <div style="text-align:right;">
         <button type="button" class="btn" onclick="document.getElementById('resize-modal').style.display='none'">キャンセル</button>
       </div>
-    </div>
-  </div>
-  
-  <!-- ❓ どこでもタップで閉じられる操作説明モーダル -->
-  <div class="modal-overlay" id="help-modal" onclick="closeHelpModal()">
-    <div class="modal-content" style="max-width: 520px; border: 2px solid var(--primary);" onclick="event.stopPropagation()">
-      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.8rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem;">
-        <h3 style="margin: 0; color: var(--primary);">📖 マス王 クイック操作ガイド</h3>
-        <button type="button" class="btn" onclick="closeHelpModal()" style="height: 24px; padding: 0 6px;">✕</button>
-      </div>
-      <ul style="font-size: 0.8rem; line-height: 1.8; padding-left: 1.2rem; margin-bottom: 1rem;">
-        <li><strong>🗂️ タブ切り替え:</strong> 上部のタブを押してツールを切り替えます。</li>
-        <li><strong>💡 タブ長押し:</strong> スマホでタブを長押しすると、機能の説明が出ます。</li>
-        <li><strong>🔀 ボタン移動:</strong> ボタンを別のタブにドラッグ＆ドロップすると配置を自由に変更できます。</li>
-        <li><strong>🔄 タブ並び替え:</strong> タブ自体を左右にドラッグして順番を入れ替えられます。</li>
-        <li><strong>⌨️ ショートカット:</strong> <kbd>Ctrl+Z</kbd>(戻す), <kbd>Ctrl+Y</kbd>(やり直し), <kbd>Ctrl+S</kbd>(保存), <kbd>Ctrl+T+?</kbd>(このヘルプ)。</li>
-      </ul>
-      <p style="font-size: 0.75rem; color: #64748b; text-align: center; margin: 0;">
-        ※画面のどこかをタップするとこの説明を閉じられます
-      </p>
     </div>
   </div>
 
@@ -1490,379 +1451,7 @@
         barFill.style.width = `${percent}%`;
       }
     }
-   
-   // ============================================================
-    // 🗂️ カテゴリ別カスタムツールバー＆ドラッグ移動エンジン
-    // ============================================================
-    const DEFAULT_TAB_ORDER = ['process', 'history', 'delete', 'convert', 'utility'];
-    const DEFAULT_TAB_INFO = {
-      process: { name: '🎨 加工', desc: '黒塗り・白塗り・モザイク・ぼかしなどの主要マスキング加工を行います。' },
-      history: { name: '🌿 履歴', desc: '元に戻す(Undo)・やり直す(Redo)やGitコミット履歴ツリーを管理します。' },
-      delete:  { name: '🧹 削除', desc: '消しゴム復元・切り抜き・センシティブシールドによる危険領域抹殺を行います。' },
-      convert: { name: '🗜️ 変換', desc: 'WebP/AVIF一括圧縮・リサイズ・90度回転・左右反転を行います。' },
-      utility: { name: '🍑 便利', desc: 'ダミー置換・枠線・矢印・連番スタンプ・カメラ撮影・アン桃などの便利ツール群です。' }
-    };
-
-    let currentLayoutMode = 'category'; // 'category' or 'classic'
-    let currentCategoryTab = 'process';
-    let currentTabOrder = [...DEFAULT_TAB_ORDER];
-    let currentTabButtons = {
-      process: ['btn-black', 'btn-white', 'btn-color', 'group-color-picker', 'btn-circle', 'btn-mosaic', 'btn-glass', 'btn-blur', 'btn-spotlight', 'group-strength'],
-      history: ['btn-undo', 'btn-redo', 'btn-clear', 'btn-git'],
-      delete:  ['btn-eraser', 'btn-crop', 'btn-shield'],
-      convert: ['btn-compressor', 'btn-resize', 'btn-rotate', 'btn-flip'],
-      utility: ['btn-dummy', 'btn-redframe', 'btn-arrow', 'btn-stamp', 'btn-text', 'btn-highlighter', 'btn-dropper', 'btn-template', 'btn-watermark', 'btn-camera', 'btn-anmomo']
-    };
-
-    // 全ボタンのDOMマップ（要素生成）
-    function getToolButtonDOMMap() {
-      return {
-        'btn-black': createBtnHTML('⬛ 黒塗り', 'mode-btn', 'data-mode="black"', 'black'),
-        'btn-white': createBtnHTML('⬜ 白塗り', 'mode-btn', 'data-mode="white"', 'white'),
-        'btn-color': createBtnHTML('🎨 カラー塗り', 'mode-btn', 'data-mode="color"', 'color'),
-        'group-color-picker': `<div class="tool-group" style="margin:0;"><label for="mask-color-picker" style="font-size:0.75rem; cursor:pointer;">🎨 色:</label><input type="color" id="mask-color-picker" value="${maskColorPicker?.value || '#000000'}" style="width:24px; height:24px; border:none; cursor:pointer; background:none;"></div>`,
-        'btn-circle': createBtnHTML('⭕ 円形マスク', 'mode-btn', 'data-mode="circle"', 'circle'),
-        'btn-mosaic': createBtnHTML('▦ モザイク', 'mode-btn', 'data-mode="mosaic"', 'mosaic'),
-        'btn-glass': createBtnHTML('🧊 すりガラス', 'mode-btn', 'data-mode="glass"', 'glass'),
-        'btn-blur': createBtnHTML('💧 ぼかし', 'mode-btn', 'data-mode="blur"', 'blur'),
-        'btn-spotlight': createBtnHTML('🔦 スポット', 'mode-btn', 'data-mode="spotlight"', 'spotlight'),
-        'group-strength': `<div class="tool-group" style="margin:0;"><label style="font-size:0.75rem;">強度:</label><input type="range" id="strength-slider" min="4" max="50" value="${document.getElementById('strength-slider')?.value || 14}" style="width:50px;"><label style="font-size:0.7rem; margin-left:2px;"><input type="checkbox" id="feather-chk" ${document.getElementById('feather-chk')?.checked ? 'checked' : ''}>ぼかし</label></div>`,
-        'btn-undo': `<button type="button" class="btn" id="undo-btn" title="元に戻す (Ctrl+Z)">↩ 元に戻す</button>`,
-        'btn-redo': `<button type="button" class="btn" id="redo-btn" title="やり直す (Ctrl+Y)">↪ やり直す</button>`,
-        'btn-clear': `<button type="button" class="btn" id="clear-btn">🔄 リセット</button>`,
-        'btn-git': `<button type="button" class="btn" id="git-tree-btn" style="color:var(--primary); font-weight:bold;">🌿 Git履歴ツリー</button>`,
-        'btn-eraser': createBtnHTML('🧹 消しゴム', 'mode-btn', 'data-mode="eraser" style="color:var(--accent); font-weight:bold;"', 'eraser'),
-        'btn-crop': createBtnHTML('✂️ 切り抜き', 'mode-btn', 'data-mode="crop"', 'crop'),
-        'btn-shield': `<button type="button" class="btn" id="sensitive-shield-btn" style="background:#fee2e2; color:#991b1b; font-weight:bold;">🚨 センシティブシールド</button>`,
-        'btn-compressor': `<button type="button" class="btn" id="compressor-modal-btn">🗜️ 一括圧縮・変換</button>`,
-        'btn-resize': `<button type="button" class="btn" id="resize-modal-btn">📏 リサイズ</button>`,
-        'btn-rotate': `<button type="button" class="btn" id="rotate-btn">↻ 90°</button>`,
-        'btn-flip': `<button type="button" class="btn" id="flip-btn">⇆ 反転</button>`,
-        'btn-dummy': `<button type="button" class="btn mode-btn" id="dummy-btn">👤 ダミー置換</button>`,
-        'btn-redframe': createBtnHTML('🔲 枠', 'mode-btn', 'data-mode="redframe"', 'redframe'),
-        'btn-arrow': createBtnHTML('↗ 矢印', 'mode-btn', 'data-mode="arrow"', 'arrow'),
-        'btn-stamp': createBtnHTML('① 連番', 'mode-btn', 'data-mode="stamp"', 'stamp'),
-        'btn-text': createBtnHTML('🔤 文字', 'mode-btn', 'data-mode="text"', 'text'),
-        'btn-highlighter': createBtnHTML('🖍 蛍光ペン', 'mode-btn', 'data-mode="highlighter"', 'highlighter'),
-        'btn-dropper': createBtnHTML('🧪 スポイト', 'mode-btn', 'data-mode="dropper"', 'dropper'),
-        'btn-template': `<button type="button" class="btn" id="template-btn">🪪 定型マスク▼</button>`,
-        'btn-watermark': `<button type="button" class="btn" id="watermark-btn">🏷️ 透かし</button>`,
-        'btn-camera': `<button type="button" class="btn" id="camera-open-btn" style="background:#ec4899; color:#fff; font-weight:bold;">📷 撮影</button>`,
-        'btn-anmomo': `<button type="button" class="btn" onclick="openAnmomoDashboard()" style="color:#ec4899; font-weight:bold;">🍑 アン桃</button>`
-      };
-    }
-
-    function createBtnHTML(label, extraClass, attrs, mode) {
-      const isActive = (currentMode === mode);
-      return `<button type="button" class="btn ${extraClass} ${isActive ? 'active' : ''}" ${attrs}>${label}</button>`;
-    }
-
-    // ツールバー全体のレンダリング
-    function renderCategoryToolbar() {
-      const tabListEl = document.getElementById('cat-tab-list');
-      const toolRowEl = document.getElementById('category-tool-row');
-      const classicContainer = document.getElementById('classic-toolbar-container');
-      const catTabsBar = document.getElementById('cat-tabs-bar');
-
-      if (!tabListEl || !toolRowEl) return;
-
-      if (currentLayoutMode === 'classic') {
-        catTabsBar.style.display = 'flex';
-        toolRowEl.style.display = 'none';
-        classicContainer.style.display = 'flex';
-        document.getElementById('toggle-layout-btn').textContent = '🗂️ カテゴリ表示';
-        renderClassicToolbar();
-        return;
-      }
-
-      catTabsBar.style.display = 'flex';
-      toolRowEl.style.display = 'flex';
-      classicContainer.style.display = 'none';
-      document.getElementById('toggle-layout-btn').textContent = '⚙️ クラシック表示';
-
-      // 1. タブバーの描画（D&D並び替え・長押し対応）
-      tabListEl.innerHTML = currentTabOrder.map(key => {
-        const info = DEFAULT_TAB_INFO[key];
-        const isActive = (currentCategoryTab === key);
-        return `
-          <div class="cat-tab-btn ${isActive ? 'active' : ''}" 
-               data-tab="${key}" 
-               draggable="true">
-            <span>${info.name}</span>
-          </div>
-        `;
-      }).join('');
-
-      // 2. 現在のタブのボタン一覧を描画（ドラッグ移動対応）
-      const btnMap = getToolButtonDOMMap();
-      const currentBtns = currentTabButtons[currentCategoryTab] || [];
-      toolRowEl.innerHTML = currentBtns.map(btnId => {
-        const html = btnMap[btnId] || '';
-        return `<div class="draggable-tool-btn" data-btn-id="${btnId}" draggable="true">${html}</div>`;
-      }).join('') + `
-        <!-- 右端の共通ボタン -->
-        <div style="margin-left: auto; display: flex; gap: 0.3rem;">
-          <button type="button" class="btn" id="copy-btn">📋 コピー</button>
-          <button type="button" class="btn btn-primary" id="save-modal-btn">💾 保存...</button>
-        </div>
-      `;
-
-      bindCategoryEvents();
-    }
-
-    // クラシックレイアウトの描画
-    function renderClassicToolbar() {
-      const row1 = document.getElementById('classic-row-1');
-      const row2 = document.getElementById('classic-row-2');
-      const btnMap = getToolButtonDOMMap();
-
-      row1.innerHTML = `
-        <button type="button" class="btn" onclick="document.getElementById('file-input').click()">📁 開く</button>
-        ${btnMap['btn-camera']}
-        <div class="tool-group">
-          <button type="button" class="btn" onclick="document.getElementById('mask-file-input').click()">📂 .mask 読込</button>
-          <button type="button" class="btn" id="export-mask-btn">📦 .mask 保存</button>
-        </div>
-        <div class="tool-group">
-          ${btnMap['btn-black']}${btnMap['btn-white']}${btnMap['btn-color']}${btnMap['btn-circle']}${btnMap['group-color-picker']}${btnMap['btn-mosaic']}${btnMap['btn-glass']}${btnMap['btn-blur']}${btnMap['btn-spotlight']}
-        </div>
-        <div class="tool-group">
-          ${btnMap['btn-eraser']}${btnMap['btn-redframe']}${btnMap['btn-arrow']}${btnMap['btn-stamp']}${btnMap['btn-text']}${btnMap['btn-dummy']}${btnMap['btn-highlighter']}${btnMap['btn-dropper']}${btnMap['btn-shield']}
-        </div>
-      `;
-
-      row2.innerHTML = `
-        <div class="tool-group">
-          ${btnMap['btn-crop']}${btnMap['btn-rotate']}${btnMap['btn-flip']}
-        </div>
-        <div class="tool-group">
-          ${btnMap['btn-template']}${btnMap['btn-watermark']}${btnMap['btn-resize']}
-        </div>
-        ${btnMap['group-strength']}
-        <div class="tool-group">
-          ${btnMap['btn-undo']}${btnMap['btn-redo']}${btnMap['btn-clear']}${btnMap['btn-git']}
-        </div>
-        <div class="tool-group">
-          <button type="button" class="btn" id="zoom-out-btn">➖</button>
-          <span id="zoom-val" style="font-size:0.75rem; min-width:35px; text-align:center;">100%</span>
-          <button type="button" class="btn" id="zoom-in-btn">➕</button>
-          <button type="button" class="btn" id="zoom-fit-btn">全体</button>
-        </div>
-        <div style="margin-left: auto; display: flex; gap: 0.3rem;">
-          <button type="button" class="btn" id="copy-btn">📋 コピー</button>
-          <button type="button" class="btn btn-primary" id="save-modal-btn">💾 保存...</button>
-          ${btnMap['btn-compressor']}
-        </div>
-      `;
-
-      bindReboundToolEvents();
-    }
-
-    // イベントバインド（D&D、長押しツールチップ）
-    let longPressTimer = null;
-    let draggedTabKey = null;
-    let draggedBtnId = null;
-
-    function bindCategoryEvents() {
-      // タブ切り替え ＆ 長押し説明 ＆ D&D
-      document.querySelectorAll('.cat-tab-btn').forEach(tabEl => {
-        const tabKey = tabEl.dataset.tab;
-
-        // クリックでタブ切り替え
-        tabEl.addEventListener('click', () => {
-          currentCategoryTab = tabKey;
-          renderCategoryToolbar();
-          debouncedSaveStateToLocal();
-        });
-
-        // 長押しツールチップ（スマホ touchstart ＆ PC mouseenter）
-        function showTooltip() {
-          removeTooltip();
-          const tip = document.createElement('div');
-          tip.className = 'cat-tooltip';
-          tip.textContent = DEFAULT_TAB_INFO[tabKey]?.desc || '';
-          tabEl.appendChild(tip);
-        }
-        function removeTooltip() {
-          document.querySelectorAll('.cat-tooltip').forEach(t => t.remove());
-        }
-
-        tabEl.addEventListener('touchstart', () => {
-          longPressTimer = setTimeout(() => {
-            showTooltip();
-            if ('vibrate' in navigator) navigator.vibrate(30);
-          }, 450);
-        }, { passive: true });
-
-        tabEl.addEventListener('touchend', () => { clearTimeout(longPressTimer); setTimeout(removeTooltip, 2000); });
-        tabEl.addEventListener('mouseenter', () => { longPressTimer = setTimeout(showTooltip, 600); });
-        tabEl.addEventListener('mouseleave', () => { clearTimeout(longPressTimer); removeTooltip(); });
-
-        // タブのD&D並び替え
-        tabEl.addEventListener('dragstart', (e) => {
-          draggedTabKey = tabKey;
-          draggedBtnId = null;
-          tabEl.classList.add('dragging');
-          e.dataTransfer.setData('text/plain', tabKey);
-        });
-        tabEl.addEventListener('dragend', () => {
-          tabEl.classList.remove('dragging');
-          document.querySelectorAll('.cat-tab-btn').forEach(t => t.classList.remove('drag-over'));
-        });
-
-        tabEl.addEventListener('dragover', (e) => {
-          e.preventDefault();
-          tabEl.classList.add('drag-over');
-        });
-        tabEl.addEventListener('dragleave', () => {
-          tabEl.classList.remove('drag-over');
-        });
-
-        tabEl.addEventListener('drop', (e) => {
-          e.preventDefault();
-          tabEl.classList.remove('drag-over');
-
-          // 1. タブ自体の並び替え
-          if (draggedTabKey && draggedTabKey !== tabKey) {
-            const fromIdx = currentTabOrder.indexOf(draggedTabKey);
-            const toIdx = currentTabOrder.indexOf(tabKey);
-            currentTabOrder.splice(fromIdx, 1);
-            currentTabOrder.splice(toIdx, 0, draggedTabKey);
-            renderCategoryToolbar();
-            debouncedSaveStateToLocal();
-            showAutoSaveToast('🔄 タブの並び順を変更しました');
-          }
-
-          // 2. ボタンを別タブへ移動
-          if (draggedBtnId) {
-            // 元のタブから削除
-            for (let k in currentTabButtons) {
-              currentTabButtons[k] = currentTabButtons[k].filter(id => id !== draggedBtnId);
-            }
-            // 新しいタブへ追加
-            if (!currentTabButtons[tabKey]) currentTabButtons[tabKey] = [];
-            currentTabButtons[tabKey].push(draggedBtnId);
-
-            currentCategoryTab = tabKey;
-            renderCategoryToolbar();
-            debouncedSaveStateToLocal();
-            showAutoSaveToast(`📦 「${DEFAULT_TAB_INFO[tabKey].name}」タブへボタンを移動しました`);
-          }
-        });
-      });
-
-      // ボタンのD&D開始
-      document.querySelectorAll('.draggable-tool-btn').forEach(btnWrapper => {
-        btnWrapper.addEventListener('dragstart', (e) => {
-          draggedBtnId = btnWrapper.dataset.btnId;
-          draggedTabKey = null;
-          e.dataTransfer.setData('text/plain', draggedBtnId);
-        });
-      });
-
-      bindReboundToolEvents();
-    }
-
-    // 再描画された各種ツールボタンのイベントリスナー再接続
-    function bindReboundToolEvents() {
-      // モード切替
-      document.querySelectorAll('.mode-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          if (e.currentTarget.id === 'dummy-btn') {
-            document.getElementById('dummy-modal').style.display = 'flex';
-            return;
-          }
-          document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-          e.currentTarget.classList.add('active');
-          currentMode = e.currentTarget.dataset.mode;
-        });
-      });
-
-      // 各種モーダル＆操作ボタン
-      document.getElementById('undo-btn')?.addEventListener('click', undo);
-      document.getElementById('redo-btn')?.addEventListener('click', redo);
-      document.getElementById('clear-btn')?.addEventListener('click', resetImage);
-      document.getElementById('git-tree-btn')?.addEventListener('click', () => { renderGitTree(); document.getElementById('git-tree-modal').style.display = 'flex'; });
-      document.getElementById('sensitive-shield-btn')?.addEventListener('click', applySensitiveShield);
-      document.getElementById('compressor-modal-btn')?.addEventListener('click', () => document.getElementById('compressor-modal').style.display = 'flex');
-      document.getElementById('resize-modal-btn')?.addEventListener('click', () => document.getElementById('resize-modal').style.display = 'flex');
-      document.getElementById('template-btn')?.addEventListener('click', () => document.getElementById('template-modal').style.display = 'flex');
-      document.getElementById('watermark-btn')?.addEventListener('click', () => {
-        const text = prompt('透かし文字を入力:', '社外秘 / CONFIDENTIAL');
-        if (!text || text.trim().length === 0) return;
-        ctx.save();
-        ctx.font = `bold ${Math.max(24, canvas.width / 15)}px sans-serif`;
-        ctx.fillStyle = 'rgba(239, 68, 68, 0.25)';
-        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.translate(canvas.width / 2, canvas.height / 2);
-        ctx.rotate(-Math.PI / 6); ctx.fillText(text.trim(), 0, 0);
-        ctx.restore(); pushUndo('🏷️ 透かし文字');
-      });
-      document.getElementById('rotate-btn')?.addEventListener('click', () => {
-        const tCanvas = document.createElement('canvas'); tCanvas.width = canvas.width; tCanvas.height = canvas.height;
-        tCanvas.getContext('2d').drawImage(canvas, 0, 0);
-        canvas.width = tCanvas.height; canvas.height = tCanvas.width;
-        ctx.translate(canvas.width, 0); ctx.rotate(Math.PI / 2); ctx.drawImage(tCanvas, 0, 0);
-        updateZoom(currentZoom); pushUndo('↻ 90度回転');
-      });
-      document.getElementById('flip-btn')?.addEventListener('click', () => {
-        const tCanvas = document.createElement('canvas'); tCanvas.width = canvas.width; tCanvas.height = canvas.height;
-        tCanvas.getContext('2d').drawImage(canvas, 0, 0);
-        ctx.translate(canvas.width, 0); ctx.scale(-1, 1); ctx.drawImage(tCanvas, 0, 0);
-        pushUndo('⇆ 左右反転');
-      });
-      document.getElementById('camera-open-btn')?.addEventListener('click', async () => {
-        document.getElementById('camera-modal').style.display = 'flex';
-        if (typeof startCamera === 'function') await startCamera();
-      });
-      document.getElementById('copy-btn')?.addEventListener('click', async () => {
-        if (!canvas.width) return;
-        try {
-          canvas.toBlob(async (blob) => {
-            await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
-            showAutoSaveToast('📋 クリップボードに画像をコピーしました！');
-          });
-        } catch(e) { alert('保存メニューをご利用ください'); }
-      });
-      document.getElementById('save-modal-btn')?.addEventListener('click', () => {
-        if (!canvas.width) return;
-        document.getElementById('save-modal').style.display = 'flex';
-      });
-      document.getElementById('zoom-in-btn')?.addEventListener('click', () => updateZoom(currentZoom + 0.15));
-      document.getElementById('zoom-out-btn')?.addEventListener('click', () => updateZoom(currentZoom - 0.15));
-      document.getElementById('zoom-fit-btn')?.addEventListener('click', () => updateZoom(getFitZoomScale()));
-    }
-
-    // クラシック切替ボタン
-    document.getElementById('toggle-layout-btn')?.addEventListener('click', () => {
-      currentLayoutMode = (currentLayoutMode === 'category') ? 'classic' : 'category';
-      renderCategoryToolbar();
-      debouncedSaveStateToLocal();
-      showAutoSaveToast(`レイアウトを「${currentLayoutMode === 'category' ? 'カテゴリ表示' : 'クラシック表示'}」に変更しました`);
-    });
-
-    // 使い方ヘルパー開閉
-    function openHelpModal() { document.getElementById('help-modal').style.display = 'flex'; }
-    function closeHelpModal() { document.getElementById('help-modal').style.display = 'none'; }
-    document.getElementById('help-modal-open-btn')?.addEventListener('click', openHelpModal);
-
-    // ショートカット Ctrl+T+? または ?
-    window.addEventListener('keydown', (e) => {
-      if ((e.ctrlKey && e.key.toLowerCase() === 't') || e.key === '?') {
-        e.preventDefault();
-        openHelpModal();
-      }
-    });
-
-    // UI設定の復元ヘルパー
-    function applyUILayoutState(uiLayout) {
-      if (!uiLayout) return;
-      if (uiLayout.mode) currentLayoutMode = uiLayout.mode;
-      if (uiLayout.activeTab) currentCategoryTab = uiLayout.activeTab;
-      if (uiLayout.tabOrder && Array.isArray(uiLayout.tabOrder)) currentTabOrder = uiLayout.tabOrder;
-      if (uiLayout.tabButtons) currentTabButtons = Object.assign(JSON.parse(JSON.stringify(DEFAULT_TAB_BUTTONS)), uiLayout.tabButtons);
-      renderCategoryToolbar();
-    }
+    
     // --- 状態管理 ---
     const canvas = document.getElementById('canvas');
     const ctx = canvas.getContext('2d', { willReadFrequently: true });
@@ -1979,11 +1568,10 @@
     }
 
     // --- 全データ統合保存オブジェクト生成関数 ---
-    // --- 全データ統合保存オブジェクト生成関数（UI・タブ配置・全データ完全同梱版） ---
     function generateFullProjectJSON() {
       return {
         app: "Mas-King",
-        version: "5.0.0",
+        version: "2.9.2",
         timestamp: new Date().toISOString(),
         stamina: {
           current: currentStamina,
@@ -1994,38 +1582,26 @@
           currentMode: currentMode,
           maskColor: maskColorPicker?.value || '#000000',
           strength: document.getElementById('strength-slider')?.value || 14,
-          feather: document.getElementById('feather-chk')?.checked || false,
-          stampCounter: stampCounter
-        },
-        uiLayout: {
-          mode: currentLayoutMode,
-          activeTab: currentCategoryTab,
-          tabOrder: currentTabOrder,
-          tabButtons: currentTabButtons
+          feather: document.getElementById('feather-chk')?.checked || false
         },
         sparkle: getSparkleState(),
-        gitHistory: {
+  gitHistory: {
           commits: gitCommits,
           currentCommitId: currentCommitId,
           currentBranch: currentBranch,
           branches: branches
         },
-        anmomo: (typeof anmomoData !== 'undefined') ? anmomoData : null,
         activeImageIndex: activeImageIndex,
         images: imageList.map((img, idx) => ({
           name: img.name,
           width: img.width,
           height: img.height,
           src: (idx === activeImageIndex && canvas.width > 0) ? canvas.toDataURL('image/png') : img.src,
-          originalSrc: img.originalSrc || img.src,
-          gitCommits: img.gitCommits || [],
-          currentCommitId: img.currentCommitId || null,
-          currentBranch: img.currentBranch || 'main',
-          branches: img.branches || { 'main': null }
+          originalSrc: img.originalSrc || img.src
         }))
       };
     }
-    
+
     // --- デバウンス自動保存（操作停止1秒後に非同期実行でラグ解消） ---
     function debouncedSaveStateToLocal() {
       if (autoSaveDebounceTimer) clearTimeout(autoSaveDebounceTimer);
@@ -2206,7 +1782,7 @@ function selectImage(idx, loadedImg = null) {
         try {
           const data = JSON.parse(ev.target.result);
           if (data.app !== "Mas-King" || !data.images) {
-            alert('有効なマス王 (.mask) ファイルではありません。');
+            alert('有効な マス王   R̄ (.mask) ファイルではありません。');
             return;
           }
 
@@ -2222,20 +1798,9 @@ function selectImage(idx, loadedImg = null) {
             if (data.settings.strength) document.getElementById('strength-slider').value = data.settings.strength;
             if (data.settings.feather !== undefined) document.getElementById('feather-chk').checked = data.settings.feather;
             if (data.settings.maskColor && maskColorPicker) maskColorPicker.value = data.settings.maskColor;
-            if (data.settings.stampCounter) stampCounter = data.settings.stampCounter;
           }
 
-          // ★ UIレイアウト・カスタムボタン配置の復元
-          if (data.uiLayout && typeof applyUILayoutState === 'function') {
-            applyUILayoutState(data.uiLayout);
-          }
-
-          if (data.anmomo && typeof anmomoData !== 'undefined') {
-            Object.assign(anmomoData, data.anmomo);
-            saveAnmomoDashboard();
-          }
-
-          if (data.gitHistory) {
+if (data.gitHistory) {
             gitCommits = data.gitHistory.commits || [];
             currentCommitId = data.gitHistory.currentCommitId || null;
             currentBranch = data.gitHistory.currentBranch || 'main';
@@ -2252,25 +1817,20 @@ function selectImage(idx, loadedImg = null) {
               src: imgData.src,
               originalSrc: imgData.originalSrc || imgData.src,
               undo: [],
-              redo: [],
-              gitCommits: imgData.gitCommits || [],
-              currentCommitId: imgData.currentCommitId || null,
-              currentBranch: imgData.currentBranch || 'main',
-              branches: imgData.branches || { 'main': null }
+              redo: []
             });
           });
 
           renderImageTabs();
           selectImage(data.activeImageIndex >= 0 ? data.activeImageIndex : 0);
           saveStateToLocal();
-          showAutoSaveToast('📦 .mask プロジェクト（UI配置含む）を完全復元しました！');
+          alert('data.mask プロジェクトを完全復元しました！');
         } catch(err) {
           alert('.mask ファイルの読み込みに失敗しました。');
         }
       };
       reader.readAsText(file);
     }
-    
 
 // ==========================================
     // 📷 完全ローカル・カメラ撮影＆即座マスキングエンジン
@@ -2359,9 +1919,20 @@ function selectImage(idx, loadedImg = null) {
       addImageFile(photoDataUrl, photoName);
       closeCameraModal();
 
-      showAutoSaveToast('📸 写真を撮影してマス王に読み込みました！');
+      showAutoSaveToast('📸 写真を撮影して マス王   R̄に読み込みました！');
     });
-    
+    // ファイル入力 & D&D & コピペ
+    document.getElementById('file-input').addEventListener('change', (e) => {
+      Array.from(e.target.files).forEach(file => {
+        if (file.name.endsWith('.mask') || file.name.endsWith('.json')) {
+          loadMaskProjectFile(file);
+        } else {
+          const reader = new FileReader();
+          reader.onload = (ev) => addImageFile(ev.target.result, file.name);
+          reader.readAsDataURL(file);
+        }
+      });
+    });
 
     window.addEventListener('paste', (e) => {
       const items = (e.clipboardData || e.originalEvent.clipboardData)?.items;
@@ -2743,10 +2314,10 @@ function selectImage(idx, loadedImg = null) {
       ctx.fillRect(x, y, w, h);
       ctx.restore();
     }
-// 消しゴム（元画像ピクセル復元：回転・切り抜き・リサイズ完全対応版）
+// 🧹 消しゴム（元画像ピクセル復元：回転・切り抜き・リサイズ完全対応版）
     function applyEraser(x, y, w, h) {
       if (!undoStack || undoStack.length === 0) return;
-      // 現在のキャンバスサイズと一致する最も古いベース履歴を自動検索して復元
+      // ★ 3位の修正：現在のキャンバスサイズと一致する最も古い（変形直後のまっさらな）ベース履歴を探して復元
       const baseData = undoStack.find(data => data && data.width === canvas.width && data.height === canvas.height);
       if (baseData) {
         ctx.putImageData(baseData, 0, 0, x, y, w, h);
@@ -3080,7 +2651,6 @@ function selectImage(idx, loadedImg = null) {
         input.style.color = '#000000';
       }
     });
-
 document.getElementById('dummy-start-btn').addEventListener('click', () => {
       dummyState.text = document.getElementById('dummy-input').value || 'ダミー';
       dummyState.bg = document.getElementById('dummy-bg').value;
@@ -3088,6 +2658,7 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
       dummyState.size = parseInt(document.getElementById('dummy-size').value, 10);
 
       dummyOverlayText.textContent = dummyState.text;
+      // ★ 2位の修正：ズーム倍率に合わせたフォントサイズを適用
       dummyOverlay.style.fontSize = `${dummyState.size * currentZoom}px`;
       dummyOverlay.style.background = dummyState.bg;
       dummyOverlay.style.color = dummyState.color;
@@ -3103,11 +2674,11 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
     function updateOverlayPosition() {
       if (!canvas.width || dummyOverlay.style.display === 'none') return;
       const rect = canvas.getBoundingClientRect();
+      // ★ 2位の修正：キャンバス座標と画面CSSピクセルを1ミリの狂いもなく完全同期
       dummyOverlay.style.left = `${(dummyState.x / canvas.width) * rect.width}px`;
       dummyOverlay.style.top = `${(dummyState.y / canvas.height) * rect.height}px`;
       dummyOverlay.style.fontSize = `${dummyState.size * currentZoom}px`;
-    }
-    
+    }    
 
     let isDraggingDummy = false;
     let dragOffset = { x: 0, y: 0 };
@@ -3313,9 +2884,7 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
     function pushUndo(actionMsg = '編集作業') {
       pushCommit(actionMsg);
     }
-// ==========================================
-    // ↩ Undo (元に戻す) / ↪ Redo (やり直す) / 🔄 リセット
-    // ==========================================
+// ↩ Undo (元に戻す：連番スタンプ自動巻き戻し対応版)
     function undo() {
       if (!canvas.width || undoStack.length <= 1) return;
 
@@ -3333,6 +2902,9 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
         ctx.putImageData(prevState, 0, 0);
         updateZoom(currentZoom);
 
+        // ★ 1位の修正：Undo時に連番スタンプのカウンターも「1つ前」に安全巻き戻し
+        stampCounter = Math.max(1, stampCounter - 1);
+
         // GitツリーのHEADも1つ前に戻す
         if (gitCommits.length > 1) {
           const currentIdx = gitCommits.findIndex(c => c.id === currentCommitId);
@@ -3344,7 +2916,6 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
         debouncedSaveStateToLocal();
       }
     }
-
     function redo() {
       if (!canvas.width || redoStack.length === 0) return;
 
@@ -3456,18 +3027,27 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
       }
     });
 
-// 更新履歴データ（重複削除・完全版）
+    // 更新履歴データ
     const changelogData = [
-    {
-      version: 'v5.0.0',
-      date: '2026-09-10 18:40',
-      type: 'feat',
-      title: 'カテゴリ別カスタムタブ＆ワークスペース自由配置エンジンの搭載',
+
+{
+      version: 'v5.1.0',
+      date: '2026-09-11 18:03',
+      type: 'change',
+      title: 'サイトタイトルを          マス王   R̄に変更しました',
       items: [
-        'ツールバーを【加工・履歴・削除・変換・便利】の5大カテゴリタブに整理し、目的の機能へ即座にアクセスできるよう刷新しました',
-        'タブ長押しでの機能説明ツールチップ、タブ自体のD&D並び替え、機能ボタンのカテゴリ間ドラッグ移動による完全自由なカスタムに対応しました',
-        '「⚙️ クラシック表示」ボタンで以前の全表示レイアウトにいつでもワンクリック復帰可能にし、すべてのUI配置を.maskとIndexedDBに自動保存・復元できるようにしました',
-        '操作ヘルプモーダル（どこでもタップで閉じる）およびショートカットキー（Ctrl+T+? / ?）を追加しました'
+        'マス王から          マス王   R̄へ変更しました。意味は、マス王 Royal editionです。'
+      ]
+    },
+{
+      version: 'v5.0.0',
+      date: '2026-09-11 18:00',
+      type: 'fix',
+      title: '連番Undo巻き戻し・ズーム時ダミー配置・変形後消しゴムの重要修正',
+      items: [
+        '連番スタンプでUndo(元に戻す)を実行した際、スタンプの番号カウンターが自動で1つ前に巻き戻るよう修正しました',
+        '画面を拡大・縮小ズームした状態でダミー置換文字を配置した際、プレビューと焼き付け位置・サイズのズレを完全に解消しました',
+        '画像の回転・切り抜き・リサイズ変形を行った後でも、消しゴムツールで元画像を正常に復元できるよう改善しました'
       ]
     },
     {
@@ -3625,7 +3205,7 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
         '画像の左上や右下など端付近をマスキングする際、ルーペ（拡大鏡）の表示がキャンバス外を参照して黒く乱れる問題を解消しました'
       ]
     },
-    {
+{
       version: 'v4.5.3',
       date: '2026-09-07 16:38',
       type: 'fix',
@@ -3672,292 +3252,292 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
         'WebP/AVIF一括圧縮機において、ブラウザ非対応時のフォールバックで拡張子が正常に保存されるよう修正しました'
       ]
     },
+      {
+        version: 'v4.3.0',
+        date: '2026-09-05 16:40',
+        type: 'fix',
+        title: 'アン桃モーダルの二重生成バグを修正',
+        items: [
+          'アン桃のモーダルおよびゲーム画面がDOM内で重複生成される問題を解消し、プレイ履歴タイムラインの表示を完全安定化しました'
+        ]
+      },
+      {
+        version: 'v4.2.5',
+        date: '2026-09-05 15:42',
+        type: 'fix',
+        title: '更新履歴のカテゴリー別ボタンに変更がないのを直しました',
+        items: [
+          '更新履歴のカテゴリー別ボタンに変更がないのを直しました'
+        ]
+      },
+      {
+        version: 'v4.2.0',
+        date: '2026-09-05 15:40',
+        type: 'fix',
+        title: '回転・切り抜き・リサイズ後の消しゴム復元バグを修正',
+        items: [
+          '画像の回転・反転・切り抜き・リサイズを行った後でも、消しゴム（選択範囲の復元）が正常に機能するよう修正しました'
+        ]
+      },
+      {
+        version: 'v4.1.0',
+       date: '2026-09-05 14:50',
+        type: 'change',
+        title: 'アン桃のダッシュボードについて変更を行いました',
+        items: [
+          '消した個数を全部刻んで表示される形式に変更しました'
+        ]
+      },
     {
-      version: 'v4.3.0',
-      date: '2026-09-05 16:40',
-      type: 'fix',
-      title: 'アン桃モーダルの二重生成バグを修正',
-      items: [
-        'アン桃のモーダルおよびゲーム画面がDOM内で重複生成される問題を解消し、プレイ履歴タイムラインの表示を完全安定化しました'
-      ]
-    },
+        version: 'v4.0.0',
+        date: '2026-09-05 13:00',
+        type: 'feat',
+        title: 'ミニゲームアン桃を追加しました',
+        items: [
+          '桃野天然水/アンギラのギラちゃんが出てくるミニゲーム　アン桃を追加しました',
+          'タップ/クリックで60秒の間にランダムに90個降ってくる桃野天然水とギラちゃんを消すゲームです。1回ごとに8万スタミナ消費'
+        ]
+      },
     {
-      version: 'v4.2.0',
-      date: '2026-09-05 15:42',
-      type: 'fix',
-      title: '更新履歴のカテゴリー別ボタンに変更がないのを直しました',
-      items: [
-        '更新履歴のカテゴリー別ボタンに変更がないのを直しました'
-      ]
-    },
+        version: 'v3.9.0',
+        date: '2026-09-05 09:20',
+        type: 'change',
+        title: '訪問数・現地時計のレスポンシブ最適化（PC常時表示・スマホモーダル化）',
+        items: [
+          'PC画面では今まで通りヘッダーに訪問者数と現地時計を常時表示するようにしました',
+          'スマホ画面ではヘッダーのはみ出しを防ぐため、ボタンをタップしてモーダルで確認・消去できる省スペース設計にしました'
+        ]
+      },
     {
-      version: 'v4.2.0',
-      date: '2026-09-05 15:40',
-      type: 'fix',
-      title: '回転・切り抜き・リサイズ後の消しゴム復元バグを修正',
-      items: [
-        '画像の回転・反転・切り抜き・リサイズを行った後でも、消しゴム（選択範囲の復元）が正常に機能するよう修正しました'
-      ]
-    },
-    {
-      version: 'v4.1.0',
-      date: '2026-09-05 14:50',
-      type: 'change',
-      title: 'アン桃のダッシュボードについて変更を行いました',
-      items: [
-        '消した個数を全部刻んで表示される形式に変更しました'
-      ]
-    },
-    {
-      version: 'v4.0.0',
-      date: '2026-09-05 13:00',
-      type: 'feat',
-      title: 'ミニゲームアン桃を追加しました',
-      items: [
-        '桃野天然水/アンギラのギラちゃんが出てくるミニゲーム　アン桃を追加しました',
-        'タップ/クリックで60秒の間にランダムに90個降ってくる桃野天然水とギラちゃんを消すゲームです。1回ごとに8万スタミナ消費'
-      ]
-    },
-    {
-      version: 'v3.9.0',
-      date: '2026-09-05 09:20',
-      type: 'change',
-      title: '訪問数・現地時計のレスポンシブ最適化（PC常時表示・スマホモーダル化）',
-      items: [
-        'PC画面では今まで通りヘッダーに訪問者数と現地時計を常時表示するようにしました',
-        'スマホ画面ではヘッダーのはみ出しを防ぐため、ボタンをタップしてモーダルで確認・消去できる省スペース設計にしました'
-      ]
-    },
-    {
-      version: 'v3.8.0',
-      date: '2026-09-05 08:35',
-      type: 'change',
-      title: '超軽量 WebP / AVIF 一括コンバーターへの変更&更新履歴のカテゴリに変更を追加しました',
-      items: [
-        '超軽量 WebP / AVIF 一括コンバーターで画像を圧縮した際、1623.png→1623.(選択した拡張子) 296.1 KB ➔ (圧縮後のサイズ)と表示するようにしました',
-        '更新履歴のカテゴリに変更を追加しました'
-      ]
-    },
-    {
-      version: 'v3.7.0',
-      date: '2026-09-04 16:40',
-      type: 'feat',
-      title: 'スマホ表示の文字・ボタン自動縮小＆横スクロール最適化',
-      items: [
-        '画面サイズに応じてボタンや文字の大きさが自動縮小（clamp対応）し、はみ出しを防止しました',
-        'ヘッダー、ナビタブ、ツールバー、各種設定モーダルの横スクロール操作を滑らかに最適化しました',
-        '小型スマホ（iPhone SEなど）でも操作ボタンが画面外へ押し出されないよう余白と高さを調整しました'
-      ]
-    },
-    {
-      version: 'v3.6.0',
-      date: '2026-09-03 18:55',
-      type: 'feat',
-      title: 'リンク集を追加しました',
-      items: [
-        '管理人が厳選したおすすめサイトをカテゴリ別に分けて掲載しました'
-      ]
-    },
-    {
-      version: 'v3.5.0',
-      date: '2026-09-03 17:35',
-      type: 'feat',
-      title: '更新履歴のカテゴリ分別・絞り込みフィルターを追加しました',
-      items: [
-        '「追加 / バグ修正 / 削除 / その他」のボタンで更新履歴を瞬時に絞り込み表示可能にしました'
-      ]
-    },
-    {
-      version: 'v3.4.0',
-      date: '2026-09-02 18:31',
-      type: 'feat',
-      title: 'マス王アンケートを公開しました',
-      items: [
-        '要望、バグ、クレームなどを管理人に送れます'
-      ]
-    },
-    {
-      version: 'v3.3.0',
-      date: '2026-09-02 18:18',
-      type: 'feat',
-      title: '保存先をlocalstorageから IndexedDBへ変えました',
-      items: [
-        '保存容量が5MBから数ギガに増加するので、重い画像やコミットを100件作っても再リロードする際落ちません'
-      ]
-    },
-    {
-      version: 'v3.20',
-      date: '2026-09-02 17:45',
-      type: 'feat',
-      title: 'Git履歴ツリーを追加しました',
-      items: [
-        '操作が自動的にすべて履歴ツリーにコミットされます',
-        'コミットを押すと、そのコミットの操作に復元できます',
-        '.maskにもしっかり履歴ツリーが保存できます。ブランチも作れます'
-      ]
-    },
-    {
-      version: 'v3.1.0',
-      date: '2026-09-02 09:25',
-      type: 'feat',
-      title: 'センシティブシールド/オープニングアニメーションを追加しました',
-      items: [
-        'グロ画像を自動検知し、厚めのモザイクをかけます',
-        'apiなどを一切使わずローカル処理しています',
-        'スキップ/2回目以降流さない機能つきの5秒間のオープニングアニメーションを追加しました'
-      ]
-    },
-    {
-      version: 'v3.0.0',
-      date: '2026-09-01 15:25',
-      type: 'feat',
-      title: '自己紹介タブを追加しました',
-      items: [
-        '管理人の自己紹介タブを追加しました'
-      ]
-    },
-    {
-      version: 'v2.9.2',
-      date: '2026-09-01 12:00',
-      type: 'feat',
-      title: 'カラー塗り・選択移動・カラーピッカー連動＆スマホ完全最適化',
-      items: [
-        '好きな色やスポイト抽出色で四角く塗りつぶせる「🎨 カラー塗り」機能を追加',
-        '選択した範囲をドラッグで別の場所に移動・複製できる「🔀 選択移動」を新設',
-        '円形マスク・枠・矢印・連番スタンプでカラーピッカーおよびスポイト抽出色を選択可能に',
-        '消しゴム（選択範囲の元画像復元）機能の安定化',
-        'スマホ・タブレットでの2本指ピンチズーム・パン移動の追従性とページネーション表示を改善',
-        '右クリックによる画像保存・コピー操作を完全許可'
-      ]
-    },
-    {
-      version: 'v2.9.0',
-      date: '2026-09-01 10:39',
-      type: 'feat',
-      title: 'PWA化しました',
-      items: [
-        'これで実際にアプリのように使えます'
-      ]
-    },
-    {
-      version: 'v2.8.0',
-      date: '2026-09-01 10:15',
-      type: 'other',
-      title: 'ロゴのルビをマーキーに変えました',
-      items: [
-        'ロゴのルビのところをmarquee(文字がスクロールするアニメーション)にしました'
-      ]
-    },
-    {
-      version: 'v2.7.1',
-      date: '2026-08-31 12:15',
-      type: 'fix',
-      title: '描画・マスキング完了時の超軽量化＆ラグ完全解消',
-      items: [
-        'ドラッグ終了時の同期Base64書き込みを遅延デバウンス化し、体感遅延をゼロに改善',
-        'モザイク・ぼかし・消しゴム処理のピクセル走査を整数最適化して高速化'
-      ]
-    },
-    {
-      version: 'v2.7.0',
-      date: '2026-08-31 11:45',
-      type: 'feat',
-      title: '高精度ローカル自動認識マスク＆円形カラーピッカー連動・スマホ操作性超強化',
-      items: [
-        '完全ローカルで動く高精度エッジ・スキントーン自動解析による文字・顔一発マスキングを搭載',
-        '円形マスク・枠・矢印・連番スタンプでカラーピッカー及びスポイト抽出色を選択可能に',
-        '消しゴム（選択範囲の元画像復元）機能を追加',
-        'スマホ・タブレットでの2本指ピンチズーム・パン移動およびタッチ操作性を格段に向上'
-      ]
-    },
-    {
-      version: 'v2.6.0',
-      date: '2026-08-31 09:47',
-      type: 'feat',
-      title: 'on/offボタンを動かせる機能を追加しました',
-      items: [
-        ' 位置を自由自在に変えれます'
-      ]
-    },
-    {
-      version: 'v2.5.0',
-      date: '2026-08-31 09:38',
-      type: 'feat',
-      title: '星のマウスストーカを追加しました',
-      items: [
-        ' スマホでもついてきます。ライトモードだと少しはっきりした黄色、ダークモードだと薄い黄色にしてあります。on/off機能付きです'
-      ]
-    },
-    {
-      version: 'v2.4.0',
-      date: '2026-08-31 08:56',
-      type: 'feat',
-      title: '超軽量 WebP / AVIF 一括コンバーター＆圧縮機を追加しました',
-      items: [
-        ' 重たいPNGやJPEGをドラッグするだけで、画質を保ったままファイルサイズを1/10に一括圧縮（ギガ削減）できます'
-      ]
-    },
-    {
-      version: 'v2.4.0',
-      date: '2026-08-30 19:40',
-      type: 'fix',
-      title: '調べて分かったバグをすべて直しました',
-      items: [
-        'パソコンで機能が使用できないバグなどを直しました。文法なども直しました'
-      ]
-    },
-    {
-      version: 'v2.3.0',
-      date: '2026-08-30 09:10',
-      type: 'feat',
-      title: '独自形式 data.mask 対応＆超インフレスタミナ可視化バー搭載',
-      items: [
-        '全画像・スタミナ状態を完全保存＆復元できる data.mask (JSON形式) の入出力に対応',
-        '毎分52万回復のリアルタイム・スタミナバーを下部に搭載（動作超軽量設計）',
-        'リロード時の自動復元を完全強化（作業状態・タブ・スタミナが確実に保持されます）'
-      ]
-    },
-    {
-      version: 'v2.2.0',
-      date: '2026-08-29 20:30',
-      type: 'feat',
-      title: 'SQL Serverアクセスカウンター＆現地時刻時計の搭載',
-      items: [
-        'Somee.com MSSQL連動のリアルタイムアクセスカウンターをヘッダーに統合',
-        'アクセスした国・タイムゾーンを自動判別する高精度現地時計を搭載'
-      ]
-    },
-    {
-      version: 'v2.1.0',
-      date: '2026-08-29 14:50',
-      type: 'feat',
-      title: 'ダミー文字置換ツール＆直感ドラッグ移動の実装',
-      items: [
-        '氏名・電話番号・メール・住所・会社名などのダミー上書き置換に対応',
-        '配置枠を画面上で直感的にドラッグ＆ドロップ移動して位置調整可能'
-      ]
-    },
-    {
-      version: 'v2.0.0',
-      date: '2026-08-28 19:15',
-      type: 'feat',
-      title: '超大型アップデート：全29大機能＆スマホ完全対応',
-      items: [
-        'スマホ・タブレットのタッチ・スワイプ・ピンチ操作に完全最適化',
-        '注釈機能・定型カードマスク・透かし・リサイズ・保存形式選択を実装'
-      ]
-    },
-    {
-      version: 'v1.0.0',
-      date: '2026-08-28 19:00',
-      type: 'other',
-      title: '初期リリース',
-      items: [
-        '完全ローカル完結マスキングツールの初期公開'
-      ]
-    }
-  ];
-  
+        version: 'v3.8.0',
+        date: '2026-09-05 8:35',
+        type: 'change',
+        title: '超軽量 WebP / AVIF 一括コンバーターへの変更&更新履歴のカテゴリに変更を追加しました',
+        items: [
+          '超軽量 WebP / AVIF 一括コンバーターで画像を圧縮した際、1623.png→1623.(選択した拡張子) 296.1 KB ➔ (圧縮後のサイズ)と表示するようにしました',
+          '更新履歴のカテゴリに変更を追加しました'
+        ]
+      },
+{
+        version: 'v3.7.0',
+        date: '2026-09-04 16:40',
+        type: 'feat',
+        title: 'スマホ表示の文字・ボタン自動縮小＆横スクロール最適化',
+        items: [
+          '画面サイズに応じてボタンや文字の大きさが自動縮小（clamp対応）し、はみ出しを防止しました',
+          'ヘッダー、ナビタブ、ツールバー、各種設定モーダルの横スクロール操作を滑らかに最適化しました',
+          '小型スマホ（iPhone SEなど）でも操作ボタンが画面外へ押し出されないよう余白と高さを調整しました'
+        ]
+      },
+      {
+        version: 'v3.6.0',
+        date: '2026-09-03 18:55',
+        type: 'feat',
+        title: 'リンク集を追加しました',
+        items: [
+          '管理人が厳選したおすすめサイトをカテゴリ別に分けて掲載しました'
+        ]
+      },
+      {
+        version: 'v3.5.0',
+        date: '2026-09-03 17:35',
+        type: 'feat',
+        title: '更新履歴のカテゴリ分別・絞り込みフィルターを追加しました',
+        items: [
+          '「追加 / バグ修正 / 削除 / その他」のボタンで更新履歴を瞬時に絞り込み表示可能にしました'
+        ]
+      },
+      {
+        version: 'v3.4.0',
+        date: '2026-09-02 18:31',
+        type: 'feat',
+        title: 'マス王アンケートを公開しました',
+        items: [
+          '要望、バグ、クレームなどを管理人に送れます'
+        ]
+      },
+      {
+        version: 'v3.3.0',
+        date: '2026-09-02 18:18',
+        type: 'feat',
+        title: '保存先をlocalstorageから IndexedDBへ変えました',
+        items: [
+          '保存容量が5MBから数ギガに増加するので、重い画像やコミットを100件作っても再リロードする際落ちません'
+        ]
+      },
+      {
+        version: 'v3.20',
+        date: '2026-09-02 17:45',
+        type: 'feat',
+        title: 'Git履歴ツリーを追加しました',
+        items: [
+          '操作が自動的にすべて履歴ツリーにコミットされます',
+          'コミットを押すと、そのコミットの操作に復元できます',
+          '.maskにもしっかり履歴ツリーが保存できます。ブランチも作れます'
+        ]
+      },
+      {
+        version: 'v3.1.0',
+        date: '2026-09-02 09:25',
+        type: 'feat',
+        title: 'センシティブシールド/オープニングアニメーションを追加しました',
+        items: [
+          'グロ画像を自動検知し、厚めのモザイクをかけます',
+          'apiなどを一切使わずローカル処理しています',
+          'スキップ/2回目以降流さない機能つきの5秒間のオープニングアニメーションを追加しました'
+        ]
+      },
+      {
+        version: 'v3.0.0',
+        date: '2026-09-01 15:25',
+        type: 'feat',
+        title: '自己紹介タブを追加しました',
+        items: [
+          '管理人の自己紹介タブを追加しました'
+        ]
+      },
+      {
+        version: 'v2.9.2',
+        date: '2026-09-01 12:00',
+        type: 'feat',
+        title: 'カラー塗り・選択移動・カラーピッカー連動＆スマホ完全最適化',
+        items: [
+          '好きな色やスポイト抽出色で四角く塗りつぶせる「🎨 カラー塗り」機能を追加',
+          '選択した範囲をドラッグで別の場所に移動・複製できる「🔀 選択移動」を新設',
+          '円形マスク・枠・矢印・連番スタンプでカラーピッカーおよびスポイト抽出色を選択可能に',
+          '消しゴム（選択範囲の元画像復元）機能の安定化',
+          'スマホ・タブレットでの2本指ピンチズーム・パン移動の追従性とページネーション表示を改善',
+          '右クリックによる画像保存・コピー操作を完全許可'
+        ]
+      },
+      {
+        version: 'v2.9.0',
+        date: '2026-09-01 10:39',
+        type: 'feat',
+        title: 'PWA化しました',
+        items: [
+          'これで実際にアプリのように使えます'
+        ]
+      },
+      {
+        version: 'v2.8.0',
+        date: '2026-09-01 10:15',
+        type: 'other',
+        title: 'ロゴのルビをマーキーに変えました',
+        items: [
+          'ロゴのルビのところをmarquee(文字がスクロールするアニメーション)にしました'
+        ]
+      },
+      {
+        version: 'v2.7.1',
+        date: '2026-08-31 12:15',
+        type: 'fix',
+        title: '描画・マスキング完了時の超軽量化＆ラグ完全解消',
+        items: [
+          'ドラッグ終了時の同期Base64書き込みを遅延デバウンス化し、体感遅延をゼロに改善',
+          'モザイク・ぼかし・消しゴム処理のピクセル走査を整数最適化して高速化'
+        ]
+      },
+      {
+        version: 'v2.7.0',
+        date: '2026-08-31 11:45',
+        type: 'feat',
+        title: '高精度ローカル自動認識マスク＆円形カラーピッカー連動・スマホ操作性超強化',
+        items: [
+          '完全ローカルで動く高精度エッジ・スキントーン自動解析による文字・顔一発マスキングを搭載',
+          '円形マスク・枠・矢印・連番スタンプでカラーピッカー及びスポイト抽出色を選択可能に',
+          '消しゴム（選択範囲の元画像復元）機能を追加',
+          'スマホ・タブレットでの2本指ピンチズーム・パン移動およびタッチ操作性を格段に向上'
+        ]
+      },
+      {
+        version: 'v2.6.0',
+        date: '2026-08-31 09:47',
+        type: 'feat',
+        title: 'on/offボタンを動かせる機能を追加しました',
+        items: [
+          ' 位置を自由自在に変えれます'
+        ]
+      },
+      {
+        version: 'v2.5.0',
+        date: '2026-08-31 09:38',
+        type: 'feat',
+        title: '星のマウスストーカを追加しました',
+        items: [
+          ' スマホでもついてきます。ライトモードだと少しはっきりした黄色、ダークモードだと薄い黄色にしてあります。on/off機能付きです'
+        ]
+      },
+      {
+        version: 'v2.4.0',
+        date: '2026-08-31 08:56',
+        type: 'feat',
+        title: '超軽量 WebP / AVIF 一括コンバーター＆圧縮機を追加しました',
+        items: [
+          ' 重たいPNGやJPEGをドラッグするだけで、画質を保ったままファイルサイズを1/10に一括圧縮（ギガ削減）できます'
+        ]
+      },
+      {
+        version: 'v2.4.0',
+        date: '2026-08-30 19:40',
+        type: 'fix',
+        title: '調べて分かったバグをすべて直しました',
+        items: [
+          'パソコンで機能が使用できないバグなどを直しました。文法なども直しました'
+        ]
+      },
+      {
+        version: 'v2.3.0',
+        date: '2026-08-30 09:10',
+        type: 'feat',
+        title: '独自形式 data.mask 対応＆超インフレスタミナ可視化バー搭載',
+        items: [
+          '全画像・スタミナ状態を完全保存＆復元できる data.mask (JSON形式) の入出力に対応',
+          '毎分52万回復のリアルタイム・スタミナバーを下部に搭載（動作超軽量設計）',
+          'リロード時の自動復元を完全強化（作業状態・タブ・スタミナが確実に保持されます）'
+        ]
+      },
+      {
+        version: 'v2.2.0',
+        date: '2026-08-29 20:30',
+        type: 'feat',
+        title: 'SQL Serverアクセスカウンター＆現地時刻時計の搭載',
+        items: [
+          'Somee.com MSSQL連動のリアルタイムアクセスカウンターをヘッダーに統合',
+          'アクセスした国・タイムゾーンを自動判別する高精度現地時計を搭載'
+        ]
+      },
+      {
+        version: 'v2.1.0',
+        date: '2026-08-29 14:50',
+        type: 'feat',
+        title: 'ダミー文字置換ツール＆直感ドラッグ移動の実装',
+        items: [
+          '氏名・電話番号・メール・住所・会社名などのダミー上書き置換に対応',
+          '配置枠を画面上で直感的にドラッグ＆ドロップ移動して位置調整可能'
+        ]
+      },
+      {
+        version: 'v2.0.0',
+        date: '2026-08-28 19:15',
+        type: 'feat',
+        title: '超大型アップデート：全29大機能＆スマホ完全対応',
+        items: [
+          'スマホ・タブレットのタッチ・スワイプ・ピンチ操作に完全最適化',
+          '注釈機能・定型カードマスク・透かし・リサイズ・保存形式選択を実装'
+        ]
+      },
+      {
+        version: 'v1.0.0',
+        date: '2026-08-28 19:00',
+        type: 'other',
+        title: '初期リリース',
+        items: [
+          '完全ローカル完結マスキングツールの初期公開'
+        ]
+      }
+    ];
+
     let clCurrentPage = 1;
     const clItemsPerPage = 10;
     let clSortDesc = true;
@@ -3972,27 +3552,21 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
     };
 
     function renderChangelog() {
-      const searchInput = document.getElementById('cl-search-input');
-      const query = searchInput ? searchInput.value.toLowerCase() : '';
+      const query = document.getElementById('cl-search-input').value.toLowerCase();
       const listEl = document.getElementById('changelog-list');
       const selectEl = document.getElementById('cl-page-select');
 
-      if (!listEl || !selectEl) return;
-
-      const queries = query.split(/\s+/).filter(q => q.length > 0);
+          const queries = query.split(/\s+/).filter(q => q.length > 0);
       let filtered = changelogData.filter(item => {
         const matchesCategory = (clActiveFilter === 'all') || (item.type === clActiveFilter);
-        const itemText = (item.items && Array.isArray(item.items)) ? item.items.join(' ') : '';
-        const full = `${item.version} ${item.date} ${item.title} ${itemText}`.toLowerCase();
+        const full = `${item.version} ${item.date} ${item.title} ${item.items.join(' ')}`.toLowerCase();
         const matchesQuery = queries.length === 0 || queries.every(q => full.includes(q));
         return matchesCategory && matchesQuery;
       });
 
-      // ★ 安全な日付ソート（どのブラウザでも絶対に壊れない文字列比較）
       filtered.sort((a, b) => {
-        const dateA = a.date || '';
-        const dateB = b.date || '';
-        return clSortDesc ? dateB.localeCompare(dateA) : dateA.localeCompare(dateB);
+        const diff = new Date(a.date) - new Date(b.date);
+        return clSortDesc ? -diff : diff;
       });
 
       const totalItems = filtered.length;
@@ -4007,16 +3581,11 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
         if (i === clCurrentPage) opt.selected = true;
         selectEl.appendChild(opt);
       }
-      
-      const totalPagesEl = document.getElementById('cl-total-pages');
-      const totalCountEl = document.getElementById('cl-total-count');
-      const prevBtn = document.getElementById('cl-prev-btn');
-      const nextBtn = document.getElementById('cl-next-btn');
+      document.getElementById('cl-total-pages').textContent = totalPages;
+      document.getElementById('cl-total-count').textContent = totalItems;
 
-      if (totalPagesEl) totalPagesEl.textContent = totalPages;
-      if (totalCountEl) totalCountEl.textContent = totalItems;
-      if (prevBtn) prevBtn.disabled = (clCurrentPage === 1);
-      if (nextBtn) nextBtn.disabled = (clCurrentPage === totalPages);
+      document.getElementById('cl-prev-btn').disabled = (clCurrentPage === 1);
+      document.getElementById('cl-next-btn').disabled = (clCurrentPage === totalPages);
 
       if (totalItems === 0) {
         listEl.innerHTML = '<p style="color:#64748b; text-align:center; padding: 2rem;">該当する更新履歴が見つかりませんでした。</p>';
@@ -4028,9 +3597,6 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
 
       listEl.innerHTML = pageItems.map(item => {
         const conf = typeConfig[item.type] || typeConfig['other'];
-        const itemsList = (item.items && Array.isArray(item.items)) 
-          ? item.items.map(li => `<li>${li}</li>`).join('') 
-          : '';
         return `
           <div class="changelog-item">
             <div class="changelog-header">
@@ -4042,7 +3608,7 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
               <span style="font-size:0.8rem; color:#64748b;">📅 ${item.date}</span>
             </div>
             <ul style="padding-left:1.2rem; font-size:0.85rem; line-height:1.6;">
-              ${itemsList}
+              ${item.items.map(li => `<li>${li}</li>`).join('')}
             </ul>
           </div>
         `;
@@ -4057,10 +3623,8 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
         clActiveFilter = e.currentTarget.dataset.filter;
         clCurrentPage = 1;
         renderChangelog();
-        renderCategoryToolbar(); // ★ これを追加！（ツールバーのボタンを表示させる）
       });
     });
-
 
     document.getElementById('cl-prev-btn').addEventListener('click', () => { if (clCurrentPage > 1) { clCurrentPage--; renderChangelog(); } });
     document.getElementById('cl-next-btn').addEventListener('click', () => { if (clCurrentPage < Math.ceil(changelogData.length / clItemsPerPage)) { clCurrentPage++; renderChangelog(); } });
@@ -5302,3 +4866,4 @@ window.addEventListener('DOMContentLoaded', async () => {
 </div>
 </body>
 </html>
+
