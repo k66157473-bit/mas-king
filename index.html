@@ -1567,41 +1567,54 @@
       }
     }
 
-    // --- 全データ統合保存オブジェクト生成関数 ---
+// --- 全データ統合保存オブジェクト生成関数（テーマ・UI・全データ完全同梱版） ---
     function generateFullProjectJSON() {
       return {
-        app: "Mas-King",
-        version: "2.9.2",
+        app: "Mas-King R̄",
+        version: "5.2.0",
         timestamp: new Date().toISOString(),
+        // ★ 選んだテーマ・UIレイアウト設定を完全保存
+        theme: {
+          darkMode: document.body.classList.contains('dark-mode'),
+          uiLayoutMode: (typeof currentLayoutMode !== 'undefined') ? currentLayoutMode : 'category',
+          activeCategoryTab: (typeof currentCategoryTab !== 'undefined') ? currentCategoryTab : 'process',
+          tabOrder: (typeof currentTabOrder !== 'undefined') ? currentTabOrder : ['process', 'history', 'delete', 'convert', 'utility'],
+          tabButtons: (typeof currentTabButtons !== 'undefined') ? currentTabButtons : null
+        },
+        settings: {
+          currentMode: currentMode,
+          maskColor: maskColorPicker?.value || '#000000',
+          strength: parseInt(document.getElementById('strength-slider')?.value, 10) || 14,
+          feather: document.getElementById('feather-chk')?.checked || false,
+          stampCounter: stampCounter,
+          currentZoom: currentZoom
+        },
         stamina: {
           current: currentStamina,
           totalUsed: totalUsedStamina
         },
-        settings: {
-          darkMode: document.body.classList.contains('dark-mode'),
-          currentMode: currentMode,
-          maskColor: maskColorPicker?.value || '#000000',
-          strength: document.getElementById('strength-slider')?.value || 14,
-          feather: document.getElementById('feather-chk')?.checked || false
-        },
         sparkle: getSparkleState(),
-  gitHistory: {
+        gitHistory: {
           commits: gitCommits,
           currentCommitId: currentCommitId,
           currentBranch: currentBranch,
           branches: branches
         },
+        anmomo: (typeof anmomoData !== 'undefined') ? anmomoData : null,
         activeImageIndex: activeImageIndex,
         images: imageList.map((img, idx) => ({
           name: img.name,
           width: img.width,
           height: img.height,
           src: (idx === activeImageIndex && canvas.width > 0) ? canvas.toDataURL('image/png') : img.src,
-          originalSrc: img.originalSrc || img.src
+          originalSrc: img.originalSrc || img.src,
+          gitCommits: img.gitCommits || [],
+          currentCommitId: img.currentCommitId || null,
+          currentBranch: img.currentBranch || 'main',
+          branches: img.branches || { 'main': null }
         }))
       };
     }
-
     // --- デバウンス自動保存（操作停止1秒後に非同期実行でラグ解消） ---
     function debouncedSaveStateToLocal() {
       if (autoSaveDebounceTimer) clearTimeout(autoSaveDebounceTimer);
@@ -1776,55 +1789,129 @@ function selectImage(idx, loadedImg = null) {
       if (file) loadMaskProjectFile(file);
     });
 
+// ==========================================
+    // 📦 全データ完全復元エンジン（テーマ・画像・UI・Git・アン桃 100%復元）
+    // ==========================================
+    function applyFullProjectState(data) {
+      if (!data || (data.app !== "Mas-King R̄" && data.app !== "Mas-King")) {
+        alert('有効なマス王 (.mask) ファイルではありません。');
+        return false;
+      }
+
+      // 1. テーマ＆ダークモード復元
+      if (data.theme) {
+        if (data.theme.darkMode !== undefined) {
+          if (data.theme.darkMode) {
+            document.body.classList.add('dark-mode');
+            const darkBtn = document.getElementById('dark-mode-btn');
+            if (darkBtn) darkBtn.textContent = '☀️';
+            localStorage.setItem('maskou_dark', '1');
+          } else {
+            document.body.classList.remove('dark-mode');
+            const darkBtn = document.getElementById('dark-mode-btn');
+            if (darkBtn) darkBtn.textContent = '🌙';
+            localStorage.setItem('maskou_dark', '0');
+          }
+        }
+        if (typeof applyUILayoutState === 'function') {
+          applyUILayoutState(data.theme);
+        }
+      } else if (data.settings && data.settings.darkMode !== undefined) {
+        // 過去バージョン互換
+        if (data.settings.darkMode) {
+          document.body.classList.add('dark-mode');
+          const darkBtn = document.getElementById('dark-mode-btn');
+          if (darkBtn) darkBtn.textContent = '☀️';
+          localStorage.setItem('maskou_dark', '1');
+        } else {
+          document.body.classList.remove('dark-mode');
+          const darkBtn = document.getElementById('dark-mode-btn');
+          if (darkBtn) darkBtn.textContent = '🌙';
+          localStorage.setItem('maskou_dark', '0');
+        }
+      }
+
+      // 2. スタミナ復元
+      if (data.stamina) {
+        currentStamina = Math.min(MAX_STAMINA, data.stamina.current || MAX_STAMINA);
+        totalUsedStamina = data.stamina.totalUsed || 0;
+        updateStaminaUI();
+      }
+
+      // 3. マウスストーカー復元
+      if (data.sparkle) applySparkleState(data.sparkle);
+
+      // 4. 設定値・スタンプ番号・ツールモード復元
+      if (data.settings) {
+        if (data.settings.strength) {
+          const slider = document.getElementById('strength-slider');
+          if (slider) slider.value = data.settings.strength;
+        }
+        if (data.settings.feather !== undefined) {
+          const chk = document.getElementById('feather-chk');
+          if (chk) chk.checked = data.settings.feather;
+        }
+        if (data.settings.maskColor && maskColorPicker) maskColorPicker.value = data.settings.maskColor;
+        if (data.settings.stampCounter) stampCounter = data.settings.stampCounter;
+        if (data.settings.currentMode) {
+          currentMode = data.settings.currentMode;
+          document.querySelectorAll('.mode-btn').forEach(b => {
+            b.classList.toggle('active', b.dataset.mode === currentMode);
+          });
+        }
+      }
+
+      // 5. アン桃データ復元
+      if (data.anmomo && typeof anmomoData !== 'undefined') {
+        Object.assign(anmomoData, data.anmomo);
+        saveAnmomoDashboard();
+      }
+
+      // 6. Git履歴ツリー復元
+      if (data.gitHistory) {
+        gitCommits = data.gitHistory.commits || [];
+        currentCommitId = data.gitHistory.currentCommitId || null;
+        currentBranch = data.gitHistory.currentBranch || 'main';
+        branches = data.gitHistory.branches || { 'main': null };
+        renderGitTree();
+      }
+
+      // 7. 画像リスト復元
+      if (data.images && Array.isArray(data.images)) {
+        imageList = [];
+        data.images.forEach(imgData => {
+          imageList.push({
+            name: imgData.name,
+            width: imgData.width,
+            height: imgData.height,
+            src: imgData.src,
+            originalSrc: imgData.originalSrc || imgData.src,
+            undo: [],
+            redo: [],
+            gitCommits: imgData.gitCommits || [],
+            currentCommitId: imgData.currentCommitId || null,
+            currentBranch: imgData.currentBranch || 'main',
+            branches: imgData.branches || { 'main': null }
+          });
+        });
+
+        renderImageTabs();
+        selectImage(data.activeImageIndex >= 0 ? data.activeImageIndex : 0);
+      }
+
+      return true;
+    }
+
+    // .mask プロジェクトファイルの読込
     function loadMaskProjectFile(file) {
       const reader = new FileReader();
       reader.onload = (ev) => {
         try {
           const data = JSON.parse(ev.target.result);
-          if (data.app !== "Mas-King" || !data.images) {
-            alert('有効な マス王   R̄ (.mask) ファイルではありません。');
-            return;
+          if (applyFullProjectState(data)) {
+            saveStateToLocal();
+            showAutoSaveToast('📦 .mask プロジェクト（テーマ・全データ含む）を完全復元しました！');
           }
-
-          if (data.stamina) {
-            currentStamina = Math.min(MAX_STAMINA, data.stamina.current || MAX_STAMINA);
-            totalUsedStamina = data.stamina.totalUsed || 0;
-            updateStaminaUI();
-          }
-
-          if (data.sparkle) applySparkleState(data.sparkle);
-
-          if (data.settings) {
-            if (data.settings.strength) document.getElementById('strength-slider').value = data.settings.strength;
-            if (data.settings.feather !== undefined) document.getElementById('feather-chk').checked = data.settings.feather;
-            if (data.settings.maskColor && maskColorPicker) maskColorPicker.value = data.settings.maskColor;
-          }
-
-if (data.gitHistory) {
-            gitCommits = data.gitHistory.commits || [];
-            currentCommitId = data.gitHistory.currentCommitId || null;
-            currentBranch = data.gitHistory.currentBranch || 'main';
-            branches = data.gitHistory.branches || { 'main': null };
-            renderGitTree();
-          }
-
-          imageList = [];
-          data.images.forEach(imgData => {
-            imageList.push({
-              name: imgData.name,
-              width: imgData.width,
-              height: imgData.height,
-              src: imgData.src,
-              originalSrc: imgData.originalSrc || imgData.src,
-              undo: [],
-              redo: []
-            });
-          });
-
-          renderImageTabs();
-          selectImage(data.activeImageIndex >= 0 ? data.activeImageIndex : 0);
-          saveStateToLocal();
-          alert('data.mask プロジェクトを完全復元しました！');
         } catch(err) {
           alert('.mask ファイルの読み込みに失敗しました。');
         }
@@ -3029,7 +3116,16 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
 
     // 更新履歴データ
     const changelogData = [
-
+{
+      version: 'v5.2.0',
+      date: '2026-09-11 18:58',
+      type: 'feat',
+      title: 'テーマ設定を含む全データ.mask＆IndexedDB完全保存に対応',
+      items: [
+        '.maskプロジェクトファイルおよびIndexedDBへの保存項目に、選択中のテーマ（ダークモード/UI配置/カスタムボタン順）を追加しました',
+        'PCとスマホ間での.maskファイル共有時に、作業画像だけでなくテーマ設定や全履歴・アン桃スコアまで100%完全同期できるよう強化しました'
+      ]
+    },
 {
       version: 'v5.1.0',
       date: '2026-09-11 18:03',
@@ -3653,13 +3749,11 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
 
     // 初期表示
     renderChangelog();
-// 起動時の完全自動復元（IndexedDBから大容量データを100%復元）
+// 起動時の完全自動復元（IndexedDBからテーマ・全データを100%復元）
     window.addEventListener('DOMContentLoaded', async () => {
       try {
-        // 1. まずIndexedDBから取得
         let data = await idbGet('maskou_project_autosave');
 
-        // 2. もしIndexedDBになければ過去のlocalStorageから移行（後方互換）
         if (!data) {
           const oldStorage = localStorage.getItem('maskou_project_autosave');
           if (oldStorage) {
@@ -3670,42 +3764,7 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
         }
 
         if (data) {
-          // マウスストーカー復元
-          if (data.sparkle) applySparkleState(data.sparkle);
-
-          // 設定復元
-          if (data.settings && data.settings.maskColor && maskColorPicker) {
-            maskColorPicker.value = data.settings.maskColor;
-          }
-
-          // Git履歴ツリー復元
-          if (data.gitHistory) {
-            gitCommits = data.gitHistory.commits || [];
-            currentCommitId = data.gitHistory.currentCommitId || null;
-            currentBranch = data.gitHistory.currentBranch || 'main';
-            branches = data.gitHistory.branches || { 'main': null };
-            renderGitTree();
-          }
-
-          // 画像リスト復元
-          if (data.images && data.images.length > 0) {
-            if (data.stamina) {
-              currentStamina = data.stamina.current || MAX_STAMINA;
-              totalUsedStamina = data.stamina.totalUsed || 0;
-              updateStaminaUI();
-            }
-            imageList = data.images.map(imgData => ({
-              name: imgData.name,
-              width: imgData.width,
-              height: imgData.height,
-              src: imgData.src,
-              originalSrc: imgData.originalSrc || imgData.src,
-              undo: [],
-              redo: []
-            }));
-            renderImageTabs();
-            selectImage(data.activeImageIndex >= 0 ? data.activeImageIndex : 0);
-          }
+          applyFullProjectState(data);
         }
       } catch(e) {
         console.warn('起動時のIndexedDB復元に失敗しました:', e);
