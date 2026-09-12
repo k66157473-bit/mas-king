@@ -5216,15 +5216,33 @@ document.addEventListener('DOMContentLoaded', () => {
     if (translationQueue.length > 0) processQueue();
   }
 
-  // 3. テキストの登録（アイコン等と混ざっていても取りこぼさない安全処理）
+  // 3. テキストの登録（★ マス王のアクセスカウンター・動的数値を完全保護）
   function registerTextNode(textNode) {
     const parent = textNode.parentElement;
     if (!parent) return;
-    if (['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(parent.tagName)) return;
+    
+    // スクリプトや非表示タグ、言語切り替えバーは除外
+    if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME'].includes(parent.tagName)) return;
     if (parent.closest('#lang-switcher')) return;
+
+    // ★ マス王の訪問者カウンター・時計・スタミナ・開設カウンター・ミニゲーム数値を完全スキップ
+    const isProtectedArea = parent.closest(`
+      .notranslate, [data-no-translate],
+      .counter-badge, #stats-modal, .site-counter, .stamina-footer,
+      #d1-counter, #d1-counter-modal,
+      #live-local-clock, #live-local-clock-modal,
+      #stamina-current-text, #stamina-used-text,
+      #count-days, #count-minutes, #count-seconds,
+      #anmomo-current-score, #anmomo-timer-text, #anmomo-history-list
+    `.replace(/\s+/g, ' '));
+
+    if (isProtectedArea) return;
 
     const rawText = textNode.nodeValue.trim();
     if (!rawText) return;
+
+    // ★ 「---」「...」や数値、記号のみのテキストはカウンター巻き込み防止のため除外
+    if (/^[\d\s,.:\-–—/()|%~+*#&.・…]+$/.test(rawText)) return;
 
     let targetEl;
 
