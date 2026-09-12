@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -43,6 +44,14 @@
             padding: 14px;
             position: absolute;
             z-index: 10;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+        /* 全UI非表示用クラス */
+        .ui-hidden {
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
         }
 
         /* === 緊急地震速報 (EEW) バナー === */
@@ -65,6 +74,7 @@
             gap: 10px;
             animation: pulse-eew 0.5s infinite alternate;
             white-space: nowrap;
+            transition: opacity 0.3s ease;
         }
 
         @keyframes pulse-eew {
@@ -114,11 +124,12 @@
             border-radius: 12px;
             padding: 12px;
             box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
-            display: flex;
+            display: none;
             gap: 8px;
             flex-wrap: wrap;
             justify-content: center;
             max-width: 400px;
+            transition: opacity 0.3s ease;
         }
         
         #sticky-controls button {
@@ -143,6 +154,7 @@
         #sticky-controls button:active {
             transform: scale(0.98);
         }
+
         #view-toggle-bar {
             position: absolute;
             top: 60px;
@@ -158,6 +170,7 @@
             z-index: 15;
             flex-wrap: wrap;
             justify-content: center;
+            transition: opacity 0.3s ease;
         }
 
         .view-btn {
@@ -240,11 +253,12 @@
             display: flex;
             gap: 4px;
             margin-bottom: 6px;
+            flex-wrap: wrap;
         }
 
         .btn-graph-dl {
             flex: 1;
-            padding: 3px;
+            padding: 4px 2px;
             font-size: 10px;
             font-weight: bold;
             border-radius: 3px;
@@ -253,6 +267,8 @@
             border: 1px solid rgba(0, 255, 204, 0.4);
             color: #00ffcc;
             transition: all 0.15s;
+            text-align: center;
+            white-space: nowrap;
         }
         .btn-graph-dl:hover { background: rgba(0, 255, 204, 0.35); color: #fff; }
 
@@ -276,7 +292,7 @@
         #control-panel {
             bottom: 14px;
             left: 14px;
-            width: 400px;
+            width: 410px;
             max-height: calc(100vh - 28px);
             overflow-y: auto;
             border-left: 4px solid #3399ff;
@@ -421,22 +437,49 @@
             color: #ff8888; border-radius: 3px; cursor: pointer; padding: 2px 5px; font-size: 10px;
         }
 
-        .timeline-controls-bar { display: flex; gap: 6px; margin-top: 5px; }
+        .timeline-controls-bar { display: flex; gap: 6px; margin-top: 5px; flex-wrap: wrap; }
         .btn-small {
             flex: 1; padding: 4px; background: rgba(0, 255, 136, 0.15); border: 1px solid rgba(0, 255, 136, 0.4);
             color: #00ff88; border-radius: 3px; cursor: pointer; font-size: 10.5px; font-weight: bold;
+            white-space: nowrap; text-align: center;
         }
 
-        .file-io-bar { display: flex; gap: 6px; margin-top: 4px; }
+        .file-io-bar {
+            display: flex;
+            gap: 6px;
+            position: sticky;
+            top: 48px;
+            z-index: 25;
+            background: rgba(10, 15, 25, 0.95);
+            padding: 4px 0;
+            margin-bottom: 6px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(51, 153, 255, 0.25);
+        }
+
         .btn-file-io {
             flex: 1; padding: 6px; font-size: 10.5px; font-weight: bold; border-radius: 4px; cursor: pointer;
             border: 1px solid rgba(255, 204, 0, 0.5); background: rgba(255, 204, 0, 0.15); color: #ffcc00;
+            white-space: nowrap;
         }
 
-        .btn-container { display: flex; gap: 6px; margin-top: 10px; }
+        /* ★ 要件3：PCでもスクロール時常に上部に常時固定（sticky）される地震発生・リセットボタンコンテナ */
+        .btn-container {
+            display: flex;
+            gap: 6px;
+            position: sticky;
+            top: 0;
+            z-index: 35;
+            background: rgba(10, 15, 25, 0.98);
+            padding: 6px 0 8px 0;
+            border-bottom: 2px solid rgba(51, 153, 255, 0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+        }
+
         .btn {
-            flex: 1; padding: 9px; border: none; border-radius: 4px; font-weight: bold;
-            font-size: 12.5px; cursor: pointer; transition: all 0.2s;
+            flex: 1; padding: 10px; border: none; border-radius: 4px; font-weight: bold;
+            font-size: 13px; cursor: pointer; transition: all 0.2s;
         }
 
         #btn-trigger {
@@ -447,7 +490,19 @@
             background: rgba(40, 55, 75, 0.85); color: #b0c8e0; border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        #hint { position: absolute; top: 14px; left: 14px; font-size: 11px; color: rgba(255, 255, 255, 0.4); pointer-events: none; z-index: 10; }
+        #hint {
+            position: absolute;
+            top: 14px;
+            left: 14px;
+            font-size: 11px;
+            color: rgba(255, 255, 255, 0.5);
+            pointer-events: none;
+            z-index: 10;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: opacity 0.3s ease;
+        }
 
         /* === レンジロック（誤操作防止）＆ sticky 吸着スタイル === */
         #btn-range-lock.locked {
@@ -462,18 +517,6 @@
             opacity: 0.5;
             filter: grayscale(80%);
             cursor: not-allowed;
-        }
-
-        .file-io-bar {
-            position: sticky;
-            top: 0;
-            z-index: 25;
-            background: rgba(10, 15, 25, 0.95);
-            padding: 6px 0;
-            margin-bottom: 8px;
-            backdrop-filter: blur(8px);
-            -webkit-backdrop-filter: blur(8px);
-            border-bottom: 1px solid rgba(51, 153, 255, 0.25);
         }
 
         /* 2画面分割表示用セパレータ */
@@ -511,7 +554,7 @@
         }
         .btn-slot:hover { background: rgba(0, 255, 204, 0.3); color: #fff; }
 
-        /* === スマホ向け最新最適化（横スクロール完全排除・HUDレイアウト） === */
+        /* === スマホ向け最新最適化 === */
         @media (max-width: 768px) {
             #canvas-container {
                 margin: 0 !important;
@@ -542,7 +585,7 @@
                 width: auto;
                 transform: none;
                 display: grid;
-                grid-template-columns: repeat(5, 1fr);
+                grid-template-columns: repeat(3, 1fr);
                 gap: 4px;
                 padding: 4px;
                 background: rgba(10, 15, 25, 0.85);
@@ -573,10 +616,10 @@
 
             #status-panel { 
                 position: fixed;
-                top: 88px;
+                top: 108px;
                 right: 6px;
                 left: auto;
-                width: 180px;
+                width: 185px;
                 max-height: 25vh;
                 padding: 6px 8px;
                 border-left: 3px solid #00ff88;
@@ -616,65 +659,25 @@
                 left: 0;
                 right: 0;
                 width: 100%;
-                max-height: 38vh;
-                padding: 10px 12px 16px 12px;
+                max-height: 40vh;
+                padding: 8px 12px 16px 12px;
                 border-left: none;
                 border-top: 2px solid #3399ff;
                 border-radius: 16px 16px 0 0;
-                background: rgba(10, 15, 25, 0.94);
+                background: rgba(10, 15, 25, 0.95);
                 box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.85);
                 overflow-y: auto;
                 z-index: 25;
-                display: flex;
-                flex-direction: column;
             }
 
             .btn-container { 
-                order: -1; 
-                margin-top: 0;
-                margin-bottom: 8px;
-                position: sticky;
                 top: 0;
-                background: rgba(10, 15, 25, 0.98);
                 padding: 4px 0 6px 0;
-                border-bottom: 1px solid rgba(51, 153, 255, 0.25);
-                z-index: 30;
-                gap: 8px;
             }
 
             .file-io-bar {
-                order: -1;
-                margin-top: 0;
-                margin-bottom: 6px;
-                gap: 4px;
-                position: sticky;
-                top: 48px;
+                top: 44px;
             }
-
-            .panel-title { order: -2; font-size: 11.5px; margin-bottom: 6px; }
-            .btn { padding: 10px 8px; font-size: 13px; }
-            .btn-file-io { padding: 5px 3px; font-size: 10px; }
-            .section-divider { font-size: 10.5px; margin: 8px 0 4px 0; padding-top: 4px; }
-            .control-group { margin-bottom: 6px; }
-            .control-group label { font-size: 10.5px; margin-bottom: 2px; }
-            .checkbox-label { font-size: 10.5px !important; }
-            
-            .slider-text-row { gap: 6px; }
-            .slider-text-row input[type="number"], .slider-text-row input[type="text"] { width: 68px; font-size: 11px; padding: 4px 5px; }
-            select, input[type="text"], input[type="number"] { font-size: 11px; padding: 5px 6px; }
-            input[type="range"] { height: 6px; }
-            input[type="range"]::-webkit-slider-thumb { width: 18px; height: 18px; }
-            
-            .btn-arrow-action { font-size: 10px; padding: 6px 2px; }
-            .arrow-btn-grid, .arrow-rotate-bar { gap: 4px; margin-top: 3px; }
-            .btn-small { padding: 5px 3px; font-size: 10px; }
-            .coord-inputs { gap: 3px; margin-top: 2px; }
-            .coord-row { gap: 4px; }
-            .coord-field span { font-size: 9px; margin-bottom: 1px; }
-            .coord-field input { font-size: 10px; padding: 4px 5px; }
-            .timeline-table, .aftershock-table { font-size: 9.5px; }
-            .timeline-row input, .aftershock-row input { font-size: 9.5px; padding: 3px 4px; }
-            .timeline-row button, .aftershock-row button { font-size: 9px; padding: 3px 5px; }
         }
     </style>
 
@@ -684,7 +687,8 @@
 </head>
 <body>
 
-    <div id="hint">🖱️ ドラッグで360°旋回 / スクロールでズーム / ← →キーで家の向き回転</div>
+    <!-- 操作ヒント -->
+    <div id="hint" class="ui-element">🖱️ ドラッグで360°旋回 / スクロールでズーム / ← →キーで回転 / 【右クリック】で全UI非表示・復元</div>
     <div id="canvas-container"></div>
 
     <!-- 2画面比較用境界線 & ラベル -->
@@ -693,33 +697,35 @@
     <div id="split-label-right" class="split-label">対策後（現在の設定）</div>
 
     <!-- 緊急地震速報 (EEW) バナー -->
-    <div id="eew-banner">
+    <div id="eew-banner" class="ui-element">
         <span>🚨 緊急地震速報 (EEW)</span>
         <span id="eew-countdown-text">主要動 (S波) 到達まで あと 0.0 秒</span>
     </div>
 
-    <!-- 視点・音響・環境切替クイックバー -->
-    <div id="view-toggle-bar">
-        <button id="btn-view-outside" class="view-btn active">🌐 外から見る（外観）</button>
-        <button id="btn-view-inside" class="view-btn">🏠 中から見る（室内）</button>
+    <!-- 視点・音響・録画切替クイックバー -->
+    <div id="view-toggle-bar" class="ui-element">
+        <button id="btn-view-outside" class="view-btn active">🌐 外観</button>
+        <button id="btn-view-inside" class="view-btn">🏠 室内</button>
         <button id="btn-audio-toggle" class="view-btn" style="color: #ffaa00; border-color: rgba(255, 170, 0, 0.4);">🔊 音: ON</button>
         <button id="btn-audio-mode" class="view-btn" style="color: #00ffcc; border-color: rgba(0, 255, 204, 0.4);">🏡 家屋内音響</button>
         <button id="btn-env-time" class="view-btn" style="color: #ffdd88; border-color: rgba(255, 221, 136, 0.4);">☀️ 昼モード</button>
+        <!-- ★ 要件9：画面録画開始/停止ボタン -->
+        <button id="btn-screen-record" class="view-btn" style="color: #ff4444; border-color: rgba(255, 68, 68, 0.5);">🔴 画面録画開始</button>
     </div>
 
     <!-- パネル非表示ボタン -->
-    <button id="btn-toggle-status" class="panel-toggle-btn" title="ステータスパネル切り替え">ℹ️</button>
-    <button id="btn-toggle-control" class="panel-toggle-btn" title="コントロールパネル切り替え">⚙️</button>
+    <button id="btn-toggle-status" class="panel-toggle-btn ui-element" title="ステータスパネル切り替え">ℹ️</button>
+    <button id="btn-toggle-control" class="panel-toggle-btn ui-element" title="コントロールパネル切り替え">⚙️</button>
 
-    <!-- Sticky制御パネル（地震発生・再開・リセット） -->
-    <div id="sticky-controls" style="display: none;">
+    <!-- Sticky制御パネル -->
+    <div id="sticky-controls" class="ui-element">
         <button id="btn-trigger-sticky">🚨 地震発生</button>
         <button id="btn-resume-sticky">▶️ 再開</button>
         <button id="btn-reset-sticky">🔄 リセット</button>
     </div>
 
     <!-- 右上：ステータスパネル -->
-    <div id="status-panel" class="glass-panel">
+    <div id="status-panel" class="glass-panel ui-element">
         <div class="status-title">
             <span id="lbl-status-monitor-title">STATUS MONITOR</span>
             <span id="save-indicator" style="font-size: 9.5px; color: #00ff88; opacity: 0; transition: opacity 0.3s;">💾 Saved</span>
@@ -741,7 +747,7 @@
             <span id="val-lpgm-class" class="status-value" style="color: #00ffcc;">階級 0 (なし)</span>
         </div>
         
-        <!-- Galオシロスコープ & 画像保存 -->
+        <!-- Galオシロスコープ & 画像・動画保存 -->
         <div class="status-row" style="margin-bottom: 1px;">
             <span class="status-label" id="lbl-status-gal">リアルタイム加速度 (Gal):</span>
             <span id="val-gal-text" class="status-value" style="color: #00ffcc;">0.0 Gal</span>
@@ -756,9 +762,11 @@
         <canvas id="fft-canvas" width="280" height="32"></canvas>
 
         <div class="graph-export-bar">
-            <button id="btn-gal-png" class="btn-graph-dl">📷 PNG保存</button>
-            <button id="btn-gal-jpg" class="btn-graph-dl">📷 JPG保存</button>
-            <button id="btn-gal-gif" class="btn-graph-dl">🎥 GIF保存</button>
+            <button id="btn-gal-png" class="btn-graph-dl">📷 PNG</button>
+            <button id="btn-gal-jpg" class="btn-graph-dl">📷 JPG</button>
+            <button id="btn-gal-gif" class="btn-graph-dl">📷 GIF</button>
+            <!-- ★ 要件5：リアルタイムGal・周波数スペクトルグラフ動画 (.mp4) ダウンロードボタン -->
+            <button id="btn-graph-mp4-rec" class="btn-graph-dl" style="color: #ffbb00; border-color: rgba(255, 187, 0, 0.5);">🎥 グラフ動画.mp4</button>
         </div>
 
         <div class="status-row">
@@ -795,9 +803,16 @@
     </div>
 
     <!-- 左下：コントロールパネル -->
-    <div id="control-panel" class="glass-panel">
-        <div class="panel-title">
-            <span>⚙️ EARTHQUAKE MASTER PRO</span>
+    <div id="control-panel" class="glass-panel ui-element">
+        
+        <!-- ★ 要件3：PCでもスクロールに埋もれず最上部に常時固定される地震発生/リセットボタン -->
+        <div class="btn-container">
+            <button id="btn-trigger" class="btn">地震発生</button>
+            <button id="btn-reset" class="btn">リセット</button>
+        </div>
+
+        <div class="panel-title" style="margin-top: 8px;">
+            <span id="lbl-app-title">⚙️ EARTHQUAKE MASTER PRO</span>
             <!-- 言語切替トグル -->
             <select id="sel-language" style="width: auto; padding: 2px 6px; font-size: 10px; background: rgba(0,255,136,0.15); border-color: #00ff88; color: #00ff88;">
                 <option value="ja">日本語</option>
@@ -830,20 +845,20 @@
             <button class="btn-slot" data-slot="5">枠5</button>
         </div>
         
-        <!-- 🌍 地震タイプ選択 -->
-        <div class="control-group">
-            <label>🌍 地震タイプ</label>
-            <select id="sel-earthquake-type" style="width: 100%; padding: 6px; font-size: 10px; background: rgba(10, 15, 25, 0.9); color: #00ff88; border: 1px solid rgba(0, 255, 128, 0.4); border-radius: 4px; cursor: pointer;">
-                <option value="shallow-direct">🔴 直下型 (浅い・突き上げ) - P波・S波短い</option>
-                <option value="deep-direct">🟠 深い直下型 (400km) - 揺れ弱い</option>
-                <option value="trench">🔵 海溝型 (プレート型) - ローリング長い</option>
-                <option value="back-arc">🟣 背弧盆地 (島弧内) - 複雑な揺れ</option>
-                <option value="crustal">🟡 地殻内 (断層型) - 被害地震</option>
-                <option value="volcanic">🟤 火山地震 (マグマ活動) - 短周期</option>
+        <!-- ★ 要件1：地震タイプ選択（主要動の揺れタイプと自動連動） -->
+        <div class="control-group" style="margin-top: 8px;">
+            <label>🌍 地震タイプ (主要動と自動連動)</label>
+            <select id="sel-earthquake-type" style="width: 100%; padding: 6px; font-size: 11px; background: rgba(10, 15, 25, 0.9); color: #00ff88; border: 1px solid rgba(0, 255, 128, 0.4); border-radius: 4px; cursor: pointer;">
+                <option value="shallow-direct">🔴 直下型 (浅い断層・突き上げ) → 縦揺れ主体</option>
+                <option value="deep-direct">🟠 深発直下型 (400km) → 縦微動・減衰</option>
+                <option value="trench" selected>🔵 海溝型 (プレート沈み込み) → 横揺れローリング</option>
+                <option value="back-arc">🟣 背弧盆地 (島弧内複雑波) → 複合揺れ</option>
+                <option value="crustal">🟡 地殻内断層 (局所激震) → 縦揺れ主体</option>
+                <option value="volcanic">🟤 火山地震 (マグマ活動・浅発) → 短周期縦微動</option>
             </select>
         </div>
 
-        <div class="control-group" style="margin-top: 8px;">
+        <div class="control-group">
             <label>震災プリセット</label>
             <select id="sel-preset">
                 <option value="custom">-- カスタム設定 --</option>
@@ -855,7 +870,7 @@
             </select>
         </div>
 
-        <!-- 歴史的地震アーカイブ (地図・震央クイック選択) -->
+        <!-- 歴史的地震アーカイブ -->
         <div class="control-group">
             <label>歴史的地震アーカイブ (ワンタップ震央選択)</label>
             <select id="sel-archive-quake">
@@ -888,10 +903,11 @@
                 倒壊瞬間スローモーション & バレットタイム旋回
             </label>
         </div>
+        <!-- ★ 要件7：J-ALERT / 緊急地震速報 音声完全制御 -->
         <div class="control-group">
             <label class="checkbox-label">
                 <input type="checkbox" id="chk-jalert-voice" checked>
-                J-ALERT / 緊急地震速報 合成音声アナウンス
+                J-ALERT / 緊急地震速報 合成音声＆警報チャイム (OFFで完全消音)
             </label>
         </div>
         <div class="control-group">
@@ -919,10 +935,13 @@
             </label>
         </div>
 
-        <!-- 実観測波形 CSV 読込 -->
+        <!-- ★ 要件6：実観測地震波形 & 標準物理波形ダウンロード機能 -->
         <div class="control-group">
-            <label>実観測地震波形データ (KiK-net / JMA CSV読込)</label>
-            <input type="file" id="inp-csv-wave" accept=".csv,.txt" style="font-size: 11px;">
+            <label>地震波形データ (KiK-net / JMA CSV読込・標準波形出力)</label>
+            <div style="display: flex; gap: 4px;">
+                <input type="file" id="inp-csv-wave" accept=".csv,.txt" style="font-size: 10.5px; flex: 1;">
+                <button id="btn-dl-standard-wave" class="btn-file-io" style="flex: 1; padding: 4px; border-color: #00ff88; color: #00ff88; background: rgba(0, 255, 136, 0.1);">📥 標準波形.csv 出力</button>
+            </div>
             <div id="lbl-csv-status" style="font-size: 10px; color: #00ffcc; margin-top: 2px;">標準物理波形を使用中</div>
         </div>
 
@@ -1065,7 +1084,7 @@
             </div>
         </div>
 
-        <!-- 矢印ボタンで家の方向を動かす -->
+        <!-- 建物の向き -->
         <div class="section-divider">🧭 建物の向き・方角 (矢印ボタンで回転)</div>
         <div class="control-group">
             <label>家の向き (回転角度) <span id="lbl-house-angle">0° (北)</span></label>
@@ -1085,14 +1104,14 @@
             </div>
         </div>
 
-        <!-- 揺れタイプ -->
+        <!-- ★ 要件1：主要動の揺れタイプ -->
         <div class="section-divider">〰️ 揺れタイプ (縦揺れ / 横揺れの選択)</div>
         <div class="control-group">
             <label>主要動の揺れタイプ</label>
             <select id="sel-shake-type">
-                <option value="auto" selected>複合・自動 (P波縦微動 → S波横ローリング)</option>
+                <option value="auto">複合・自動 (P波縦微動 → S波横ローリング)</option>
                 <option value="vertical">縦揺れ主体 (激しい上下動・直下突き上げ型)</option>
-                <option value="horizontal">横揺れ主体 (長周期ローリング・巨大水平変位)</option>
+                <option value="horizontal" selected>横揺れ主体 (長周期ローリング・巨大水平変位)</option>
             </select>
         </div>
 
@@ -1193,8 +1212,8 @@
             </div>
         </div>
 
-        <!-- 余震マネージャー -->
-        <div class="section-divider">⚡ 余震マネージャー (最大300個・時間差発生)</div>
+        <!-- ★ 要件8：余震マネージャー & CSV読込/ダウンロード機能 -->
+        <div class="section-divider">⚡ 余震マネージャー (最大300個・CSV連携)</div>
         <div class="control-group">
             <div style="font-size: 10.5px; color: #8fa0b5; margin-bottom: 3px;">
                 本震からの発生秒数、M、距離(d)、深さ(h)を設定:
@@ -1214,8 +1233,11 @@
                 </table>
             </div>
             <div class="timeline-controls-bar">
-                <button id="btn-add-aftershock" class="btn-small">＋ 余震を追加 (最大300)</button>
-                <button id="btn-gen-aftershocks" class="btn-small" style="color: #ffaa00; border-color: rgba(255, 170, 0, 0.4);">大森公式クラスタ生成</button>
+                <button id="btn-add-aftershock" class="btn-small">＋ 余震追加</button>
+                <button id="btn-gen-aftershocks" class="btn-small" style="color: #ffaa00; border-color: rgba(255, 170, 0, 0.4);">大森公式生成</button>
+                <button id="btn-export-aftershock-csv" class="btn-small" style="color: #00ffcc; border-color: rgba(0, 255, 204, 0.4);">📥 余震CSV出力</button>
+                <button id="btn-import-aftershock-csv" class="btn-small" style="color: #3399ff; border-color: rgba(51, 153, 255, 0.4);">📂 余震CSV読込</button>
+                <input type="file" id="inp-aftershock-csv" accept=".csv,.txt" style="display: none;">
             </div>
         </div>
 
@@ -1261,14 +1283,9 @@
                 </div>
             </div>
         </div>
-
-        <div class="btn-container">
-            <button id="btn-trigger" class="btn">地震発生</button>
-            <button id="btn-reset" class="btn">リセット</button>
-        </div>
     </div>
 
-    <!-- 音声確認モーダル (scriptの直前に正しく配置) -->
+    <!-- 音声確認モーダル -->
     <div id="audio-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 999; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
         <div style="background: rgba(15, 23, 42, 0.95); border: 2px solid #ffaa00; border-radius: 12px; padding: 20px; width: 90%; max-width: 320px; text-align: center; box-shadow: 0 0 25px rgba(255, 170, 0, 0.4);">
             <div style="font-size: 32px; margin-bottom: 8px;">🔊⚠️</div>
@@ -1290,7 +1307,7 @@
 
         const VP = 6.0;
         const VS = 3.5;
-        const STORAGE_KEY = "EARTHQUAKE_SIM_CONFIG_MASTER_V9_PRO";
+        const STORAGE_KEY = "EARTHQUAKE_SIM_CONFIG_MASTER_V10_PRO";
 
         const EPICENTERS = {
             off_sanriku:   { name: "三陸沖", lat: 38.30, lon: 142.37, depth: 24, defaultM: 9.0 },
@@ -1312,7 +1329,6 @@
             sapporo:  { name: "札幌", lat: 43.06, lon: 141.35 }
         };
 
-        // 歴史的地震アーカイブ
         const ARCHIVE_QUAKES = {
             kanto1923:    { epi: "sagami_trough", loc: "tokyo", m: 7.9, h: 15, d: 50 },
             fukui1948:    { epi: "custom_coord", loc: "kanazawa", m: 7.1, h: 10, d: 20, lat: 36.10, lon: 136.20 },
@@ -1381,7 +1397,6 @@
             { delaySec: 55, m: 6.8, d: 110, h: 25 }
         ];
 
-        // 実観測CSV波形データバッファ
         let customCsvWave = null;
 
         // シミュレーション状態管理
@@ -1403,7 +1418,8 @@
             currentGal: 0.0,
             lpgmClass: 0,
             
-            shakeType: 'auto',
+            shakeType: 'horizontal',
+            earthquakeType: 'trench',
             cameraView: 'outside',
             houseAngle: 0.0,
             envTime: 'day',
@@ -1441,11 +1457,10 @@
             manualIntensityVal: 6.5,
             timelineIntensityEnabled: false,
 
-            // 新機能フラグ群
             splitView: false,
             stressHeatmap: false,
             bulletTime: true,
-            jalertVoice: true,
+            jalertVoice: true, // ★ 要件7：完全消音制御
             faultRupture: true,
             macroFire: false,
             mobileShake: false,
@@ -1533,9 +1548,9 @@
             saveConfigToStorage();
         }
 
-        // J-ALERT / EEW 音声アナウンス（音量OFF・ミュート時は喋らないよう修正）
+        // ★ 要件7：J-ALERT / EEW 音声完全ミュート制御（チェックOFFでいかなる場合も完全消音）
         function speakEEWAnnouncement() {
-            if (!state.audioEnabled || state.masterVolume <= 0 || !state.jalertVoice || !('speechSynthesis' in window)) return;
+            if (!state.jalertVoice || !state.audioEnabled || state.masterVolume <= 0 || !('speechSynthesis' in window)) return;
             window.speechSynthesis.cancel();
             const text = (state.currentLang === 'en') ? "Earthquake Early Warning. Strong shaking expected." : "緊急地震速報。大地震です。強い揺れに警戒してください。";
             const uttr = new SpeechSynthesisUtterance(text);
@@ -1547,7 +1562,7 @@
         }
 
         function playEEWChime() {
-            if (!state.audioEnabled || !audioCtx) return;
+            if (!state.jalertVoice || !state.audioEnabled || !audioCtx || state.masterVolume <= 0) return;
             const now = audioCtx.currentTime;
             const osc1 = audioCtx.createOscillator(), osc2 = audioCtx.createOscillator(), gain = audioCtx.createGain();
             osc1.frequency.setValueAtTime(440, now); osc1.frequency.setValueAtTime(659.25, now + 0.15);
@@ -1559,7 +1574,7 @@
         }
 
         function playCreakSound() {
-            if (!state.audioEnabled || !audioCtx || Math.random() > 0.08) return;
+            if (!state.audioEnabled || !audioCtx || state.masterVolume <= 0 || Math.random() > 0.08) return;
             const now = audioCtx.currentTime;
             const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
             osc.type = "sawtooth";
@@ -1572,7 +1587,7 @@
         }
 
         function playGlassShatterSound() {
-            if (!state.audioEnabled || !audioCtx) return;
+            if (!state.audioEnabled || !audioCtx || state.masterVolume <= 0) return;
             const now = audioCtx.currentTime;
             const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
             osc.type = "square";
@@ -1585,7 +1600,7 @@
         }
 
         function playCollapseSound() {
-            if (!state.audioEnabled || !audioCtx) return;
+            if (!state.audioEnabled || !audioCtx || state.masterVolume <= 0) return;
             const now = audioCtx.currentTime;
             const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
             osc.type = "sawtooth";
@@ -1711,19 +1726,19 @@
         baseMesh.receiveShadow = true;
         houseGroup.add(baseMesh);
 
-        // 壁
+        // ★ 要件4：初期状態の家の形状維持（壁・屋根・基礎の正しい立体感・位置構築）
         const wallHeight = 2.2;
         const wallGeo = new THREE.BoxGeometry(2.8, wallHeight, 2.8);
         const wallMat = new THREE.MeshStandardMaterial({ color: 0x4a321f, roughness: 0.95, metalness: 0.05, side: THREE.DoubleSide });
         const wallMesh = new THREE.Mesh(wallGeo, wallMat);
-        wallMesh.position.y = 0.4 + wallHeight / 2;
+        wallMesh.position.y = 0.4 + wallHeight / 2; // y = 1.5
         wallMesh.castShadow = true; wallMesh.receiveShadow = true;
         houseGroup.add(wallMesh);
 
         const wallEdges = new THREE.LineSegments(new THREE.EdgesGeometry(wallGeo), new THREE.LineBasicMaterial({ color: 0x24140a, linewidth: 2 }));
         wallMesh.add(wallEdges);
 
-        // 窓ガラスオブジェクト
+        // 窓ガラス
         const glassGeo = new THREE.PlaneGeometry(1.0, 0.8);
         const glassMat = new THREE.MeshStandardMaterial({ color: 0xaaddff, transparent: true, opacity: 0.65, roughness: 0.1, side: THREE.DoubleSide });
         const windowMesh = new THREE.Mesh(glassGeo, glassMat);
@@ -1746,7 +1761,7 @@
         const glassShatterParticles = new THREE.Points(glassShatterGeo, glassShatterMat);
         houseGroup.add(glassShatterParticles);
 
-        // 筋交い (Braces)
+        // 筋交い
         const braceGroup = new THREE.Group();
         const braceMat = new THREE.MeshStandardMaterial({ color: 0xaa7733, metalness: 0.3 });
         const b1 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.8, 0.08), braceMat);
@@ -1766,13 +1781,21 @@
         secondFloorGroup.visible = false;
         houseGroup.add(secondFloorGroup);
 
-        // 超高層ビル・タワーマンションモデル (階数自由構築対応)
+        // 屋根（初期高さ 3.3）
+        const roofGeo = new THREE.ConeGeometry(2.6, 1.4, 4);
+        const roofMat = new THREE.MeshStandardMaterial({ color: 0x992211, roughness: 0.6, metalness: 0.1, side: THREE.DoubleSide });
+        const roofMesh = new THREE.Mesh(roofGeo, roofMat);
+        roofMesh.position.set(0, 0.4 + wallHeight + 0.7, 0);
+        roofMesh.rotation.y = Math.PI / 4;
+        roofMesh.castShadow = true;
+        houseGroup.add(roofMesh);
+
+        // 超高層ビルモデル
         const highriseGroup = new THREE.Group();
         const towerFloors = [];
         highriseGroup.visible = false;
         houseGroup.add(highriseGroup);
 
-// ★ 超高層ビル・タワーマンションモデル（ペちゃんこ解消・階高1.2m＋窓ガラス付き）
         function rebuildHighrise(floors) {
             while (highriseGroup.children.length > 0) {
                 highriseGroup.remove(highriseGroup.children[0]);
@@ -1781,13 +1804,12 @@
             state.buildingFloors = floors;
             document.getElementById('lbl-building-floors').innerText = `${floors} 階`;
 
-            const floorHeight = 1.2; // 1フロアの高さを45cmからリアルな1.2mへ大幅拡大
+            const floorHeight = 1.2;
 
             for (let tf = 0; tf < floors; tf++) {
                 const flGroup = new THREE.Group();
                 flGroup.position.y = 0.2 + tf * floorHeight;
 
-                // フロア外壁
                 const floorMesh = new THREE.Mesh(
                     new THREE.BoxGeometry(3.0, floorHeight * 0.75, 3.0),
                     new THREE.MeshStandardMaterial({
@@ -1799,7 +1821,6 @@
                 floorMesh.position.y = (floorHeight * 0.75) / 2;
                 flGroup.add(floorMesh);
 
-                // 窓ガラス帯（ビルらしさを表現）
                 const windowBand = new THREE.Mesh(
                     new THREE.BoxGeometry(3.02, floorHeight * 0.22, 3.02),
                     new THREE.MeshStandardMaterial({
@@ -1815,7 +1836,6 @@
                 highriseGroup.add(flGroup);
             }
 
-            // ビル全体の高さに合わせてカメラの注視点と距離を自動調整（全体が綺麗に映る）
             if (state.structureType === 'highrise') {
                 const totalH = floors * floorHeight;
                 controls.target.set(0, Math.min(25, totalH * 0.4), 0);
@@ -1823,10 +1843,8 @@
                 controls.update();
             }
         }
-        
-        
 
-        // 複数棟（連鎖破壊用）グループの生成
+        // 複数棟並列グループ
         const multiHouses = [];
         const multiHouseGroup = new THREE.Group();
         plateGroup.add(multiHouseGroup);
@@ -1866,15 +1884,6 @@
             controls.maxDistance = Math.max(80, count * 6);
         }
 
-        // 屋根
-        const roofGeo = new THREE.ConeGeometry(2.6, 1.4, 4);
-        const roofMat = new THREE.MeshStandardMaterial({ color: 0x992211, roughness: 0.6, metalness: 0.1, side: THREE.DoubleSide });
-        const roofMesh = new THREE.Mesh(roofGeo, roofMat);
-        roofMesh.position.y = 0.4 + wallHeight + 0.7;
-        roofMesh.rotation.y = Math.PI / 4;
-        roofMesh.castShadow = true;
-        houseGroup.add(roofMesh);
-
         // 室内オブジェクト
         const interiorGroup = new THREE.Group();
         houseGroup.add(interiorGroup);
@@ -1904,7 +1913,6 @@
         shelfMesh.position.y = 0.6;
         shelfGroup.add(shelfMesh);
 
-        // 散乱・飛び散る本・小物の物理メッシュ
         const flyingBooks = [];
         for (let b = 0; b < 6; b++) {
             const book = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.18, 0.06), new THREE.MeshStandardMaterial({ color: 0xcc3322 }));
@@ -1930,13 +1938,11 @@
         avatarHead.position.y = 0.45;
         avatarGroup.add(avatarBody); avatarGroup.add(avatarHead);
 
-        // 懐中電灯・スマホライト
         const flashlight = new THREE.SpotLight(0xffffff, 0, 8, Math.PI / 6, 0.5);
         flashlight.position.set(0, 0.3, 0.2);
         flashlight.target.position.set(0, 0, 2);
         avatarGroup.add(flashlight);
         avatarGroup.add(flashlight.target);
-
         interiorGroup.add(avatarGroup);
 
         const lampGroup = new THREE.Group();
@@ -1977,7 +1983,7 @@
         const fireParticles = new THREE.Points(fireGeo, fireMat);
         houseGroup.add(fireParticles);
 
-        // リアル津波メッシュ
+        // 津波メッシュ
         const tsunamiGroup = new THREE.Group();
         const tsunamiGeo = new THREE.BoxGeometry(26, 8, 6, 20, 10, 10);
         const tsunamiMat = new THREE.MeshStandardMaterial({ color: 0x0066aa, transparent: true, opacity: 0.88, roughness: 0.05, metalness: 0.1 });
@@ -1986,7 +1992,7 @@
         tsunamiGroup.position.set(0, 4.0, -28);
         scene.add(tsunamiGroup);
 
-        // --- 視点切替関数 ---
+        // --- 視点切替 ---
         function setCameraView(viewMode) {
             state.cameraView = viewMode;
             const btnOutside = document.getElementById('btn-view-outside');
@@ -2017,7 +2023,7 @@
         document.getElementById('btn-view-outside').addEventListener('click', () => setCameraView('outside'));
         document.getElementById('btn-view-inside').addEventListener('click', () => setCameraView('inside'));
 
-        // --- 環境光・昼夕夜モード切替 ---
+        // --- 環境光切替 ---
         function updateEnvTime(env) {
             state.envTime = env;
             const btn = document.getElementById('btn-env-time');
@@ -2140,7 +2146,7 @@
             document.getElementById('val-standard-status').innerText = state.standardDescription;
         }
 
-function updateStructureType(type) {
+        function updateStructureType(type) {
             state.structureType = type;
             const isHighrise = (type === 'highrise');
 
@@ -2149,7 +2155,6 @@ function updateStructureType(type) {
             secondFloorGroup.visible = (type === 'piloti');
             highriseGroup.visible = isHighrise;
 
-            // ★ 木造の壁・屋根だけでなく、室内の床・机・家具・基礎もビル時は非表示にして「ペちゃんこ残骸」を解消
             wallMesh.visible = !isHighrise;
             roofMesh.visible = !isHighrise;
             interiorGroup.visible = !isHighrise;
@@ -2161,7 +2166,6 @@ function updateStructureType(type) {
             if (isHighrise) {
                 rebuildHighrise(state.buildingFloors || 30);
             } else {
-                // 木造に戻したときはカメラ位置を元の高さに戻す
                 controls.target.set(0, 2, 0);
                 controls.update();
             }
@@ -2183,11 +2187,11 @@ function updateStructureType(type) {
         }
 
         function updateTsunamiHeight(h) {
-            state.tsunamiHeight = Math.max(0, h);  // 📍 0m対応
+            state.tsunamiHeight = Math.max(0, h);
             document.getElementById('lbl-tsunami-height').innerText = `${state.tsunamiHeight.toFixed(1)} m`;
             document.getElementById('rng-tsunami-height').value = Math.min(50, state.tsunamiHeight);
             document.getElementById('txt-tsunami-height').value = state.tsunamiHeight.toFixed(1);
-            tsunamiMesh.scale.y = state.tsunamiHeight === 0 ? 0.01 : state.tsunamiHeight / 8.0;  // 0mで非表示
+            tsunamiMesh.scale.y = state.tsunamiHeight === 0 ? 0.01 : state.tsunamiHeight / 8.0;
             tsunamiMesh.position.y = state.tsunamiHeight === 0 ? -100 : (state.tsunamiHeight / 2.0);
             saveConfigToStorage();
         }
@@ -2284,9 +2288,21 @@ function updateStructureType(type) {
                 fftCtx.fillText(f.label, idx * bw + 6, 8);
             });
             if (freqs[1].val > 0.6) {
-                document.getElementById('val-fft-text').innerText = "⚠️ 1〜2秒周期 (木造共振・キラーパルス警戒)";
+                document.getElementById('val-fft-text').innerText = "⚠️ 1〜2秒周期 (木造共振警戒)";
             } else {
                 document.getElementById('val-fft-text').innerText = "正常・低減域";
+            }
+
+            // グラフ動画録画フレーム合成
+            if (graphRecording && graphRecordCanvas) {
+                const gCtx = graphRecordCanvas.getContext('2d');
+                gCtx.fillStyle = "#07070c";
+                gCtx.fillRect(0, 0, graphRecordCanvas.width, graphRecordCanvas.height);
+                gCtx.drawImage(galCanvas, 10, 10);
+                gCtx.drawImage(fftCanvas, 10, 65);
+                gCtx.fillStyle = "#00ffcc";
+                gCtx.font = "10px monospace";
+                gCtx.fillText(`Gal: ${state.currentGal.toFixed(1)} Gal | Scale: ${state.jmaScale}`, 10, 115);
             }
         }
 
@@ -2307,9 +2323,153 @@ function updateStructureType(type) {
 
         document.getElementById('btn-gal-png').addEventListener('click', () => downloadCanvasImage('png'));
         document.getElementById('btn-gal-jpg').addEventListener('click', () => downloadCanvasImage('jpg'));
-        document.getElementById('btn-gal-gif').addEventListener('click', () => {
-            alert("📷 加速度グラフのスナップショットをGIF/PNG互換形式で保存します。");
-            downloadCanvasImage('png');
+        document.getElementById('btn-gal-gif').addEventListener('click', () => downloadCanvasImage('png'));
+
+        // ★ 要件5：リアルタイムGal・周波数スペクトルグラフ動画 (.mp4) ダウンロード機能
+        let graphRecorder = null;
+        let graphRecordedChunks = [];
+        let graphRecording = false;
+        let graphRecordCanvas = null;
+        const btnGraphMp4Rec = document.getElementById('btn-graph-mp4-rec');
+
+        btnGraphMp4Rec.addEventListener('click', () => {
+            if (!graphRecording) {
+                startGraphMp4Recording();
+            } else {
+                stopGraphMp4Recording();
+            }
+        });
+
+        function startGraphMp4Recording() {
+            if (!graphRecordCanvas) {
+                graphRecordCanvas = document.createElement('canvas');
+                graphRecordCanvas.width = 300;
+                graphRecordCanvas.height = 130;
+            }
+            graphRecordedChunks = [];
+            try {
+                const stream = graphRecordCanvas.captureStream(30);
+                const mimeType = MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' : 
+                                 (MediaRecorder.isTypeSupported('video/webm;codecs=h264') ? 'video/webm;codecs=h264' : 'video/webm');
+                graphRecorder = new MediaRecorder(stream, { mimeType });
+                graphRecorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) graphRecordedChunks.push(e.data); };
+                graphRecorder.onstop = () => {
+                    const blob = new Blob(graphRecordedChunks, { type: mimeType });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `earthquake_graph_${Date.now()}.mp4`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    btnGraphMp4Rec.innerText = "🎥 グラフ動画.mp4";
+                    btnGraphMp4Rec.style.color = "#ffbb00";
+                };
+                graphRecorder.start();
+                graphRecording = true;
+                btnGraphMp4Rec.innerText = "⏹ 録画停止(出力)";
+                btnGraphMp4Rec.style.color = "#ff4444";
+            } catch (err) {
+                alert("お使いのブラウザでは動画キャプチャがサポートされていません: " + err.message);
+            }
+        }
+
+        function stopGraphMp4Recording() {
+            if (graphRecorder && graphRecording) {
+                graphRecorder.stop();
+                graphRecording = false;
+            }
+        }
+
+        // ★ 要件9：キャンバス画面録画機能 (開始/停止ボタン)
+        let screenRecorder = null;
+        let screenRecordedChunks = [];
+        let isScreenRecording = false;
+        const btnScreenRecord = document.getElementById('btn-screen-record');
+
+        btnScreenRecord.addEventListener('click', () => {
+            if (!isScreenRecording) {
+                startScreenRecording();
+            } else {
+                stopScreenRecording();
+            }
+        });
+
+        function startScreenRecording() {
+            try {
+                const stream = renderer.domElement.captureStream(30);
+                const mimeType = MediaRecorder.isTypeSupported('video/mp4') ? 'video/mp4' : 
+                                 (MediaRecorder.isTypeSupported('video/webm;codecs=h264') ? 'video/webm;codecs=h264' : 'video/webm');
+                screenRecordedChunks = [];
+                screenRecorder = new MediaRecorder(stream, { mimeType });
+                screenRecorder.ondataavailable = (e) => {
+                    if (e.data && e.data.size > 0) screenRecordedChunks.push(e.data);
+                };
+                screenRecorder.onstop = () => {
+                    const blob = new Blob(screenRecordedChunks, { type: mimeType });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `simulation_record_${Date.now()}.mp4`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    btnScreenRecord.innerText = "🔴 画面録画開始";
+                    btnScreenRecord.style.color = "#ff4444";
+                };
+                screenRecorder.start();
+                isScreenRecording = true;
+                btnScreenRecord.innerText = "⏹ 画面録画停止(保存)";
+                btnScreenRecord.style.color = "#ffff00";
+            } catch (err) {
+                alert("画面録画の初期化に失敗しました: " + err.message);
+            }
+        }
+
+        function stopScreenRecording() {
+            if (screenRecorder && isScreenRecording) {
+                screenRecorder.stop();
+                isScreenRecording = false;
+            }
+        }
+
+        // ★ 要件6：標準物理波形のダウンロード機能 (CSV)
+        document.getElementById('btn-dl-standard-wave').addEventListener('click', () => {
+            let csv = "time_sec,p_wave_gal,s_wave_gal,total_gal\n";
+            const dt = 0.02;
+            const totalDuration = state.customDuration + 10;
+            const D = Math.sqrt(state.d * state.d + state.h * state.h);
+            const tP = D / VP;
+            const tS = D / VS;
+            const baseSway = Math.pow(1.9, Math.max(0, state.intensityI - 2.5)) * 0.08 * state.soilFactor;
+
+            for (let t = 0; t <= totalDuration; t += dt) {
+                let pGal = 0.0;
+                let sGal = 0.0;
+
+                if (t >= tP && t < tS) {
+                    pGal = Math.sin(t * 48.0) * (baseSway * 0.18 * 4800);
+                }
+                if (t >= tS) {
+                    const sTime = t - tS;
+                    const progress = sTime / state.customDuration;
+                    if (progress <= 1.2) {
+                        let envelope = 1.0;
+                        if (sTime < 2.0) envelope = sTime / 2.0;
+                        else if (progress <= 1.0) envelope = Math.exp(-1.8 * (progress - 2.0 / state.customDuration));
+                        else envelope = Math.max(0, 1.0 - (progress - 1.0) * 5.0) * 0.1;
+                        sGal = (Math.sin(sTime * 6.5) + 0.3 * Math.sin(sTime * 14.0)) * (baseSway * envelope * 1250);
+                    }
+                }
+                const totalGal = pGal + sGal;
+                csv += `${t.toFixed(2)},${pGal.toFixed(2)},${sGal.toFixed(2)},${totalGal.toFixed(2)}\n`;
+            }
+
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `standard_physical_wave_M${state.M}_D${Math.round(D)}km.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
         });
 
         // 倒壊物理 & アニメーション更新
@@ -2332,7 +2492,6 @@ function updateStructureType(type) {
                 state.baseSway = Math.pow(1.9, Math.max(0, state.intensityI - 2.5)) * 0.08 * state.soilFactor;
             }
 
-            // 実観測CSV再生ロジック
             if (customCsvWave && customCsvWave.length > 0) {
                 const sampleIdx = Math.min(customCsvWave.length - 1, Math.floor(t * 50));
                 state.currentGal = customCsvWave[sampleIdx];
@@ -2373,7 +2532,7 @@ function updateStructureType(type) {
                     lampGroup.rotation.z = Math.sin(t * 24.0) * 0.08;
                     shelfGroup.rotation.z = Math.sin(t * 30.0) * 0.03;
                     state.currentGal = Math.abs(Math.sin(t * 48.0)) * (pAmp * 4800);
-                    if (rumbleGain && state.audioEnabled) rumbleGain.gain.value = 0.08 * state.masterVolume;
+                    if (rumbleGain && state.audioEnabled && state.masterVolume > 0) rumbleGain.gain.value = 0.08 * state.masterVolume;
                 } 
                 else {
                     const sTime = state.timelineIntensityEnabled ? t : (t - state.tS);
@@ -2395,7 +2554,6 @@ function updateStructureType(type) {
 
                         currentSway = state.baseSway * envelope;
 
-                        // 余震の加算合成
                         for (let af of aftershockList) {
                             if (t >= af.delaySec) {
                                 const afSTime = t - af.delaySec;
@@ -2437,13 +2595,11 @@ function updateStructureType(type) {
                             state.currentGal = currentSway * 1250;
                         }
 
-                        // 地割れ・断層出現ビジュアル
                         if (state.faultRupture && state.intensityI >= 6.0) {
                             faultRuptureMesh.visible = true;
                             faultRuptureMesh.position.y = -0.38 + Math.sin(sTime * 8.0) * 0.15;
                         }
 
-                        // タワーマンション長周期共振アニメーション (階数自由反映)
                         if (state.structureType === 'highrise') {
                             const totalFloors = towerFloors.length;
                             towerFloors.forEach((fl, idx) => {
@@ -2453,12 +2609,11 @@ function updateStructureType(type) {
                             });
                         }
 
-                        if (rumbleGain && state.audioEnabled) {
+                        if (rumbleGain && state.audioEnabled && state.masterVolume > 0) {
                             rumbleGain.gain.value = Math.min(0.65, currentSway * 0.5) * state.masterVolume;
                         }
                         if (currentSway > 0.28) playCreakSound();
 
-                        // ガラス割れ演出
                         if (state.intensityI >= 6.5 && !state.glassBroken) {
                             state.glassBroken = true;
                             windowMesh.visible = false;
@@ -2466,7 +2621,6 @@ function updateStructureType(type) {
                             playGlassShatterSound();
                         }
 
-                        // 停電・非常灯＆スマホライト演出
                         if (state.intensityI >= 6.0) {
                             if (state.envTime === 'night') {
                                 bulbLight.intensity = 0.0;
@@ -2479,7 +2633,6 @@ function updateStructureType(type) {
                         lampGroup.rotation.z = Math.sin(sTime * 5.0) * Math.min(1.4, currentSway * 2.2 * swayReduction);
                         lampGroup.rotation.x = Math.cos(sTime * 4.2) * Math.min(1.4, currentSway * 1.8 * swayReduction);
 
-                        // 家具の剛体物理飛び散り
                         if (!state.furnitureFixed) {
                             if (state.intensityI >= 5.5) shelfGroup.rotation.z = Math.sin(sTime * 8.0) * (currentSway * 0.8);
                             if (state.intensityI >= 6.5 && !state.isCollapsed) {
@@ -2506,7 +2659,6 @@ function updateStructureType(type) {
                             }
                         });
 
-                        // 液状化
                         if (state.liquefaction) {
                             plateGroup.position.y -= delta * 0.14;
                             plateGroup.rotation.z += delta * 0.015;
@@ -2518,19 +2670,17 @@ function updateStructureType(type) {
                             }
                             mudParticles.geometry.attributes.position.needsUpdate = true;
                         }
-                        // 耐久力減算 (高層ビル倒壊防止修正版)
+
                         if (state.intensityI >= 4.5 && state.hp > 0) {
                             let modFactor = (100.0 / Math.max(1, state.seismicRate));
                             if (state.structureType === 'brace') modFactor *= 0.5;
                             else if (state.structureType === 'damper') modFactor *= 0.4;
                             else if (state.structureType === 'isolation') modFactor *= 0.1;
-                            else if (state.structureType === 'highrise') modFactor *= 0.02; // ★ 高層ビルは強固なRC/S造のため損傷係数を大幅カット
+                            else if (state.structureType === 'highrise') modFactor *= 0.02;
 
-                            // ★ 高層ビルは木造築年数の脆弱性(seismicFactor)を無視し、現代基準の頑丈さで計算
                             const baseFactor = (state.structureType === 'highrise') ? 0.1 : state.seismicFactor;
                             const damageFactor = Math.pow(Math.max(0, state.intensityI - 4.0), 2.8) * 14.0 * baseFactor * modFactor;
 
-                            // ★ 高層ビルは建物自体がペシャンコに潰れないよう最低HP(25%)をキープ（長周期共振を維持）
                             if (state.structureType === 'highrise') {
                                 state.hp = Math.max(25.0, state.hp - damageFactor * envelope * delta);
                             } else {
@@ -2538,7 +2688,6 @@ function updateStructureType(type) {
                             }
                         }
 
-           
                     } else {
                         waveStateText = "揺れ減衰・終了";
                         waveStateColor = "#8fa0b5";
@@ -2546,7 +2695,6 @@ function updateStructureType(type) {
                         state.currentGal = 0.0;
                         if (rumbleGain) rumbleGain.gain.value = 0;
 
-                        // 津波襲来
                         if (state.secondaryTsunami) {
                             state.tsunamiProgress += delta;
                             if (state.tsunamiProgress > 2.0) {
@@ -2558,7 +2706,6 @@ function updateStructureType(type) {
                             }
                         }
 
-                        // 広域延焼
                         if (state.macroFire && state.isCollapsed) {
                             macroCityGroup.visible = true;
                             camera.position.lerp(new THREE.Vector3(40, 50, 60), delta * 0.5);
@@ -2570,13 +2717,11 @@ function updateStructureType(type) {
             drawGalOscilloscope(state.currentGal);
             document.getElementById('val-lpgm-class').innerText = calculateLPGMClass(state.currentGal, currentSway, state.M);
 
-            // 応力ヒートマップ描画更新
             if (state.stressHeatmap) {
                 const stressRatio = Math.min(1.0, (100.0 - state.hp) / 100.0);
                 wallMat.color.setRGB(stressRatio, 1.0 - stressRatio, 0.2);
             }
 
-            // 複数棟の連鎖ドミノ破壊物理演算
             if (state.multiHouse && multiHouseGroup.visible) {
                 for (let i = 0; i < multiHouses.length; i++) {
                     const h = multiHouses[i];
@@ -2606,7 +2751,7 @@ function updateStructureType(type) {
 
                 let verticalDeform = 1.0;
                 if (state.shakeType === 'vertical') verticalDeform = 1.0 - (plateGroup.position.y * 0.25);
-                wallMesh.scale.y = verticalDeform;
+                wallMesh.scale.set(1, verticalDeform, 1);
                 wallMesh.position.x = state.wallDeformX * 0.6;
                 wallMesh.position.z = state.wallDeformZ * 0.6;
                 wallMesh.position.y = 0.4 + (wallHeight * verticalDeform) / 2;
@@ -2758,6 +2903,7 @@ function updateStructureType(type) {
             }
         }
 
+        // ★ 要件4：初期状態の家の形状維持（平らにならず正しい立体位置へ復元）
         function resetSimulation() {
             state.isRunning = false;
             state.simTime = 0.0;
@@ -2775,14 +2921,20 @@ function updateStructureType(type) {
             bulbLight.intensity = 1.5;
             flashlight.intensity = 0.0;
 
-            plateGroup.position.set(0, 0, 0); plateGroup.rotation.set(0, 0, 0);
-            wallMesh.scale.set(1, 1, 1); wallMesh.position.set(0, 1.5, 0); wallMesh.rotation.set(0, 0, 0);
+            plateGroup.position.set(0, 0, 0); 
+            plateGroup.rotation.set(0, 0, 0);
+            
+            // 家の壁・屋根の立体形状を確実に初期化
+            wallMesh.scale.set(1, 1, 1); 
+            wallMesh.position.set(0, 0.4 + wallHeight / 2, 0); // y = 1.5
+            wallMesh.rotation.set(0, 0, 0);
+            
             secondFloorGroup.position.set(0, 0.4 + wallHeight, 0);
-            roofMesh.position.set(0, (state.structureType === 'piloti' ? 0.4 + wallHeight + 1.8 + 0.7 : 3.3), 0);
+            roofMesh.position.set(0, (state.structureType === 'piloti' ? 0.4 + wallHeight + 1.8 + 0.7 : 0.4 + wallHeight + 0.7), 0);
             roofMesh.rotation.set(0, Math.PI / 4, 0);
 
             towerFloors.forEach((fl, idx) => {
-                fl.position.set(0, 0.4 + idx * 0.5, 0);
+                fl.position.set(0, 0.2 + idx * 1.2, 0);
                 fl.rotation.set(0, 0, 0);
             });
 
@@ -2823,13 +2975,13 @@ function updateStructureType(type) {
             updateUI("待機中", "#8fa0b5");
         }
 
-        // --- 設定エクスポート & インポート ---
+        // 設定エクスポート & インポート
         const saveIndicator = document.getElementById('save-indicator');
         let saveTimeout = null;
 
         function getExportConfig() {
             return {
-                version: "9.6-ULTIMATE-MASTER",
+                version: "10.0-ULTIMATE-MASTER",
                 savedAt: new Date().toISOString(),
                 M: state.M, d: state.d, h: state.h,
                 customDuration: state.customDuration,
@@ -2837,6 +2989,7 @@ function updateStructureType(type) {
                 buildingAge: state.buildingAge,
                 houseAngle: state.houseAngle,
                 shakeType: state.shakeType,
+                earthquakeType: state.earthquakeType,
                 cameraView: state.cameraView,
                 envTime: state.envTime,
                 audioMode: state.audioMode,
@@ -2892,6 +3045,10 @@ function updateStructureType(type) {
             if (config.buildingAge !== undefined) updateBuildingByAge(config.buildingAge);
             if (config.houseAngle !== undefined) updateHouseRotation(config.houseAngle);
             if (config.envTime !== undefined) updateEnvTime(config.envTime);
+            if (config.earthquakeType !== undefined) {
+                document.getElementById('sel-earthquake-type').value = config.earthquakeType;
+                state.earthquakeType = config.earthquakeType;
+            }
             if (config.shakeType !== undefined) { selShakeType.value = config.shakeType; state.shakeType = config.shakeType; }
             if (config.cameraView !== undefined) setCameraView(config.cameraView);
 
@@ -2948,6 +3105,10 @@ function updateStructureType(type) {
             if (config.timelineIntensityEnabled !== undefined) { chkTimelineIntensity.checked = config.timelineIntensityEnabled; timelineContainer.style.display = config.timelineIntensityEnabled ? "block" : "none"; }
             if (Array.isArray(config.intensityTimeline)) intensityTimeline = config.intensityTimeline;
             if (Array.isArray(config.aftershockList)) aftershockList = config.aftershockList;
+            if (config.jalertVoice !== undefined) {
+                state.jalertVoice = config.jalertVoice;
+                document.getElementById('chk-jalert-voice').checked = config.jalertVoice;
+            }
 
             renderTimelineTable();
             renderAftershockTable();
@@ -2963,7 +3124,7 @@ function updateStructureType(type) {
             } catch (e) { return false; }
         }
 
-        // --- URL共有機能 ---
+        // --- URL共有 ---
         document.getElementById('btn-share-url').addEventListener('click', () => {
             const jsonStr = JSON.stringify(getExportConfig());
             const base64 = btoa(encodeURIComponent(jsonStr));
@@ -2979,7 +3140,7 @@ function updateStructureType(type) {
             window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
         });
 
-        // --- 防災診断書 (画像) ダウンロード機能 ---
+        // --- 防災診断書 ---
         document.getElementById('btn-download-report').addEventListener('click', () => {
             const repCanvas = document.createElement('canvas');
             repCanvas.width = 600; repCanvas.height = 420;
@@ -3015,7 +3176,7 @@ function updateStructureType(type) {
             a.click();
         });
 
-        // --- ブックマークスロット (1〜5) 機能 ---
+        // --- ブックマークスロット ---
         document.querySelectorAll('.btn-slot').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const slot = e.target.getAttribute('data-slot');
@@ -3035,7 +3196,7 @@ function updateStructureType(type) {
             });
         });
 
-        // 実観測CSVドラッグ＆ドロップ読込
+        // 実観測CSV読込
         document.getElementById('inp-csv-wave').addEventListener('change', (e) => {
             const file = e.target.files[0];
             if (!file) return;
@@ -3069,11 +3230,20 @@ function updateStructureType(type) {
         // 特殊モードトグルバインド
         document.getElementById('chk-stress-heatmap').addEventListener('change', (e) => { state.stressHeatmap = e.target.checked; if(!state.stressHeatmap) updateBuildingByAge(state.buildingAge); });
         document.getElementById('chk-bullet-time').addEventListener('change', (e) => state.bulletTime = e.target.checked);
-        document.getElementById('chk-jalert-voice').addEventListener('change', (e) => state.jalertVoice = e.target.checked);
+        
+        // ★ 要件7：チェック状態連動
+        document.getElementById('chk-jalert-voice').addEventListener('change', (e) => {
+            state.jalertVoice = e.target.checked;
+            if (!state.jalertVoice && ('speechSynthesis' in window)) {
+                window.speechSynthesis.cancel();
+            }
+            saveConfigToStorage();
+        });
+
         document.getElementById('chk-fault-rupture').addEventListener('change', (e) => { state.faultRupture = e.target.checked; faultRuptureMesh.visible = false; });
         document.getElementById('chk-macro-fire').addEventListener('change', (e) => state.macroFire = e.target.checked);
 
-        // 地震体験車モード (スマホシェイク連動)
+        // 地震体験車モード
         document.getElementById('chk-mobile-shake').addEventListener('change', (e) => {
             state.mobileShake = e.target.checked;
             if (state.mobileShake && window.DeviceMotionEvent) {
@@ -3088,7 +3258,7 @@ function updateStructureType(type) {
             }
         });
 
-        // スマホジャイロ連動 & VR見渡し
+        // スマホジャイロ連動
         document.getElementById('chk-gyro-vr').addEventListener('change', (e) => {
             state.gyroVr = e.target.checked;
             if (state.gyroVr) {
@@ -3133,17 +3303,17 @@ function updateStructureType(type) {
         // 多言語辞書
         const I18N = {
             ja: {
-                title: "STATUS MONITOR", time: "Elapsed Time:", wave: "Wave State:",
+                title: "STATUS MONITOR", app: "⚙️ EARTHQUAKE MASTER PRO", time: "Elapsed Time:", wave: "Wave State:",
                 intensity: "計測震度 (現在地):", lpgm: "長周期地震動階級:", gal: "リアルタイム加速度 (Gal):",
                 hp: "建物構造耐久力:", struct: "建物状態:", evac: "避難判定 (シェイクアウト):"
             },
             en: {
-                title: "STATUS MONITOR", time: "Time Elapsed:", wave: "Wave Status:",
+                title: "STATUS MONITOR", app: "⚙️ EARTHQUAKE MASTER PRO", time: "Time Elapsed:", wave: "Wave Status:",
                 intensity: "Seismic Intensity:", lpgm: "LPGM Class:", gal: "Realtime Acc (Gal):",
                 hp: "Structural HP:", struct: "Building Status:", evac: "Evacuation Result:"
             },
             easy_ja: {
-                title: "じょうきょう (STATUS)", time: "じかん (Time):", wave: "ゆれのじょうたい:",
+                title: "じょうきょう (STATUS)", app: "⚙️ じしん シミュレーター", time: "じかん (Time):", wave: "ゆれのじょうたい:",
                 intensity: "ゆれのつよさ (しんど):", lpgm: "ながいゆれレベル:", gal: "かそくど (Gal):",
                 hp: "たてものの つよさ:", struct: "いえの ようす:", evac: "にげる こうどう:"
             }
@@ -3153,6 +3323,7 @@ function updateStructureType(type) {
             state.currentLang = e.target.value;
             const dict = I18N[state.currentLang] || I18N.ja;
             document.getElementById('lbl-status-monitor-title').innerText = dict.title;
+            document.getElementById('lbl-app-title').innerText = dict.app;
             document.getElementById('lbl-status-time').innerText = dict.time;
             document.getElementById('lbl-status-wave').innerText = dict.wave;
             document.getElementById('lbl-status-intensity').innerText = dict.intensity;
@@ -3207,12 +3378,12 @@ function updateStructureType(type) {
 
         const btnTrigger = document.getElementById('btn-trigger'), btnReset = document.getElementById('btn-reset');
 
-        // ビル階数スライダー連動
+        // ビル階数スライダー
         const rngFloors = document.getElementById('rng-building-floors');
         const txtFloors = document.getElementById('txt-building-floors');
         syncInputs(rngFloors, txtFloors, (val) => rebuildHighrise(Math.round(val)));
 
-        // 複数棟連鎖破壊トグル & スライダー
+        // 複数棟連鎖破壊トグル
         const chkMulti = document.getElementById('chk-multi-house');
         const multiContainer = document.getElementById('multi-house-container');
         const rngCount = document.getElementById('rng-house-count');
@@ -3328,6 +3499,58 @@ function updateStructureType(type) {
             renderAftershockTable(); saveConfigToStorage();
         });
 
+        // ★ 要件8：余震データのCSV出力＆CSV読み込み
+        document.getElementById('btn-export-aftershock-csv').addEventListener('click', () => {
+            let csv = "delaySec,m,d,h\n";
+            aftershockList.forEach(af => {
+                csv += `${af.delaySec},${af.m},${af.d},${af.h}\n`;
+            });
+            const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `aftershocks_${Date.now()}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+        });
+
+        const inpAftershockCsv = document.getElementById('inp-aftershock-csv');
+        document.getElementById('btn-import-aftershock-csv').addEventListener('click', () => inpAftershockCsv.click());
+        inpAftershockCsv.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const text = event.target.result;
+                const lines = text.split(/\r\n|\n/);
+                const newList = [];
+                for (let ln of lines) {
+                    ln = ln.trim();
+                    if (!ln || ln.startsWith("delaySec")) continue;
+                    const p = ln.split(',');
+                    if (p.length >= 4) {
+                        const delay = parseFloat(p[0]);
+                        const m = parseFloat(p[1]);
+                        const d = parseFloat(p[2]);
+                        const h = parseFloat(p[3]);
+                        if (!isNaN(delay) && !isNaN(m) && !isNaN(d) && !isNaN(h)) {
+                            newList.push({ delaySec: delay, m: m, d: d, h: h });
+                        }
+                    }
+                }
+                if (newList.length > 0) {
+                    aftershockList = newList.slice(0, 300);
+                    renderAftershockTable();
+                    saveConfigToStorage();
+                    alert(`✅ 余震データ CSV から ${aftershockList.length} 件の余震を読み込みました！`);
+                } else {
+                    alert("⚠️ 有効な余震データが見つかりませんでした。(形式: delaySec,m,d,h)");
+                }
+            };
+            reader.readAsText(file);
+            inpAftershockCsv.value = "";
+        });
+
         // 座標同期
         function onCoordinateInputChanged(updateDistance = true) {
             state.epiLat = parseCoordinate(inpEpiLat.value); state.epiLon = parseCoordinate(inpEpiLon.value);
@@ -3429,7 +3652,11 @@ function updateStructureType(type) {
         chkLiquefaction.addEventListener('change', (e) => { state.liquefaction = e.target.checked; saveConfigToStorage(); });
         chkSecondaryFire.addEventListener('change', (e) => { state.secondaryFire = e.target.checked; saveConfigToStorage(); });
         chkSecondaryTsunami.addEventListener('change', (e) => { state.secondaryTsunami = e.target.checked; saveConfigToStorage(); });
-        selShakeType.addEventListener('change', (e) => { state.shakeType = e.target.value; saveConfigToStorage(); });
+        
+        selShakeType.addEventListener('change', (e) => { 
+            state.shakeType = e.target.value; 
+            saveConfigToStorage(); 
+        });
 
         function onParameterChange() {
             state.M = parseFloat(txtM.value) || 9.0;
@@ -3523,7 +3750,7 @@ function updateStructureType(type) {
 
         btnReset.addEventListener('click', resetSimulation);
 
-        // 🔘 パネル非表示ボタン
+        // パネル非表示ボタン（個別）
         let statusVisible = true, controlVisible = true;
         document.getElementById('btn-toggle-status').addEventListener('click', () => {
             statusVisible = !statusVisible;
@@ -3536,52 +3763,77 @@ function updateStructureType(type) {
             document.getElementById('btn-toggle-control').style.opacity = controlVisible ? '1' : '0.5';
         });
 
-        // 🌍 地震タイプセレクタの処理
+        // ★ 要件2：画面上右クリックで「earthquake master pro」ロゴ含め全UIの表示/非表示をトグル
+        let isAllUIHidden = false;
+        window.addEventListener('contextmenu', (e) => {
+            e.preventDefault();
+            isAllUIHidden = !isAllUIHidden;
+            const uiElements = document.querySelectorAll('.ui-element');
+            uiElements.forEach(el => {
+                if (isAllUIHidden) {
+                    el.classList.add('ui-hidden');
+                } else {
+                    el.classList.remove('ui-hidden');
+                }
+            });
+        });
+
+        // ★ 要件1：地震タイプと主要動の揺れタイプの自動連動
         document.getElementById('sel-earthquake-type').addEventListener('change', (e) => {
             const type = e.target.value;
-            let M, d, duration, waveForm;
+            state.earthquakeType = type;
+            let M, d, duration, shakeType;
             
             switch(type) {
-                case 'shallow-direct':  // 直下型
-                    M = 6.8; d = 10; duration = 30; state.shakeType = 'vertical';
+                case 'shallow-direct':  // 直下型（浅い・突き上げ）
+                    M = 6.8; d = 10; duration = 30; shakeType = 'vertical';
                     break;
-                case 'deep-direct':  // 深い直下型
-                    M = 6.2; d = 400; duration = 25; state.shakeType = 'vertical';
+                case 'deep-direct':     // 深い直下型（400km）
+                    M = 6.2; d = 400; duration = 25; shakeType = 'vertical';
                     break;
-                case 'trench':  // 海溝型
-                    M = 8.2; d = 40; duration = 120; state.shakeType = 'horizontal';
+                case 'trench':          // 海溝型（巨大ローリング）
+                    M = 8.5; d = 80; duration = 120; shakeType = 'horizontal';
                     break;
-                case 'back-arc':  // 背弧盆地
-                    M = 6.5; d = 60; duration = 40; state.shakeType = 'horizontal';
+                case 'back-arc':        // 背弧盆地（複合波）
+                    M = 6.5; d = 60; duration = 40; shakeType = 'auto';
                     break;
-                case 'crustal':  // 地殻内
-                    M = 7.1; d = 15; duration = 45; state.shakeType = 'vertical';
+                case 'crustal':         // 地殻内（内陸断層）
+                    M = 7.1; d = 15; duration = 45; shakeType = 'vertical';
                     break;
-                case 'volcanic':  // 火山地震
-                    M = 5.5; d = 5; duration = 20; state.shakeType = 'vertical';
+                case 'volcanic':        // 火山地震（短周期微動）
+                    M = 5.5; d = 5; duration = 20; shakeType = 'vertical';
                     break;
+                default:
+                    shakeType = 'auto';
             }
             
-            // スライダーと入力フィールドを更新
-            document.getElementById('rng-magnitude').value = M.toFixed(1);
-            document.getElementById('txt-magnitude').value = M.toFixed(1);
-            document.getElementById('lbl-magnitude').innerText = `M${M.toFixed(1)}`;
-            state.M = M;
+            // 主要動の揺れタイプを連動一致
+            state.shakeType = shakeType;
+            selShakeType.value = shakeType;
+
+            // スライダー・テキストフィールド同期
+            if (M !== undefined) {
+                rngM.value = M.toFixed(1);
+                txtM.value = M.toFixed(1);
+                state.M = M;
+            }
+            if (d !== undefined) {
+                rngD.value = Math.min(1000, d);
+                txtD.value = d;
+                state.d = d;
+            }
+            if (duration !== undefined) {
+                rngDuration.value = duration;
+                txtDuration.value = duration;
+                state.customDuration = duration;
+            }
             
-            document.getElementById('rng-depth').value = Math.min(600, d);
-            document.getElementById('txt-depth').value = d;
-            document.getElementById('lbl-depth').innerText = `${d} km`;
-            state.d = d;
-            
-            document.getElementById('rng-duration').value = duration;
-            document.getElementById('txt-duration').value = duration;
-            document.getElementById('lbl-duration').innerText = `${duration}秒`;
-            state.customDuration = duration;
-            
+            selPreset.value = "custom";
+            onParameterChange();
             saveConfigToStorage();
         });
 
-        // 🎮 Sticky制御ボタン
+        // Sticky制御ボタン
         const stickyControls = document.getElementById('sticky-controls');
         const btnTriggerSticky = document.getElementById('btn-trigger-sticky');
         const btnResumeSticky = document.getElementById('btn-resume-sticky');
@@ -3625,7 +3877,7 @@ function updateStructureType(type) {
             renderer.setSize(window.innerWidth, window.innerHeight);
         });
 
-        // メインレンダー・アニメーションループ (2画面分割A/Bビュー対応)
+        // メインレンダー・アニメーションループ
         const clock = new THREE.Clock();
 
         function animate() {
@@ -3660,7 +3912,7 @@ function updateStructureType(type) {
             }
         }
 
-        // 初期化実行 (URL共有パラメータの自動復元対応)
+        // 初期化実行 (URLパラメータ復元 & 正しい初期形状セット)
         const urlParams = new URLSearchParams(window.location.search);
         const sharedData = urlParams.get('data');
         let loaded = false;
@@ -3690,6 +3942,7 @@ function updateStructureType(type) {
             onCoordinateInputChanged(false);
         }
 
+        // ★ 要件4：確実に平らにならず正しい初期立体形状で起動
         resetSimulation();
         animate();
     </script>
