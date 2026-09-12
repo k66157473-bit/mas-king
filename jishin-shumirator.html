@@ -72,7 +72,77 @@
             to { box-shadow: 0 0 30px rgba(255, 0, 0, 1); transform: translateX(-50%) scale(1.03); }
         }
 
-        /* === 視点・環境切替クイックバー === */
+        /* === パネル非表示ボタン === */
+        .panel-toggle-btn {
+            position: fixed;
+            font-size: 14px;
+            padding: 8px 10px;
+            background: rgba(10, 15, 25, 0.95);
+            border: 1px solid rgba(0, 255, 128, 0.4);
+            color: #00ff88;
+            border-radius: 6px;
+            cursor: pointer;
+            z-index: 20;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+        
+        .panel-toggle-btn:hover {
+            background: rgba(0, 255, 128, 0.15);
+            box-shadow: 0 0 12px rgba(0, 255, 128, 0.4);
+        }
+        
+        #btn-toggle-status {
+            top: 8px;
+            right: 8px;
+        }
+        
+        #btn-toggle-control {
+            bottom: 8px;
+            right: 8px;
+        }
+        
+        /* === sticky制御ボタン === */
+        #sticky-controls {
+            position: fixed;
+            bottom: 50%;
+            left: 50%;
+            transform: translate(-50%, 50%);
+            z-index: 100;
+            background: rgba(10, 15, 25, 0.95);
+            border: 2px solid rgba(0, 255, 136, 0.5);
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: 0 0 20px rgba(0, 255, 136, 0.3);
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-width: 400px;
+        }
+        
+        #sticky-controls button {
+            font-size: 12px;
+            padding: 10px 16px;
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.2), rgba(0, 200, 100, 0.2));
+            border: 1.5px solid rgba(0, 255, 136, 0.6);
+            color: #00ff88;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+            min-width: 100px;
+        }
+        
+        #sticky-controls button:hover {
+            background: linear-gradient(135deg, rgba(0, 255, 136, 0.4), rgba(0, 200, 100, 0.4));
+            box-shadow: 0 0 15px rgba(0, 255, 136, 0.6);
+            transform: scale(1.05);
+        }
+        
+        #sticky-controls button:active {
+            transform: scale(0.98);
+        }
         #view-toggle-bar {
             position: absolute;
             top: 60px;
@@ -635,14 +705,17 @@
         <button id="btn-audio-toggle" class="view-btn" style="color: #ffaa00; border-color: rgba(255, 170, 0, 0.4);">🔊 音: ON</button>
         <button id="btn-audio-mode" class="view-btn" style="color: #00ffcc; border-color: rgba(0, 255, 204, 0.4);">🏡 家屋内音響</button>
         <button id="btn-env-time" class="view-btn" style="color: #ffdd88; border-color: rgba(255, 221, 136, 0.4);">☀️ 昼モード</button>
-        <!-- 明るさ調整スライダー -->
-        <div class="control-group" style="margin-top: 8px;">
-            <label>🔆 明るさ調整 <span id="lbl-brightness">100 %</span></label>
-            <div class="slider-text-row">
-                <input type="range" id="rng-brightness" min="10" max="200" step="5" value="100">
-                <input type="number" id="txt-brightness" min="10" max="200" step="5" value="100">
-            </div>
-        </div>
+    </div>
+
+    <!-- パネル非表示ボタン -->
+    <button id="btn-toggle-status" class="panel-toggle-btn" title="ステータスパネル切り替え">ℹ️</button>
+    <button id="btn-toggle-control" class="panel-toggle-btn" title="コントロールパネル切り替え">⚙️</button>
+
+    <!-- Sticky制御パネル（地震発生・再開・リセット） -->
+    <div id="sticky-controls" style="display: none;">
+        <button id="btn-trigger-sticky">🚨 地震発生</button>
+        <button id="btn-resume-sticky">▶️ 再開</button>
+        <button id="btn-reset-sticky">🔄 リセット</button>
     </div>
 
     <!-- 右上：ステータスパネル -->
@@ -757,6 +830,19 @@
             <button class="btn-slot" data-slot="5">枠5</button>
         </div>
         
+        <!-- 🌍 地震タイプ選択 -->
+        <div class="control-group">
+            <label>🌍 地震タイプ</label>
+            <select id="sel-earthquake-type" style="width: 100%; padding: 6px; font-size: 10px; background: rgba(10, 15, 25, 0.9); color: #00ff88; border: 1px solid rgba(0, 255, 128, 0.4); border-radius: 4px; cursor: pointer;">
+                <option value="shallow-direct">🔴 直下型 (浅い・突き上げ) - P波・S波短い</option>
+                <option value="deep-direct">🟠 深い直下型 (400km) - 揺れ弱い</option>
+                <option value="trench">🔵 海溝型 (プレート型) - ローリング長い</option>
+                <option value="back-arc">🟣 背弧盆地 (島弧内) - 複雑な揺れ</option>
+                <option value="crustal">🟡 地殻内 (断層型) - 被害地震</option>
+                <option value="volcanic">🟤 火山地震 (マグマ活動) - 短周期</option>
+            </select>
+        </div>
+
         <div class="control-group" style="margin-top: 8px;">
             <label>震災プリセット</label>
             <select id="sel-preset">
@@ -818,18 +904,6 @@
             <label class="checkbox-label">
                 <input type="checkbox" id="chk-macro-fire">
                 広域街並み視点 & 周辺延焼シミュレーション
-            </label>
-        </div>
-        <div class="control-group">
-            <label class="checkbox-label">
-                <input type="checkbox" id="chk-blackout">
-                ⚡ 停電 (照明消失 & 非常灯作動)
-            </label>
-        </div>
-        <div class="control-group">
-            <label class="checkbox-label">
-                <input type="checkbox" id="chk-water-shutdown">
-                💧 断水 (水道断裂 & 給水ストップ)
             </label>
         </div>
         <div class="control-group">
@@ -900,13 +974,6 @@
             <div class="slider-text-row">
                 <input type="range" id="rng-building-floors" min="3" max="100" step="1" value="30">
                 <input type="number" id="txt-building-floors" min="1" max="500" step="1" value="30">
-            </div>
-            
-            <!-- 📍 階数選択：指定階を見る機能 -->
-            <label style="margin-top: 6px; display: block;">📍 指定階を見る <span id="lbl-view-floor">30 階</span></label>
-            <div class="slider-text-row">
-                <input type="range" id="rng-view-floor" min="1" max="30" step="1" value="30" style="flex: 1;">
-                <input type="number" id="txt-view-floor" min="1" max="500" step="1" value="30" style="width: 60px;">
             </div>
         </div>
 
@@ -980,8 +1047,8 @@
         <div class="control-group" id="tsunami-height-container">
             <label>津波の高さ (m) (完全無制限) <span id="lbl-tsunami-height">10.0 m</span></label>
             <div class="slider-text-row">
-                <input type="range" id="rng-tsunami-height" min="1" max="50" step="0.5" value="10">
-                <input type="number" id="txt-tsunami-height" min="0.1" max="1000" step="0.1" value="10.0">
+                <input type="range" id="rng-tsunami-height" min="0" max="50" step="0.5" value="10">
+                <input type="number" id="txt-tsunami-height" min="0" max="1000" step="0.1" value="10.0">
             </div>
         </div>
 
@@ -1340,7 +1407,7 @@
             cameraView: 'outside',
             houseAngle: 0.0,
             envTime: 'day',
-            brightness: 100.0,
+
             // 音響
             audioEnabled: true,
             audioMode: 'indoor',
@@ -1390,8 +1457,6 @@
             isCollapsed: false,
             glassBroken: false,
             blackout: false,
-            waterShutdown: false,
-            viewFloor: 30,
             wallDeformX: 0.0,
             wallDeformZ: 0.0,
             roofFallProgress: 0.0,
@@ -1753,19 +1818,8 @@
             // ビル全体の高さに合わせてカメラの注視点と距離を自動調整（全体が綺麗に映る）
             if (state.structureType === 'highrise') {
                 const totalH = floors * floorHeight;
-                const multiCount = state.multiHouseCount || 1;
-                const multiSpacing = multiCount > 1 ? (multiCount - 1) * 3.6 : 0;
-                
-                controls.target.set(0, Math.min(25, totalH * 0.35), 0);
-                const zoomDist = Math.max(30, 
-                    18 + floors * 0.3 + multiSpacing * 0.5
-                );
-                camera.position.set(
-                    zoomDist * 0.75, 
-                    Math.max(15, totalH * 0.6),
-                    zoomDist * 0.9
-                );
-                controls.maxDistance = Math.max(100, zoomDist * 1.5);
+                controls.target.set(0, Math.min(25, totalH * 0.4), 0);
+                camera.position.set(18 + floors * 0.2, Math.max(12, totalH * 0.5), 24 + floors * 0.3);
                 controls.update();
             }
         }
@@ -1909,17 +1963,17 @@
         const dustParticles = new THREE.Points(dustGeo, dustMat);
         plateGroup.add(dustParticles);
 
-        // 火災パーティクル（改善版：より目立つ）
-        const fireCount = 150;
+        // 火災パーティクル
+        const fireCount = 100;
         const fireGeo = new THREE.BufferGeometry();
         const firePos = new Float32Array(fireCount * 3);
         const fireVel = [];
         for(let i=0; i<fireCount; i++) {
-            firePos[i*3] = (Math.random() - 0.5) * 3; firePos[i*3+1] = Math.random() * 2 + 0.5; firePos[i*3+2] = (Math.random() - 0.5) * 3;
-            fireVel.push(new THREE.Vector3((Math.random()-0.5)*1.2, Math.random()*3.5 + 2.0, (Math.random()-0.5)*1.2));
+            firePos[i*3] = (Math.random() - 0.5) * 2; firePos[i*3+1] = Math.random() * 1.5 + 0.4; firePos[i*3+2] = (Math.random() - 0.5) * 2;
+            fireVel.push(new THREE.Vector3((Math.random()-0.5)*0.8, Math.random()*2.2 + 1.2, (Math.random()-0.5)*0.8));
         }
         fireGeo.setAttribute('position', new THREE.BufferAttribute(firePos, 3));
-        const fireMat = new THREE.PointsMaterial({ color: 0xff4400, size: 0.42, transparent: true, opacity: 0, sizeAttenuation: true });
+        const fireMat = new THREE.PointsMaterial({ color: 0xff3300, size: 0.28, transparent: true, opacity: 0 });
         const fireParticles = new THREE.Points(fireGeo, fireMat);
         houseGroup.add(fireParticles);
 
@@ -1963,68 +2017,43 @@
         document.getElementById('btn-view-outside').addEventListener('click', () => setCameraView('outside'));
         document.getElementById('btn-view-inside').addEventListener('click', () => setCameraView('inside'));
 
+        // --- 環境光・昼夕夜モード切替 ---
         function updateEnvTime(env) {
             state.envTime = env;
             const btn = document.getElementById('btn-env-time');
-            
             if (env === 'day') {
-                btn.innerHTML = "☀️ 昼モード";
-                btn.style.color = "#ffdd88";
+                scene.background.setHex(0x07070c);
+                scene.fog.color.setHex(0x07070c);
+                ambientLight.color.setHex(0xddeeff);
                 ambientLight.intensity = 0.65;
+                dirLight.color.setHex(0xffffff);
                 dirLight.intensity = 1.2;
+                btn.innerText = "☀️ 昼モード";
             } else if (env === 'sunset') {
-                btn.innerHTML = "🌅 夕方モード";
-                btn.style.color = "#ff9944";
+                scene.background.setHex(0x2a1008);
+                scene.fog.color.setHex(0x2a1008);
+                ambientLight.color.setHex(0xffaa77);
                 ambientLight.intensity = 0.5;
+                dirLight.color.setHex(0xff6622);
                 dirLight.intensity = 1.5;
+                btn.innerText = "🌇 夕方モード";
             } else {
-                btn.innerHTML = "🌙 夜モード";
-                btn.style.color = "#5588ff";
+                scene.background.setHex(0x020205);
+                scene.fog.color.setHex(0x020205);
+                ambientLight.color.setHex(0x223355);
                 ambientLight.intensity = 0.25;
+                dirLight.color.setHex(0x4466aa);
                 dirLight.intensity = 0.4;
+                btn.innerText = "🌙 夜モード";
             }
-            
-            // 🔆 環境モード切り替え時に明るさを反映
-            updateBrightness(state.brightness);
+            saveConfigToStorage();
         }
+
         document.getElementById('btn-env-time').addEventListener('click', () => {
             const nextEnv = (state.envTime === 'day' ? 'sunset' : (state.envTime === 'sunset' ? 'night' : 'day'));
             updateEnvTime(nextEnv);
         });
-        // 🔆 明るさスライダーのイベント処理
-        document.getElementById('rng-brightness').addEventListener('input', (e) => {
-            document.getElementById('txt-brightness').value = e.target.value;
-            updateBrightness(parseInt(e.target.value));
-            saveConfigToStorage();
-        });
-        
-        document.getElementById('txt-brightness').addEventListener('input', (e) => {
-            const val = Math.max(10, Math.min(200, parseInt(e.target.value) || 100));
-            document.getElementById('rng-brightness').value = val;
-            updateBrightness(val);
-            saveConfigToStorage();
-        });
-        // 🔆 明るさ調整関数
-        function updateBrightness(val) {
-            state.brightness = Math.max(10, Math.min(200, val));
-            document.getElementById('lbl-brightness').innerText = `${state.brightness} %`;
-            document.getElementById('rng-brightness').value = state.brightness;
-            document.getElementById('txt-brightness').value = state.brightness;
-            
-            const brightnessMultiplier = state.brightness / 100.0;
-            
-            // 現在の環境モードに応じて明るさを調整
-            if (state.envTime === 'day') {
-                ambientLight.intensity = 0.65 * brightnessMultiplier;
-                dirLight.intensity = 1.2 * brightnessMultiplier;
-            } else if (state.envTime === 'sunset') {
-                ambientLight.intensity = 0.5 * brightnessMultiplier;
-                dirLight.intensity = 1.5 * brightnessMultiplier;
-            } else { // night
-                ambientLight.intensity = 0.25 * brightnessMultiplier;
-                dirLight.intensity = 0.4 * brightnessMultiplier;
-            }
-        }
+
         // --- 家の向き更新 ---
         function updateHouseRotation(angleDeg) {
             let normalizedAngle = ((angleDeg % 360) + 360) % 360;
@@ -2154,12 +2183,12 @@ function updateStructureType(type) {
         }
 
         function updateTsunamiHeight(h) {
-            state.tsunamiHeight = Math.max(0.1, h);
+            state.tsunamiHeight = Math.max(0, h);  // 📍 0m対応
             document.getElementById('lbl-tsunami-height').innerText = `${state.tsunamiHeight.toFixed(1)} m`;
             document.getElementById('rng-tsunami-height').value = Math.min(50, state.tsunamiHeight);
             document.getElementById('txt-tsunami-height').value = state.tsunamiHeight.toFixed(1);
-            tsunamiMesh.scale.y = state.tsunamiHeight / 8.0;
-            tsunamiMesh.position.y = (state.tsunamiHeight / 2.0);
+            tsunamiMesh.scale.y = state.tsunamiHeight === 0 ? 0.01 : state.tsunamiHeight / 8.0;  // 0mで非表示
+            tsunamiMesh.position.y = state.tsunamiHeight === 0 ? -100 : (state.tsunamiHeight / 2.0);
             saveConfigToStorage();
         }
 
@@ -2289,28 +2318,6 @@ function updateStructureType(type) {
 
         function updatePhysics(delta) {
             if (!state.isRunning) return;
-
-            // ⚡ 停電・断水機能：建物崩壊時に発動
-            if ((state.blackout || state.waterShutdown) && state.isCollapsed) {
-                if (state.blackout) {
-                    // 停電：メイン照明を極限まで低下、非常灯（赤色ポイントライト）作動
-                    ambientLight.intensity = Math.max(0.05, ambientLight.intensity - delta * 0.8);
-                    dirLight.intensity = Math.max(0.1, dirLight.intensity - delta * 0.6);
-                    pointLight.intensity = 2.5;  // 非常灯が明るく
-                    pointLight.color.setHex(0xff3300);  // 赤色に
-                } else {
-                    // 停電解除時：照明を戻す
-                    if (state.envTime === 'day') {
-                        ambientLight.intensity = Math.min(0.65, ambientLight.intensity + delta * 0.3);
-                        dirLight.intensity = Math.min(1.2, dirLight.intensity + delta * 0.3);
-                    } else {
-                        ambientLight.intensity = Math.min(0.25, ambientLight.intensity + delta * 0.2);
-                        dirLight.intensity = Math.min(0.4, dirLight.intensity + delta * 0.2);
-                    }
-                    pointLight.intensity = 0.8;  // 通常の非常灯
-                    pointLight.color.setHex(0x00ff88);  // 通常色に
-                }
-            }
 
             state.simTime += delta;
             const t = state.simTime;
@@ -2499,17 +2506,15 @@ function updateStructureType(type) {
                             }
                         });
 
-                        // 液状化（改善版：より激しいアニメーション）
+                        // 液状化
                         if (state.liquefaction) {
-                            plateGroup.position.y -= delta * 0.28;  // 沈下速度を2倍に
-                            plateGroup.rotation.z += delta * 0.035; // 傾斜速度を上げ
-                            plateGroup.rotation.x += delta * 0.018;
-                            mudMat.opacity = Math.min(0.85, mudMat.opacity + delta * 0.35); // より濃く
+                            plateGroup.position.y -= delta * 0.14;
+                            plateGroup.rotation.z += delta * 0.015;
+                            mudMat.opacity = Math.min(0.8, mudMat.opacity + delta * 0.2);
                             const mpos = mudParticles.geometry.attributes.position.array;
                             for (let i = 0; i < mudCount; i++) {
-                                mpos[i*3+1] += mudVel[i].y * delta * 1.8;  // 速度1.8倍
-                                mpos[i*3] += Math.sin(state.simTime + i) * delta * 0.15; // 横揺れ追加
-                                if (mpos[i*3+1] > 2.2) mpos[i*3+1] = 0.02; // リセット高さ調整
+                                mpos[i*3+1] += mudVel[i].y * delta;
+                                if (mpos[i*3+1] > 1.8) mpos[i*3+1] = 0.05;
                             }
                             mudParticles.geometry.attributes.position.needsUpdate = true;
                         }
@@ -2541,21 +2546,14 @@ function updateStructureType(type) {
                         state.currentGal = 0.0;
                         if (rumbleGain) rumbleGain.gain.value = 0;
 
-                        // 津波襲来（改善版：波のうねり効果を追加）
+                        // 津波襲来
                         if (state.secondaryTsunami) {
                             state.tsunamiProgress += delta;
-                            // 波のうねり効果
-                            tsunamiMesh.rotation.z = Math.sin(state.tsunamiProgress * 3.0) * 0.15;
-                            tsunamiMesh.position.y = 4 + Math.sin(state.tsunamiProgress * 2.5) * 1.2;
-                            tsunamiMat.opacity = 0.88 + Math.sin(state.tsunamiProgress * 2.0) * 0.08;
-                            
                             if (state.tsunamiProgress > 2.0) {
-                                tsunamiGroup.position.z = THREE.MathUtils.lerp(tsunamiGroup.position.z, 2, delta * 1.8);
-                                tsunamiMesh.scale.y = state.tsunamiHeight / 8.0 * (1.0 + Math.sin(state.tsunamiProgress * 4.0) * 0.25);
+                                tsunamiGroup.position.z = THREE.MathUtils.lerp(tsunamiGroup.position.z, 2, delta * 1.6);
                                 if (tsunamiGroup.position.z > -5.0 && state.hp <= 0) {
-                                    roofMesh.position.z += delta * 4.5;
-                                    wallMesh.position.z += delta * 3.5;
-                                    wallMesh.rotation.x += delta * 0.3;
+                                    roofMesh.position.z += delta * 4.0;
+                                    wallMesh.position.z += delta * 3.0;
                                 }
                             }
                         }
@@ -2698,16 +2696,10 @@ function updateStructureType(type) {
                 if (fireMat.opacity > 0) {
                     const pos = fireParticles.geometry.attributes.position.array;
                     for (let i = 0; i < fireCount; i++) {
-                        pos[i*3+1] += fireVel[i].y * delta * 1.6;  // 上昇速度1.6倍
-                        pos[i*3] += fireVel[i].x * delta * 0.8;
-                        pos[i*3+2] += fireVel[i].z * delta * 0.8;
-                        if (pos[i*3+1] > 4.5) pos[i*3+1] = 0.5;  // リセット高さを上げ
+                        pos[i*3+1] += fireVel[i].y * delta;
+                        if (pos[i*3+1] > 3.2) pos[i*3+1] = 0.4;
                     }
                     fireParticles.geometry.attributes.position.needsUpdate = true;
-                    // 火災の不透明度を段階的に増加
-                    if (state.secondaryFire && state.isCollapsed) {
-                        fireMat.opacity = Math.min(0.95, fireMat.opacity + delta * 0.4);
-                    }
                 }
             }
 
@@ -2847,7 +2839,6 @@ function updateStructureType(type) {
                 shakeType: state.shakeType,
                 cameraView: state.cameraView,
                 envTime: state.envTime,
-                brightness: state.brightness,
                 audioMode: state.audioMode,
                 masterVolume: state.masterVolume,
                 structureType: state.structureType,
@@ -2901,7 +2892,6 @@ function updateStructureType(type) {
             if (config.buildingAge !== undefined) updateBuildingByAge(config.buildingAge);
             if (config.houseAngle !== undefined) updateHouseRotation(config.houseAngle);
             if (config.envTime !== undefined) updateEnvTime(config.envTime);
-            if (config.brightness !== undefined) updateBrightness(config.brightness);
             if (config.shakeType !== undefined) { selShakeType.value = config.shakeType; state.shakeType = config.shakeType; }
             if (config.cameraView !== undefined) setCameraView(config.cameraView);
 
@@ -3082,37 +3072,6 @@ function updateStructureType(type) {
         document.getElementById('chk-jalert-voice').addEventListener('change', (e) => state.jalertVoice = e.target.checked);
         document.getElementById('chk-fault-rupture').addEventListener('change', (e) => { state.faultRupture = e.target.checked; faultRuptureMesh.visible = false; });
         document.getElementById('chk-macro-fire').addEventListener('change', (e) => state.macroFire = e.target.checked);
-        
-        // ⚡ 停電機能
-        document.getElementById('chk-blackout').addEventListener('change', (e) => state.blackout = e.target.checked);
-        
-        // 💧 断水機能
-        document.getElementById('chk-water-shutdown').addEventListener('change', (e) => state.waterShutdown = e.target.checked);
-        
-        // 📍 階数表示機能（ハイライズビル用）
-        function syncFloorView(val) {
-            state.viewFloor = parseInt(val);
-            document.getElementById('lbl-view-floor').innerText = `${state.viewFloor} 階`;
-            if (state.structureType === 'highrise' && towerFloors && towerFloors.length > 0) {
-                const floorHeight = 3.0;
-                const targetY = state.viewFloor * floorHeight;
-                camera.position.y = targetY + 5;
-                controls.target.y = targetY;
-                controls.update();
-            }
-        }
-        document.getElementById('rng-view-floor').addEventListener('input', (e) => {
-            document.getElementById('txt-view-floor').value = e.target.value;
-            const maxFloor = parseInt(document.getElementById('rng-building-floors').value);
-            document.getElementById('rng-view-floor').max = maxFloor;
-            syncFloorView(e.target.value);
-        });
-        document.getElementById('txt-view-floor').addEventListener('input', (e) => {
-            const maxFloor = parseInt(document.getElementById('rng-building-floors').value);
-            const val = Math.min(parseInt(e.target.value) || 1, maxFloor);
-            document.getElementById('rng-view-floor').value = val;
-            syncFloorView(val);
-        });
 
         // 地震体験車モード (スマホシェイク連動)
         document.getElementById('chk-mobile-shake').addEventListener('change', (e) => {
@@ -3563,6 +3522,74 @@ function updateStructureType(type) {
         });
 
         btnReset.addEventListener('click', resetSimulation);
+
+        // 🔘 パネル非表示ボタン
+        let statusVisible = true, controlVisible = true;
+        document.getElementById('btn-toggle-status').addEventListener('click', () => {
+            statusVisible = !statusVisible;
+            document.getElementById('status-panel').style.display = statusVisible ? 'block' : 'none';
+            document.getElementById('btn-toggle-status').style.opacity = statusVisible ? '1' : '0.5';
+        });
+        document.getElementById('btn-toggle-control').addEventListener('click', () => {
+            controlVisible = !controlVisible;
+            document.getElementById('control-panel').style.display = controlVisible ? 'block' : 'none';
+            document.getElementById('btn-toggle-control').style.opacity = controlVisible ? '1' : '0.5';
+        });
+
+        // 🌍 地震タイプセレクタの処理
+        document.getElementById('sel-earthquake-type').addEventListener('change', (e) => {
+            const type = e.target.value;
+            let M, d, duration, waveForm;
+            
+            switch(type) {
+                case 'shallow-direct':  // 直下型
+                    M = 6.8; d = 10; duration = 30; state.shakeType = 'vertical';
+                    break;
+                case 'deep-direct':  // 深い直下型
+                    M = 6.2; d = 400; duration = 25; state.shakeType = 'vertical';
+                    break;
+                case 'trench':  // 海溝型
+                    M = 8.2; d = 40; duration = 120; state.shakeType = 'horizontal';
+                    break;
+                case 'back-arc':  // 背弧盆地
+                    M = 6.5; d = 60; duration = 40; state.shakeType = 'horizontal';
+                    break;
+                case 'crustal':  // 地殻内
+                    M = 7.1; d = 15; duration = 45; state.shakeType = 'vertical';
+                    break;
+                case 'volcanic':  // 火山地震
+                    M = 5.5; d = 5; duration = 20; state.shakeType = 'vertical';
+                    break;
+            }
+            
+            // スライダーと入力フィールドを更新
+            document.getElementById('rng-magnitude').value = M.toFixed(1);
+            document.getElementById('txt-magnitude').value = M.toFixed(1);
+            document.getElementById('lbl-magnitude').innerText = `M${M.toFixed(1)}`;
+            state.M = M;
+            
+            document.getElementById('rng-depth').value = Math.min(600, d);
+            document.getElementById('txt-depth').value = d;
+            document.getElementById('lbl-depth').innerText = `${d} km`;
+            state.d = d;
+            
+            document.getElementById('rng-duration').value = duration;
+            document.getElementById('txt-duration').value = duration;
+            document.getElementById('lbl-duration').innerText = `${duration}秒`;
+            state.customDuration = duration;
+            
+            saveConfigToStorage();
+        });
+
+        // 🎮 Sticky制御ボタン
+        const stickyControls = document.getElementById('sticky-controls');
+        const btnTriggerSticky = document.getElementById('btn-trigger-sticky');
+        const btnResumeSticky = document.getElementById('btn-resume-sticky');
+        const btnResetSticky = document.getElementById('btn-reset-sticky');
+        
+        btnTriggerSticky.addEventListener('click', () => btnTrigger.click());
+        btnResumeSticky.addEventListener('click', () => btnTrigger.click());
+        btnResetSticky.addEventListener('click', () => btnReset.click());
 
         // .jishin ファイル保存・読込
         document.getElementById('btn-export-jishin').addEventListener('click', () => {
