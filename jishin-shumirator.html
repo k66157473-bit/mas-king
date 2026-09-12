@@ -4189,11 +4189,51 @@
   // 初回スキャン実行
   scanNode(document.body);
 
-  // 6. 切り替えボタンUIの生成
+// 6. 切り替えボタンUIの生成（PC・スマホ自動位置調整・文字被り完全防止）
   if (!document.getElementById('lang-switcher')) {
+    // レスポンシブ用スタイルの注入
+    if (!document.getElementById('lang-switcher-style')) {
+      const style = document.createElement('style');
+      style.id = 'lang-switcher-style';
+      style.textContent = `
+        #lang-switcher {
+          position: fixed;
+          z-index: 99998;
+          display: flex;
+          gap: 4px;
+          background: rgba(15, 23, 42, 0.88);
+          border: 1px solid rgba(255, 255, 255, 0.2);
+          padding: 4px 6px;
+          border-radius: 8px;
+          backdrop-filter: blur(4px);
+          box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        /* PC: 右下（ヘッダーやツールバーの文字を隠さないスタミナバー上部） */
+        @media (min-width: 769px) {
+          #lang-switcher {
+            bottom: 45px;
+            right: 15px;
+          }
+        }
+        /* スマホ: 下部セーフエリアを考慮したコンパクト右下配置 */
+        @media (max-width: 768px) {
+          #lang-switcher {
+            bottom: calc(36px + env(safe-area-inset-bottom, 0px));
+            right: 8px;
+            gap: 3px;
+            padding: 3px 5px;
+          }
+          #lang-switcher button {
+            padding: 3px 6px !important;
+            font-size: 11px !important;
+          }
+        }
+      `;
+      document.head.appendChild(style);
+    }
+
     const bar = document.createElement('div');
     bar.id = 'lang-switcher';
-    bar.style.cssText = 'position:fixed;top:10px;right:10px;z-index:999999;display:flex;gap:5px;background:rgba(0,0,0,0.75);padding:6px;border-radius:8px;';
 
     const langs = [
       { code: 'ja', label: 'JP' },
@@ -4206,13 +4246,14 @@
     langs.forEach(l => {
       const btn = document.createElement('button');
       btn.textContent = l.label;
-      btn.style.cssText = 'cursor:pointer;padding:4px 8px;font-size:12px;border:none;border-radius:4px;background:#fff;font-weight:bold;';
+      btn.style.cssText = 'cursor:pointer;padding:4px 8px;font-size:12px;border:none;border-radius:4px;background:#fff;font-weight:bold;color:#0f172a;';
       btn.onclick = () => window.switchLang(l.code);
       bar.appendChild(btn);
     });
 
     document.body.appendChild(bar);
   }
+
 })();
 </script>
 
