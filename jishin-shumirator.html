@@ -1,0 +1,3670 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>ガチ物理 3D地震倒壊シミュレーター ULTIMATE MASTER PRO</title>
+    <style>
+        /* === 基本スタイル === */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        body, html {
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #07070c;
+            font-family: 'Consolas', 'Monaco', 'Courier New', 'Meiryo', sans-serif;
+            color: #e0e0e0;
+        }
+
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* グラスモフィズム共通パネル */
+        .glass-panel {
+            background: rgba(10, 15, 25, 0.92);
+            border: 1px solid rgba(0, 255, 128, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 8px;
+            padding: 14px;
+            position: absolute;
+            z-index: 10;
+        }
+
+        /* === 緊急地震速報 (EEW) バナー === */
+        #eew-banner {
+            position: absolute;
+            top: 14px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: linear-gradient(135deg, rgba(255, 30, 30, 0.95), rgba(180, 0, 0, 0.95));
+            border: 2px solid #ffff00;
+            color: #ffffff;
+            padding: 8px 22px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: bold;
+            box-shadow: 0 0 25px rgba(255, 0, 0, 0.8);
+            z-index: 25;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            animation: pulse-eew 0.5s infinite alternate;
+            white-space: nowrap;
+        }
+
+        @keyframes pulse-eew {
+            from { box-shadow: 0 0 10px rgba(255, 255, 0, 0.5); transform: translateX(-50%) scale(1); }
+            to { box-shadow: 0 0 30px rgba(255, 0, 0, 1); transform: translateX(-50%) scale(1.03); }
+        }
+
+        /* === 視点・環境切替クイックバー === */
+        #view-toggle-bar {
+            position: absolute;
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 6px;
+            padding: 5px 10px;
+            border-radius: 30px;
+            background: rgba(10, 15, 25, 0.88);
+            border: 1px solid rgba(0, 255, 136, 0.4);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+            z-index: 15;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .view-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: #8fa0b5;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+
+        .view-btn.active {
+            background: linear-gradient(135deg, #00ff88, #00aa55);
+            color: #07070c;
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.5);
+            border-color: #00ff88;
+        }
+
+        /* === 右上：ステータスパネル === */
+        #status-panel {
+            top: 14px;
+            right: 14px;
+            width: 320px;
+            max-height: calc(100vh - 28px);
+            overflow-y: auto;
+            border-left: 4px solid #00ff88;
+        }
+
+        .status-title {
+            font-size: 13px;
+            font-weight: bold;
+            color: #00ff88;
+            margin-bottom: 8px;
+            border-bottom: 1px solid rgba(0, 255, 136, 0.2);
+            padding-bottom: 3px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .status-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+            font-size: 11.5px;
+        }
+
+        .status-label { color: #8fa0b5; }
+        .status-value { font-weight: bold; font-family: 'Consolas', monospace; color: #ffffff; }
+
+        #gal-canvas {
+            width: 100%;
+            height: 46px;
+            background: rgba(0, 5, 10, 0.85);
+            border: 1px solid rgba(0, 255, 136, 0.25);
+            border-radius: 4px;
+            margin: 4px 0 2px 0;
+            display: block;
+        }
+
+        /* 周波数スペクトル (FFT) キャンバス */
+        #fft-canvas {
+            width: 100%;
+            height: 32px;
+            background: rgba(0, 5, 10, 0.85);
+            border: 1px solid rgba(0, 204, 255, 0.25);
+            border-radius: 4px;
+            margin: 2px 0 4px 0;
+            display: block;
+        }
+
+        .graph-export-bar {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 6px;
+        }
+
+        .btn-graph-dl {
+            flex: 1;
+            padding: 3px;
+            font-size: 10px;
+            font-weight: bold;
+            border-radius: 3px;
+            cursor: pointer;
+            background: rgba(0, 255, 204, 0.15);
+            border: 1px solid rgba(0, 255, 204, 0.4);
+            color: #00ffcc;
+            transition: all 0.15s;
+        }
+        .btn-graph-dl:hover { background: rgba(0, 255, 204, 0.35); color: #fff; }
+
+        .hp-bar-container {
+            width: 100%;
+            height: 7px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+
+        #hp-bar-fill {
+            width: 100%;
+            height: 100%;
+            background: #00ff88;
+            transition: width 0.1s ease, background-color 0.3s ease;
+        }
+
+        /* === 左下：コントロールパネル === */
+        #control-panel {
+            bottom: 14px;
+            left: 14px;
+            width: 400px;
+            max-height: calc(100vh - 28px);
+            overflow-y: auto;
+            border-left: 4px solid #3399ff;
+        }
+
+        #control-panel::-webkit-scrollbar, #status-panel::-webkit-scrollbar { width: 4px; }
+        #control-panel::-webkit-scrollbar-thumb, #status-panel::-webkit-scrollbar-thumb { background: rgba(51, 153, 255, 0.4); border-radius: 2px; }
+
+        .panel-title {
+            font-size: 13.5px;
+            font-weight: bold;
+            color: #3399ff;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .section-divider {
+            font-size: 11px;
+            font-weight: bold;
+            color: #00ff88;
+            margin: 10px 0 5px 0;
+            padding-top: 4px;
+            border-top: 1px dashed rgba(0, 255, 136, 0.25);
+            letter-spacing: 0.5px;
+        }
+
+        .control-group { margin-bottom: 8px; }
+        .control-group label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11.5px;
+            color: #b0c0d0;
+            margin-bottom: 3px;
+        }
+
+        .slider-text-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+
+        .slider-text-row input[type="range"] { flex: 1; }
+        .slider-text-row input[type="number"], .slider-text-row input[type="text"] {
+            width: 85px;
+            font-size: 11.5px;
+            font-weight: bold;
+            color: #ffaa00;
+            text-align: right;
+            padding: 3px 5px;
+        }
+
+        .arrow-rotate-bar { display: flex; gap: 4px; margin-top: 4px; }
+        .arrow-btn-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; margin-top: 4px; }
+
+        .btn-arrow-action {
+            flex: 1;
+            padding: 5px 2px;
+            background: rgba(0, 255, 136, 0.12);
+            border: 1px solid rgba(0, 255, 136, 0.35);
+            color: #00ff88;
+            border-radius: 4px;
+            font-size: 10.5px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-align: center;
+        }
+        .btn-arrow-action:hover {
+            background: rgba(0, 255, 136, 0.3);
+            color: #fff;
+        }
+
+        .coord-inputs { display: flex; flex-direction: column; gap: 4px; margin-top: 3px; }
+        .coord-row { display: flex; gap: 6px; }
+        .coord-field { flex: 1; }
+        .coord-field span { display: block; font-size: 9.5px; color: #8fa0b5; margin-bottom: 1px; }
+
+        select, input[type="range"], input[type="number"], input[type="text"] {
+            width: 100%;
+            background: rgba(20, 30, 45, 0.85);
+            border: 1px solid rgba(51, 153, 255, 0.4);
+            border-radius: 4px;
+            color: #fff;
+            padding: 5px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        select { cursor: pointer; font-size: 11.5px; }
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.15);
+            border: none;
+            padding: 0;
+            cursor: pointer;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: #3399ff;
+            box-shadow: 0 0 8px #3399ff;
+            cursor: pointer;
+        }
+
+        .checkbox-label {
+            display: inline-flex !important;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            color: #ffcc00 !important;
+            font-size: 11.5px;
+            margin-bottom: 3px;
+        }
+        .checkbox-label input[type="checkbox"] { accent-color: #ffaa00; cursor: pointer; }
+
+        .timeline-table, .aftershock-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 4px;
+            font-size: 10.5px;
+        }
+        .timeline-table th, .aftershock-table th {
+            color: #8fa0b5;
+            text-align: left;
+            padding: 3px 2px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .timeline-table td, .aftershock-table td { padding: 3px 2px; }
+        .timeline-row input, .aftershock-row input {
+            width: 100%; padding: 2px 3px; background: rgba(15, 25, 40, 0.9);
+            border: 1px solid rgba(0, 255, 136, 0.3); border-radius: 3px; color: #fff;
+        }
+
+        .btn-del-row {
+            background: rgba(255, 50, 50, 0.3); border: 1px solid rgba(255, 50, 50, 0.6);
+            color: #ff8888; border-radius: 3px; cursor: pointer; padding: 2px 5px; font-size: 10px;
+        }
+
+        .timeline-controls-bar { display: flex; gap: 6px; margin-top: 5px; }
+        .btn-small {
+            flex: 1; padding: 4px; background: rgba(0, 255, 136, 0.15); border: 1px solid rgba(0, 255, 136, 0.4);
+            color: #00ff88; border-radius: 3px; cursor: pointer; font-size: 10.5px; font-weight: bold;
+        }
+
+        .file-io-bar { display: flex; gap: 6px; margin-top: 4px; }
+        .btn-file-io {
+            flex: 1; padding: 6px; font-size: 10.5px; font-weight: bold; border-radius: 4px; cursor: pointer;
+            border: 1px solid rgba(255, 204, 0, 0.5); background: rgba(255, 204, 0, 0.15); color: #ffcc00;
+        }
+
+        .btn-container { display: flex; gap: 6px; margin-top: 10px; }
+        .btn {
+            flex: 1; padding: 9px; border: none; border-radius: 4px; font-weight: bold;
+            font-size: 12.5px; cursor: pointer; transition: all 0.2s;
+        }
+
+        #btn-trigger {
+            background: linear-gradient(135deg, #ff3344, #aa1122); color: white;
+            box-shadow: 0 0 12px rgba(255, 51, 68, 0.4);
+        }
+        #btn-reset {
+            background: rgba(40, 55, 75, 0.85); color: #b0c8e0; border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #hint { position: absolute; top: 14px; left: 14px; font-size: 11px; color: rgba(255, 255, 255, 0.4); pointer-events: none; z-index: 10; }
+
+        /* === レンジロック（誤操作防止）＆ sticky 吸着スタイル === */
+        #btn-range-lock.locked {
+            background: rgba(255, 51, 68, 0.25) !important;
+            border-color: #ff3344 !important;
+            color: #ff4455 !important;
+            box-shadow: 0 0 8px rgba(255, 51, 68, 0.4);
+        }
+
+        body.range-locked input[type="range"] {
+            pointer-events: none !important;
+            opacity: 0.5;
+            filter: grayscale(80%);
+            cursor: not-allowed;
+        }
+
+        .file-io-bar {
+            position: sticky;
+            top: 0;
+            z-index: 25;
+            background: rgba(10, 15, 25, 0.95);
+            padding: 6px 0;
+            margin-bottom: 8px;
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-bottom: 1px solid rgba(51, 153, 255, 0.25);
+        }
+
+        /* 2画面分割表示用セパレータ */
+        #split-divider {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            background: #00ffcc;
+            box-shadow: 0 0 10px #00ffcc;
+            z-index: 5;
+            display: none;
+            pointer-events: none;
+        }
+        .split-label {
+            position: absolute;
+            top: 10px;
+            padding: 4px 10px;
+            background: rgba(0,0,0,0.7);
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            z-index: 6;
+            display: none;
+        }
+        #split-label-left { left: 10px; color: #ff5555; border: 1px solid #ff5555; }
+        #split-label-right { right: 10px; color: #00ffcc; border: 1px solid #00ffcc; }
+
+        /* スロットブックマークバー */
+        .slot-btn-bar { display: flex; gap: 4px; margin-top: 4px; }
+        .btn-slot {
+            flex: 1; padding: 4px; font-size: 10px; font-weight: bold; border-radius: 3px;
+            border: 1px solid rgba(0, 255, 204, 0.3); background: rgba(0, 255, 204, 0.1); color: #00ffcc; cursor: pointer;
+        }
+        .btn-slot:hover { background: rgba(0, 255, 204, 0.3); color: #fff; }
+
+        /* === スマホ向け最新最適化（横スクロール完全排除・HUDレイアウト） === */
+        @media (max-width: 768px) {
+            #canvas-container {
+                margin: 0 !important;
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 1;
+            }
+
+            #hint { display: none; }
+
+            #eew-banner {
+                top: 6px;
+                width: 92%;
+                font-size: 11px;
+                padding: 6px 10px;
+                justify-content: center;
+                white-space: nowrap;
+                z-index: 30;
+            }
+
+            #view-toggle-bar { 
+                position: fixed;
+                top: 44px;
+                left: 6px;
+                right: 6px;
+                width: auto;
+                transform: none;
+                display: grid;
+                grid-template-columns: repeat(5, 1fr);
+                gap: 4px;
+                padding: 4px;
+                background: rgba(10, 15, 25, 0.85);
+                border: 1px solid rgba(0, 255, 136, 0.3);
+                border-radius: 8px;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+                z-index: 20;
+            }
+            
+            .view-btn { 
+                font-size: 9px;
+                padding: 6px 1px;
+                text-align: center;
+                justify-content: center;
+                border-radius: 5px;
+                border: 1px solid rgba(0, 255, 136, 0.25);
+                color: #b0c0d0;
+                white-space: normal;
+                line-height: 1.15;
+            }
+            
+            .view-btn.active { 
+                background: linear-gradient(135deg, #00ff88, #00aa55);
+                color: #07070c;
+                border-color: #00ff88;
+                font-weight: bold;
+            }
+
+            #status-panel { 
+                position: fixed;
+                top: 88px;
+                right: 6px;
+                left: auto;
+                width: 180px;
+                max-height: 25vh;
+                padding: 6px 8px;
+                border-left: 3px solid #00ff88;
+                border-radius: 8px;
+                background: rgba(10, 15, 25, 0.75);
+                backdrop-filter: blur(6px);
+                -webkit-backdrop-filter: blur(6px);
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+                overflow-y: auto;
+                z-index: 15;
+            }
+            
+            .status-title { 
+                display: flex;
+                font-size: 10px; 
+                margin-bottom: 3px;
+                padding-bottom: 2px;
+            }
+            
+            .status-row { 
+                font-size: 9.5px; 
+                margin-bottom: 2px;
+            }
+            
+            .status-label { font-size: 9px; }
+            .status-value { font-size: 9.5px; }
+            
+            #gal-canvas { width: 100%; height: 22px; margin: 2px 0; }
+            #fft-canvas { width: 100%; height: 20px; margin: 2px 0; }
+            
+            .graph-export-bar { display: flex; gap: 2px; margin-bottom: 3px; }
+            .btn-graph-dl { font-size: 8px; padding: 2px 1px; flex: 1; }
+
+            #control-panel { 
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                max-height: 38vh;
+                padding: 10px 12px 16px 12px;
+                border-left: none;
+                border-top: 2px solid #3399ff;
+                border-radius: 16px 16px 0 0;
+                background: rgba(10, 15, 25, 0.94);
+                box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.85);
+                overflow-y: auto;
+                z-index: 25;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .btn-container { 
+                order: -1; 
+                margin-top: 0;
+                margin-bottom: 8px;
+                position: sticky;
+                top: 0;
+                background: rgba(10, 15, 25, 0.98);
+                padding: 4px 0 6px 0;
+                border-bottom: 1px solid rgba(51, 153, 255, 0.25);
+                z-index: 30;
+                gap: 8px;
+            }
+
+            .file-io-bar {
+                order: -1;
+                margin-top: 0;
+                margin-bottom: 6px;
+                gap: 4px;
+                position: sticky;
+                top: 48px;
+            }
+
+            .panel-title { order: -2; font-size: 11.5px; margin-bottom: 6px; }
+            .btn { padding: 10px 8px; font-size: 13px; }
+            .btn-file-io { padding: 5px 3px; font-size: 10px; }
+            .section-divider { font-size: 10.5px; margin: 8px 0 4px 0; padding-top: 4px; }
+            .control-group { margin-bottom: 6px; }
+            .control-group label { font-size: 10.5px; margin-bottom: 2px; }
+            .checkbox-label { font-size: 10.5px !important; }
+            
+            .slider-text-row { gap: 6px; }
+            .slider-text-row input[type="number"], .slider-text-row input[type="text"] { width: 68px; font-size: 11px; padding: 4px 5px; }
+            select, input[type="text"], input[type="number"] { font-size: 11px; padding: 5px 6px; }
+            input[type="range"] { height: 6px; }
+            input[type="range"]::-webkit-slider-thumb { width: 18px; height: 18px; }
+            
+            .btn-arrow-action { font-size: 10px; padding: 6px 2px; }
+            .arrow-btn-grid, .arrow-rotate-bar { gap: 4px; margin-top: 3px; }
+            .btn-small { padding: 5px 3px; font-size: 10px; }
+            .coord-inputs { gap: 3px; margin-top: 2px; }
+            .coord-row { gap: 4px; }
+            .coord-field span { font-size: 9px; margin-bottom: 1px; }
+            .coord-field input { font-size: 10px; padding: 4px 5px; }
+            .timeline-table, .aftershock-table { font-size: 9.5px; }
+            .timeline-row input, .aftershock-row input { font-size: 9.5px; padding: 3px 4px; }
+            .timeline-row button, .aftershock-row button { font-size: 9px; padding: 3px 5px; }
+        }
+    </style>
+
+    <!-- Three.js (r128) & OrbitControls -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+</head>
+<body>
+
+    <div id="hint">🖱️ ドラッグで360°旋回 / スクロールでズーム / ← →キーで家の向き回転</div>
+    <div id="canvas-container"></div>
+
+    <!-- 2画面比較用境界線 & ラベル -->
+    <div id="split-divider"></div>
+    <div id="split-label-left" class="split-label">無対策（旧耐震・固定なし）</div>
+    <div id="split-label-right" class="split-label">対策後（現在の設定）</div>
+
+    <!-- 緊急地震速報 (EEW) バナー -->
+    <div id="eew-banner">
+        <span>🚨 緊急地震速報 (EEW)</span>
+        <span id="eew-countdown-text">主要動 (S波) 到達まで あと 0.0 秒</span>
+    </div>
+
+    <!-- 視点・音響・環境切替クイックバー -->
+    <div id="view-toggle-bar">
+        <button id="btn-view-outside" class="view-btn active">🌐 外から見る（外観）</button>
+        <button id="btn-view-inside" class="view-btn">🏠 中から見る（室内）</button>
+        <button id="btn-audio-toggle" class="view-btn" style="color: #ffaa00; border-color: rgba(255, 170, 0, 0.4);">🔊 音: ON</button>
+        <button id="btn-audio-mode" class="view-btn" style="color: #00ffcc; border-color: rgba(0, 255, 204, 0.4);">🏡 家屋内音響</button>
+        <button id="btn-env-time" class="view-btn" style="color: #ffdd88; border-color: rgba(255, 221, 136, 0.4);">☀️ 昼モード</button>
+        <!-- 明るさ調整スライダー -->
+        <div class="control-group" style="margin-top: 8px;">
+            <label>🔆 明るさ調整 <span id="lbl-brightness">100 %</span></label>
+            <div class="slider-text-row">
+                <input type="range" id="rng-brightness" min="10" max="200" step="5" value="100">
+                <input type="number" id="txt-brightness" min="10" max="200" step="5" value="100">
+            </div>
+        </div>
+    </div>
+
+    <!-- 右上：ステータスパネル -->
+    <div id="status-panel" class="glass-panel">
+        <div class="status-title">
+            <span id="lbl-status-monitor-title">STATUS MONITOR</span>
+            <span id="save-indicator" style="font-size: 9.5px; color: #00ff88; opacity: 0; transition: opacity 0.3s;">💾 Saved</span>
+        </div>
+        <div class="status-row">
+            <span class="status-label" id="lbl-status-time">Elapsed Time:</span>
+            <span id="val-time" class="status-value">00:00.00</span>
+        </div>
+        <div class="status-row">
+            <span class="status-label" id="lbl-status-wave">Wave State:</span>
+            <span id="val-wave" class="status-value" style="color: #3399ff;">待機中</span>
+        </div>
+        <div class="status-row">
+            <span class="status-label" id="lbl-status-intensity">計測震度 (現在地):</span>
+            <span id="val-intensity" class="status-value" style="color: #ffaa00;">-</span>
+        </div>
+        <div class="status-row">
+            <span class="status-label" id="lbl-status-lpgm">長周期地震動階級:</span>
+            <span id="val-lpgm-class" class="status-value" style="color: #00ffcc;">階級 0 (なし)</span>
+        </div>
+        
+        <!-- Galオシロスコープ & 画像保存 -->
+        <div class="status-row" style="margin-bottom: 1px;">
+            <span class="status-label" id="lbl-status-gal">リアルタイム加速度 (Gal):</span>
+            <span id="val-gal-text" class="status-value" style="color: #00ffcc;">0.0 Gal</span>
+        </div>
+        <canvas id="gal-canvas" width="280" height="46"></canvas>
+
+        <!-- 周波数スペクトル (FFT) 表示バー -->
+        <div class="status-row" style="margin-bottom: 1px;">
+            <span class="status-label">周波数スペクトル (周期特性):</span>
+            <span id="val-fft-text" class="status-value" style="color: #ffaa00; font-size: 9.5px;">-</span>
+        </div>
+        <canvas id="fft-canvas" width="280" height="32"></canvas>
+
+        <div class="graph-export-bar">
+            <button id="btn-gal-png" class="btn-graph-dl">📷 PNG保存</button>
+            <button id="btn-gal-jpg" class="btn-graph-dl">📷 JPG保存</button>
+            <button id="btn-gal-gif" class="btn-graph-dl">🎥 GIF保存</button>
+        </div>
+
+        <div class="status-row">
+            <span class="status-label" id="lbl-status-hp">建物構造耐久力:</span>
+            <span id="val-hp-text" class="status-value">100%</span>
+        </div>
+        <div class="hp-bar-container">
+            <div id="hp-bar-fill"></div>
+        </div>
+        <div class="status-row" style="margin-top: 5px;">
+            <span class="status-label" id="lbl-status-struct">建物状態:</span>
+            <span id="val-struct-status" class="status-value" style="color: #00ff88;">健全</span>
+        </div>
+        <div class="status-row">
+            <span class="status-label" id="lbl-status-evac">避難判定 (シェイクアウト):</span>
+            <span id="val-evac-result" class="status-value" style="color: #00ffcc;">待機中</span>
+        </div>
+        <div class="status-row">
+            <span class="status-label" id="lbl-status-standard">適用耐震基準:</span>
+            <span id="val-standard-status" class="status-value" style="font-size: 10.5px; color: #ffcc00;">-</span>
+        </div>
+        <div class="status-row">
+            <span class="status-label" id="lbl-status-housedir">建物の向き:</span>
+            <span id="val-house-dir-status" class="status-value" style="color: #00ff88;">0° (北)</span>
+        </div>
+        <div class="status-row">
+            <span class="status-label" id="lbl-status-speed">再生速度:</span>
+            <span id="val-speed-status" class="status-value" style="color: #3399ff;">1.0x</span>
+        </div>
+        <div class="status-row">
+            <span class="status-label">推定生存確率:</span>
+            <span id="val-survival-rate" class="status-value" style="color: #00ff88;">100 %</span>
+        </div>
+    </div>
+
+    <!-- 左下：コントロールパネル -->
+    <div id="control-panel" class="glass-panel">
+        <div class="panel-title">
+            <span>⚙️ EARTHQUAKE MASTER PRO</span>
+            <!-- 言語切替トグル -->
+            <select id="sel-language" style="width: auto; padding: 2px 6px; font-size: 10px; background: rgba(0,255,136,0.15); border-color: #00ff88; color: #00ff88;">
+                <option value="ja">日本語</option>
+                <option value="en">English</option>
+                <option value="easy_ja">やさしい にほんご</option>
+            </select>
+        </div>
+
+        <div class="file-io-bar">
+            <button id="btn-export-jishin" class="btn-file-io">💾 .jishin 保存</button>
+            <button id="btn-import-jishin" class="btn-file-io">📂 .jishin 復元</button>
+            <button id="btn-range-lock" class="btn-file-io" style="border-color: rgba(51, 153, 255, 0.6); color: #3399ff; background: rgba(51, 153, 255, 0.15);">🔓 スライダー: 解除</button>
+            <input type="file" id="inp-file-jishin" accept=".jishin,.json" style="display: none;">
+        </div>
+
+        <!-- 共有 & 診断書ダウンロード -->
+        <div style="display: flex; gap: 4px; margin-top: 4px;">
+            <button id="btn-share-url" class="btn-file-io" style="border-color: #00ffcc; color: #00ffcc; background: rgba(0,255,204,0.1);">🔗 設定URL共有</button>
+            <button id="btn-share-x" class="btn-file-io" style="border-color: #1da1f2; color: #1da1f2; background: rgba(29,161,242,0.1);">𝕏 ポスト</button>
+            <button id="btn-download-report" class="btn-file-io" style="border-color: #ffaa00; color: #ffaa00; background: rgba(255,170,0,0.1);">📄 防災診断書出力</button>
+        </div>
+
+        <!-- ブックマークスロット (1〜5) -->
+        <div class="section-divider">⭐ 実験スロット (ワンクリック一時保存/呼出)</div>
+        <div class="slot-btn-bar">
+            <button class="btn-slot" data-slot="1">枠1</button>
+            <button class="btn-slot" data-slot="2">枠2</button>
+            <button class="btn-slot" data-slot="3">枠3</button>
+            <button class="btn-slot" data-slot="4">枠4</button>
+            <button class="btn-slot" data-slot="5">枠5</button>
+        </div>
+        
+        <div class="control-group" style="margin-top: 8px;">
+            <label>震災プリセット</label>
+            <select id="sel-preset">
+                <option value="custom">-- カスタム設定 --</option>
+                <option value="hanshin">阪神・淡路大震災 (M7.3 神戸)</option>
+                <option value="tohoku" selected>東日本大震災 (M9.0 仙台/東北沖)</option>
+                <option value="noto">令和6年能登半島地震 (M7.6 珠洲)</option>
+                <option value="tokyo_direct">首都直下地震 想定 (M7.3 東京湾)</option>
+                <option value="nankai">南海トラフ巨大地震 想定 (M9.1 潮岬沖)</option>
+            </select>
+        </div>
+
+        <!-- 歴史的地震アーカイブ (地図・震央クイック選択) -->
+        <div class="control-group">
+            <label>歴史的地震アーカイブ (ワンタップ震央選択)</label>
+            <select id="sel-archive-quake">
+                <option value="">-- 歴史的地震を選択 --</option>
+                <option value="kanto1923">大正関東地震 (1923年 M7.9 相模湾)</option>
+                <option value="fukui1948">福井地震 (1948年 M7.1 福井平野)</option>
+                <option value="niigata1964">新潟地震 (1964年 M7.5 新潟沖・液状化)</option>
+                <option value="kumamoto2016">熊本地震 本震 (2016年 M7.3 益城町)</option>
+                <option value="hokkaido2018">北海道胆振東部地震 (2018年 M6.7 震度7)</option>
+            </select>
+        </div>
+
+        <!-- 2画面比較 & 特殊モード -->
+        <div class="section-divider">🚀 特殊シミュレーション & 比較モード</div>
+        <div class="control-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="chk-split-view">
+                2画面同時比較モード (無対策 vs 現在設定)
+            </label>
+        </div>
+        <div class="control-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="chk-stress-heatmap">
+                構造応力ヒートマップ表示 (FEM的負荷可視化)
+            </label>
+        </div>
+        <div class="control-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="chk-bullet-time" checked>
+                倒壊瞬間スローモーション & バレットタイム旋回
+            </label>
+        </div>
+        <div class="control-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="chk-jalert-voice" checked>
+                J-ALERT / 緊急地震速報 合成音声アナウンス
+            </label>
+        </div>
+        <div class="control-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="chk-fault-rupture" checked>
+                地割れ・地殻断層露出ビジュアル (直下型)
+            </label>
+        </div>
+        <div class="control-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="chk-macro-fire">
+                広域街並み視点 & 周辺延焼シミュレーション
+            </label>
+        </div>
+        <div class="control-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="chk-blackout">
+                ⚡ 停電 (照明消失 & 非常灯作動)
+            </label>
+        </div>
+        <div class="control-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="chk-water-shutdown">
+                💧 断水 (水道断裂 & 給水ストップ)
+            </label>
+        </div>
+        <div class="control-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="chk-mobile-shake">
+                地震体験車モード (スマホシェイク連動)
+            </label>
+        </div>
+        <div class="control-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="chk-gyro-vr">
+                スマホジャイロ連動 & VR主観見渡し
+            </label>
+        </div>
+
+        <!-- 実観測波形 CSV 読込 -->
+        <div class="control-group">
+            <label>実観測地震波形データ (KiK-net / JMA CSV読込)</label>
+            <input type="file" id="inp-csv-wave" accept=".csv,.txt" style="font-size: 11px;">
+            <div id="lbl-csv-status" style="font-size: 10px; color: #00ffcc; margin-top: 2px;">標準物理波形を使用中</div>
+        </div>
+
+        <!-- 表層地盤増幅率 -->
+        <div class="control-group">
+            <label>表層地盤タイプ (地盤増幅率)</label>
+            <select id="sel-soil-type">
+                <option value="1.0">台地・硬質地盤 (標準 ×1.0)</option>
+                <option value="0.75">硬質岩盤 (揺れ軽減 ×0.75)</option>
+                <option value="1.45">沖積低地・平野部 (揺れ増幅 ×1.45)</option>
+                <option value="2.2">沿岸埋立地・軟弱泥炭層 (大増幅 ×2.2)</option>
+            </select>
+        </div>
+
+        <!-- 音響設定 -->
+        <div class="section-divider">🔊 音響モード & マスター音量設定</div>
+        <div class="control-group">
+            <label>音響空間モード</label>
+            <select id="sel-audio-mode">
+                <option value="indoor" selected>🏡 家屋内モード (反響・家具きしみ重視・迫力増大)</option>
+                <option value="outdoor">🏞️ 屋外モード (開放空間・遠地地鳴り重視)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>マスター音量倍率 <span id="lbl-master-vol">100 %</span></label>
+            <div class="slider-text-row">
+                <input type="range" id="rng-master-vol" min="0" max="300" step="1" value="100">
+                <input type="number" id="txt-master-vol" min="0" max="1000" step="1" value="100">
+            </div>
+        </div>
+
+        <!-- 構造補強・耐震率設定 -->
+        <div class="section-divider">🏗️ 構造工法 & 耐震補強切り替え</div>
+        <div class="control-group">
+            <label>建物の構造タイプ</label>
+            <select id="sel-structure-type">
+                <option value="standard" selected>木造平屋 (標準)</option>
+                <option value="piloti">木造2階建て ピロティ構造 (1階層崩壊)</option>
+                <option value="highrise">超高層ビル・タワーマンション (長周期共振モード)</option>
+                <option value="brace">耐震補強 (筋交い・ブレース追加 / 損傷半減)</option>
+                <option value="damper">制震ダンパー設置 (揺れエネルギー減衰)</option>
+                <option value="isolation">免震ゴム構造 (アイソレータ / 揺れ85%カット)</option>
+            </select>
+        </div>
+
+        <!-- ビル階数自由指定 -->
+        <div class="control-group" id="highrise-floors-container" style="display: none;">
+            <label>ビル階数 (自由入力) <span id="lbl-building-floors">30 階</span></label>
+            <div class="slider-text-row">
+                <input type="range" id="rng-building-floors" min="3" max="100" step="1" value="30">
+                <input type="number" id="txt-building-floors" min="1" max="500" step="1" value="30">
+            </div>
+            
+            <!-- 📍 階数選択：指定階を見る機能 -->
+            <label style="margin-top: 6px; display: block;">📍 指定階を見る <span id="lbl-view-floor">30 階</span></label>
+            <div class="slider-text-row">
+                <input type="range" id="rng-view-floor" min="1" max="30" step="1" value="30" style="flex: 1;">
+                <input type="number" id="txt-view-floor" min="1" max="500" step="1" value="30" style="width: 60px;">
+            </div>
+        </div>
+
+        <!-- 複数棟並列 & 連鎖破壊モード -->
+        <div class="control-group" style="margin-top: 6px;">
+            <label class="checkbox-label">
+                <input type="checkbox" id="chk-multi-house">
+                🏘️ 複数棟並列・連鎖破壊モード (密集市街地)
+            </label>
+            <div id="multi-house-container" style="display: none; margin-top: 4px;">
+                <label>建築軒数 (自由入力) <span id="lbl-house-count">12 軒</span></label>
+                <div class="slider-text-row">
+                    <input type="range" id="rng-house-count" min="2" max="30" step="1" value="12">
+                    <input type="number" id="txt-house-count" min="2" max="100" step="1" value="12">
+                </div>
+            </div>
+        </div>
+
+        <div class="control-group" style="margin-top: 6px;">
+            <label>基準耐震率 (%) (完全無制限) <span id="lbl-seismic-rate">100 %</span></label>
+            <div class="slider-text-row">
+                <input type="range" id="rng-seismic-rate" min="10" max="500" step="5" value="100">
+                <input type="number" id="txt-seismic-rate" min="0.1" max="100000" step="1" value="100">
+            </div>
+        </div>
+
+        <!-- 室内防災・家具固定・間取りレイアウト -->
+        <div class="section-divider">🛡️ 室内防災対策 & 間取りカスタマイズ</div>
+        <div class="control-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="chk-furniture-fixed" checked>
+                突っ張り棒・耐震ジェル (家具転倒防止) 有効
+            </label>
+        </div>
+        <div class="control-group">
+            <label>人間の避難行動 (シェイクアウト)</label>
+            <select id="sel-evacuation-action">
+                <option value="table" selected>机の下に隠れて頭を守る (Drop, Cover, Hold on)</option>
+                <option value="crouch">部屋の隅でしゃがんで頭を守る</option>
+                <option value="none">無防備に立っている (何もしない)</option>
+            </select>
+        </div>
+        <div class="control-group">
+            <label>本棚の配置位置 (間取りカスタマイズ)</label>
+            <div class="slider-text-row">
+                <input type="range" id="rng-shelf-x" min="-1.1" max="1.1" step="0.1" value="-1.0">
+                <span style="font-size: 10px; color: #ffaa00;">壁際・左右配置</span>
+            </div>
+        </div>
+
+        <!-- 液状化 & 二次災害 -->
+        <div class="section-divider">🌋 液状化 & 二次災害 (リアル津波・火災)</div>
+        <div class="control-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="chk-liquefaction">
+                液状化現象 (地盤沈下・泥水噴出・傾斜)
+            </label>
+        </div>
+        <div class="control-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="chk-secondary-fire" checked>
+                リアル火災延焼 (電気ショート・火炎・黒煙上昇)
+            </label>
+        </div>
+        <div class="control-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="chk-secondary-tsunami">
+                リアル津波襲来 (動的波浪・浸水・流失)
+            </label>
+        </div>
+        <div class="control-group" id="tsunami-height-container">
+            <label>津波の高さ (m) (完全無制限) <span id="lbl-tsunami-height">10.0 m</span></label>
+            <div class="slider-text-row">
+                <input type="range" id="rng-tsunami-height" min="1" max="50" step="0.5" value="10">
+                <input type="number" id="txt-tsunami-height" min="0.1" max="1000" step="0.1" value="10.0">
+            </div>
+        </div>
+
+        <!-- 築年数設定 -->
+        <div class="section-divider">🏠 建物・築年数設定 (自動外観・耐震変化)</div>
+        <div class="control-group">
+            <label>築年数 (無制限) <span id="lbl-building-age">築 89 年</span></label>
+            <div class="slider-text-row">
+                <input type="range" id="rng-building-age" min="0" max="150" step="1" value="89">
+                <input type="number" id="txt-building-age" min="0" max="10000" value="89">
+            </div>
+            <div style="font-size: 10.5px; color: #8fa0b5; margin-top: 2px;" id="lbl-building-type-desc">
+                伝統構法・老朽木造 (旧耐震以前)
+            </div>
+        </div>
+
+        <!-- 矢印ボタンで家の方向を動かす -->
+        <div class="section-divider">🧭 建物の向き・方角 (矢印ボタンで回転)</div>
+        <div class="control-group">
+            <label>家の向き (回転角度) <span id="lbl-house-angle">0° (北)</span></label>
+            <div class="slider-text-row">
+                <input type="range" id="rng-house-angle" min="0" max="360" step="1" value="0">
+                <input type="number" id="txt-house-angle" min="0" max="360" step="1" value="0">
+            </div>
+            <div class="arrow-rotate-bar">
+                <button id="btn-rot-left" class="btn-arrow-action">↺ 左回転 (-15°)</button>
+                <button id="btn-rot-right" class="btn-arrow-action">↻ 右回転 (+15°)</button>
+            </div>
+            <div class="arrow-btn-grid">
+                <button class="btn-arrow-action btn-dir-preset" data-angle="0">⬆ 北 (0°)</button>
+                <button class="btn-arrow-action btn-dir-preset" data-angle="90">➡ 東 (90°)</button>
+                <button class="btn-arrow-action btn-dir-preset" data-angle="180">⬇ 南 (180°)</button>
+                <button class="btn-arrow-action btn-dir-preset" data-angle="270">⬅ 西 (270°)</button>
+            </div>
+        </div>
+
+        <!-- 揺れタイプ -->
+        <div class="section-divider">〰️ 揺れタイプ (縦揺れ / 横揺れの選択)</div>
+        <div class="control-group">
+            <label>主要動の揺れタイプ</label>
+            <select id="sel-shake-type">
+                <option value="auto" selected>複合・自動 (P波縦微動 → S波横ローリング)</option>
+                <option value="vertical">縦揺れ主体 (激しい上下動・直下突き上げ型)</option>
+                <option value="horizontal">横揺れ主体 (長周期ローリング・巨大水平変位)</option>
+            </select>
+        </div>
+
+        <!-- 震源地・現在地 -->
+        <div class="section-divider">📍 震源地と現在地 (双方向連動 & 多彩フォーマット)</div>
+        <div class="control-group">
+            <label>震源地 (Epicenter)</label>
+            <select id="sel-epicenter">
+                <option value="off_sanriku" selected>三陸沖 (東日本大震災 震源)</option>
+                <option value="awaji_north">淡路島北部 (阪神大震災 震源)</option>
+                <option value="noto_suzu">能登半島沖 (能登半島地震 震源)</option>
+                <option value="tokyo_bay">東京湾北部</option>
+                <option value="sagami_trough">相模トラフ (関東大震災タイプ)</option>
+                <option value="nankai_trough">南海トラフ (潮岬沖)</option>
+                <option value="custom_coord">✏️ 自由入力 (DMS/DMM/10進数)</option>
+            </select>
+            <div class="coord-inputs">
+                <div class="coord-row">
+                    <div class="coord-field">
+                        <span>緯度 (Lat / DMS)</span>
+                        <input type="text" id="inp-epi-lat" value="38.30">
+                    </div>
+                    <div class="coord-field">
+                        <span>経度 (Lon / DMS)</span>
+                        <input type="text" id="inp-epi-lon" value="142.37">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>現在地 / 観測地 (Location)</label>
+            <select id="sel-location">
+                <option value="sendai" selected>仙台 (宮城県)</option>
+                <option value="tokyo">東京 (東京都)</option>
+                <option value="kobe">神戸 (兵庫県)</option>
+                <option value="osaka">大阪 (大阪府)</option>
+                <option value="nagoya">名古屋 (愛知県)</option>
+                <option value="kanazawa">金沢 (石川県)</option>
+                <option value="fukuoka">福岡 (福岡県)</option>
+                <option value="sapporo">札幌 (北海道)</option>
+                <option value="custom_coord">✏️ 自由入力 (DMS/DMM/10進数)</option>
+            </select>
+            <div class="coord-inputs">
+                <div class="coord-row">
+                    <div class="coord-field">
+                        <span>緯度 (Lat / DMS)</span>
+                        <input type="text" id="inp-loc-lat" value="38.27">
+                    </div>
+                    <div class="coord-field">
+                        <span>経度 (Lon / DMS)</span>
+                        <input type="text" id="inp-loc-lon" value="140.87">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 震源・距離パラメータ -->
+        <div class="section-divider">⚡ 震源・距離パラメータ (完全無制限)</div>
+        <div class="control-group">
+            <label>マグニチュード (M) <span id="lbl-m">9.0</span></label>
+            <div class="slider-text-row">
+                <input type="range" id="rng-m" min="1.0" max="10.0" step="0.1" value="9.0">
+                <input type="number" id="txt-m" min="0.1" max="20.0" step="0.1" value="9.0">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>震源水平距離 (d) [動かすと現在地が移動] <span id="lbl-d">130 km</span></label>
+            <div class="slider-text-row">
+                <input type="range" id="rng-d" min="1" max="1000" step="1" value="130">
+                <input type="number" id="txt-d" min="0" max="100000" step="1" value="130">
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>震源の深さ (h) <span id="lbl-h">24 km</span></label>
+            <div class="slider-text-row">
+                <input type="range" id="rng-h" min="0" max="300" step="1" value="24">
+                <input type="number" id="txt-h" min="0" max="100000" step="1" value="24">
+            </div>
+        </div>
+
+        <!-- 揺れる時間 & 再生倍速 -->
+        <div class="section-divider">⏱️ 揺れる時間 & 再生倍速 (完全無制限)</div>
+        <div class="control-group">
+            <label>揺れの継続時間 (秒) <span id="lbl-duration">70 秒</span></label>
+            <div class="slider-text-row">
+                <input type="range" id="rng-duration" min="5" max="10000" step="1" value="70">
+                <input type="number" id="txt-duration" min="1" max="1000000" step="1" value="70">
+            </div>
+        </div>
+        <div class="control-group">
+            <label>再生速度倍率 (無制限) <span id="lbl-playback-speed">1.0x</span></label>
+            <div class="slider-text-row">
+                <input type="range" id="rng-playback-speed" min="0.1" max="10.0" step="0.1" value="1.0">
+                <input type="number" id="txt-playback-speed" min="0.001" max="100000" step="0.1" value="1.0">
+            </div>
+        </div>
+
+        <!-- 余震マネージャー -->
+        <div class="section-divider">⚡ 余震マネージャー (最大300個・時間差発生)</div>
+        <div class="control-group">
+            <div style="font-size: 10.5px; color: #8fa0b5; margin-bottom: 3px;">
+                本震からの発生秒数、M、距離(d)、深さ(h)を設定:
+            </div>
+            <div style="max-height: 140px; overflow-y: auto; border: 1px solid rgba(0,255,136,0.2); border-radius: 4px; padding: 2px;">
+                <table class="aftershock-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 24%;">発生(秒後)</th>
+                            <th style="width: 20%;">M</th>
+                            <th style="width: 24%;">距離(km)</th>
+                            <th style="width: 20%;">深さ(km)</th>
+                            <th style="width: 12%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="aftershock-tbody"></tbody>
+                </table>
+            </div>
+            <div class="timeline-controls-bar">
+                <button id="btn-add-aftershock" class="btn-small">＋ 余震を追加 (最大300)</button>
+                <button id="btn-gen-aftershocks" class="btn-small" style="color: #ffaa00; border-color: rgba(255, 170, 0, 0.4);">大森公式クラスタ生成</button>
+            </div>
+        </div>
+
+        <!-- 震度直接入力 -->
+        <div class="section-divider">📊 震度の直接打ち込み (固定値)</div>
+        <div class="control-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="chk-manual-intensity">
+                固定震度を手動で打ち込む
+            </label>
+            <div id="manual-intensity-container" style="display: none; margin-top: 5px;">
+                <label>指定震度 (0.0〜無制限) <span id="lbl-manual-intensity">6.5</span></label>
+                <div class="slider-text-row">
+                    <input type="range" id="rng-manual-intensity" min="0.0" max="7.5" step="0.1" value="6.5">
+                    <input type="number" id="txt-manual-intensity" min="0.0" max="20.0" step="0.1" value="6.5">
+                </div>
+            </div>
+        </div>
+
+        <!-- 時間別震度タイムライン -->
+        <div class="section-divider">📈 時間別 震度タイムライン (時間変化)</div>
+        <div class="control-group">
+            <label class="checkbox-label">
+                <input type="checkbox" id="chk-timeline-intensity">
+                時間別に震度の変化を打ち込む
+            </label>
+            
+            <div id="timeline-container" style="display: none; margin-top: 5px;">
+                <table class="timeline-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 28%;">開始(秒)</th>
+                            <th style="width: 28%;">終了(秒)</th>
+                            <th style="width: 32%;">震度</th>
+                            <th style="width: 12%;"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="timeline-tbody"></tbody>
+                </table>
+                <div class="timeline-controls-bar">
+                    <button id="btn-add-timeline-row" class="btn-small">＋ 行を追加</button>
+                    <button id="btn-reset-timeline-pattern" class="btn-small" style="color: #ffaa00; border-color: rgba(255, 170, 0, 0.4);">標準パターン</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-container">
+            <button id="btn-trigger" class="btn">地震発生</button>
+            <button id="btn-reset" class="btn">リセット</button>
+        </div>
+    </div>
+
+    <!-- 音声確認モーダル (scriptの直前に正しく配置) -->
+    <div id="audio-modal" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.75); z-index: 999; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+        <div style="background: rgba(15, 23, 42, 0.95); border: 2px solid #ffaa00; border-radius: 12px; padding: 20px; width: 90%; max-width: 320px; text-align: center; box-shadow: 0 0 25px rgba(255, 170, 0, 0.4);">
+            <div style="font-size: 32px; margin-bottom: 8px;">🔊⚠️</div>
+            <div style="font-size: 14px; font-weight: bold; color: #ffaa00; margin-bottom: 8px;">音が出ます</div>
+            <div style="font-size: 11.5px; color: #cbd5e1; margin-bottom: 16px; line-height: 1.5;">
+                地震の地鳴りや警報チャイムなどの大きな音響が再生されます。<br>開始してもよろしいですか？
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button id="btn-modal-cancel" style="flex: 1; padding: 9px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.3); background: rgba(255,255,255,0.1); color: #fff; font-size: 12px; cursor: pointer;">キャンセル</button>
+                <button id="btn-modal-start" style="flex: 1; padding: 9px; border-radius: 6px; border: none; background: linear-gradient(135deg, #ff3344, #aa1122); color: #fff; font-size: 12px; font-weight: bold; cursor: pointer; box-shadow: 0 0 10px rgba(255,51,68,0.5);">開始する</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        /* ==========================================================================
+           3D EARTHQUAKE COLLAPSE SIMULATOR ULTIMATE MASTER PRO - JAVASCRIPT
+           ========================================================================== */
+
+        const VP = 6.0;
+        const VS = 3.5;
+        const STORAGE_KEY = "EARTHQUAKE_SIM_CONFIG_MASTER_V9_PRO";
+
+        const EPICENTERS = {
+            off_sanriku:   { name: "三陸沖", lat: 38.30, lon: 142.37, depth: 24, defaultM: 9.0 },
+            awaji_north:   { name: "淡路島北部", lat: 34.60, lon: 135.00, depth: 16, defaultM: 7.3 },
+            noto_suzu:     { name: "能登半島沖", lat: 37.50, lon: 137.24, depth: 16, defaultM: 7.6 },
+            tokyo_bay:     { name: "東京湾北部", lat: 35.60, lon: 139.90, depth: 30, defaultM: 7.3 },
+            sagami_trough: { name: "相模トラフ", lat: 35.00, lon: 139.30, depth: 15, defaultM: 7.9 },
+            nankai_trough: { name: "南海トラフ", lat: 33.20, lon: 135.80, depth: 30, defaultM: 9.1 }
+        };
+
+        const LOCATIONS = {
+            sendai:   { name: "仙台", lat: 38.27, lon: 140.87 },
+            tokyo:    { name: "東京", lat: 35.69, lon: 139.69 },
+            kobe:     { name: "神戸", lat: 34.69, lon: 135.19 },
+            osaka:    { name: "大阪", lat: 34.69, lon: 135.50 },
+            nagoya:   { name: "名古屋", lat: 35.18, lon: 136.91 },
+            kanazawa: { name: "金沢", lat: 36.59, lon: 136.66 },
+            fukuoka:  { name: "福岡", lat: 33.59, lon: 130.40 },
+            sapporo:  { name: "札幌", lat: 43.06, lon: 141.35 }
+        };
+
+        // 歴史的地震アーカイブ
+        const ARCHIVE_QUAKES = {
+            kanto1923:    { epi: "sagami_trough", loc: "tokyo", m: 7.9, h: 15, d: 50 },
+            fukui1948:    { epi: "custom_coord", loc: "kanazawa", m: 7.1, h: 10, d: 20, lat: 36.10, lon: 136.20 },
+            niigata1964:  { epi: "custom_coord", loc: "sendai", m: 7.5, h: 34, d: 55, lat: 38.40, lon: 139.20, liq: true },
+            kumamoto2016: { epi: "custom_coord", loc: "fukuoka", m: 7.3, h: 12, d: 15, lat: 32.75, lon: 130.76 },
+            hokkaido2018: { epi: "custom_coord", loc: "sapporo", m: 6.7, h: 37, d: 45, lat: 42.69, lon: 142.00 }
+        };
+
+        function parseCoordinate(input) {
+            if (typeof input === 'number') return input;
+            if (!input) return 0;
+            const str = String(input).trim();
+            if (/^[-+]?\d+(\.\d+)?$/.test(str)) return parseFloat(str);
+
+            const dmsMatch = str.match(/([+-]?\d+)[°度\s]+(\d+)['分\s]+([0-9.]+)(["秒\s]*)([NSEWnsew]?)/);
+            if (dmsMatch) {
+                let deg = parseFloat(dmsMatch[1]), min = parseFloat(dmsMatch[2]), sec = parseFloat(dmsMatch[3]), dir = dmsMatch[5] ? dmsMatch[5].toUpperCase() : '';
+                let val = Math.abs(deg) + (min / 60) + (sec / 3600);
+                if (deg < 0 || dir === 'S' || dir === 'W') val = -val;
+                return val;
+            }
+            const dmmMatch = str.match(/([+-]?\d+)[°度\s]+([0-9.]+)['分\s]*([NSEWnsew]?)/);
+            if (dmmMatch) {
+                let deg = parseFloat(dmmMatch[1]), min = parseFloat(dmmMatch[2]), dir = dmmMatch[3] ? dmmMatch[3].toUpperCase() : '';
+                let val = Math.abs(deg) + (min / 60);
+                if (deg < 0 || dir === 'S' || dir === 'W') val = -val;
+                return val;
+            }
+            const fallback = parseFloat(str);
+            return isNaN(fallback) ? 0 : fallback;
+        }
+
+        function calculateDistance(lat1, lon1, lat2, lon2) {
+            const radLat1 = lat1 * Math.PI / 180, radLon1 = lon1 * Math.PI / 180, radLat2 = lat2 * Math.PI / 180, radLon2 = lon2 * Math.PI / 180;
+            const a = 6378137.0, b = 6356752.314245, e2 = (a*a - b*b) / (a*a);
+            const dy = radLat1 - radLat2, dx = radLon1 - radLon2, my = (radLat1 + radLat2) / 2.0;
+            const W = Math.sqrt(1.0 - e2 * Math.sin(my) * Math.sin(my));
+            const M = a * (1.0 - e2) / (W * W * W), N = a / W;
+            const d = Math.sqrt((dy * M) * (dy * M) + (dx * N * Math.cos(my)) * (dx * N * Math.cos(my)));
+            return Math.max(0, Math.round(d / 1000));
+        }
+
+        function calculateBearing(lat1, lon1, lat2, lon2) {
+            const phi1 = lat1 * Math.PI / 180, phi2 = lat2 * Math.PI / 180, deltaLam = (lon2 - lon1) * Math.PI / 180;
+            const y = Math.sin(deltaLam) * Math.cos(phi2);
+            const x = Math.cos(phi1) * Math.sin(phi2) - Math.sin(phi1) * Math.cos(phi2) * Math.cos(deltaLam);
+            return Math.atan2(y, x);
+        }
+
+        function calculateDestinationPoint(lat1, lon1, distanceKm, bearingRad) {
+            const R = 6371.0, delta = distanceKm / R, phi1 = lat1 * Math.PI / 180, lam1 = lon1 * Math.PI / 180;
+            const phi2 = Math.asin(Math.sin(phi1) * Math.cos(delta) + Math.cos(phi1) * Math.sin(delta) * Math.cos(bearingRad));
+            const lam2 = lam1 + Math.atan2(Math.sin(bearingRad) * Math.sin(delta) * Math.cos(phi1), Math.cos(delta) - Math.sin(phi1) * Math.sin(phi2));
+            return { lat: phi2 * 180 / Math.PI, lon: lam2 * 180 / Math.PI };
+        }
+
+        let intensityTimeline = [
+            { start: 0,  end: 8,  intensity: 3.2 },
+            { start: 8,  end: 18, intensity: 5.4 },
+            { start: 18, end: 45, intensity: 7.1 },
+            { start: 45, end: 70, intensity: 4.5 }
+        ];
+
+        let aftershockList = [
+            { delaySec: 25, m: 7.2, d: 140, h: 20 },
+            { delaySec: 55, m: 6.8, d: 110, h: 25 }
+        ];
+
+        // 実観測CSV波形データバッファ
+        let customCsvWave = null;
+
+        // シミュレーション状態管理
+        const state = {
+            isRunning: false,
+            simTime: 0.0,
+            M: 9.0,
+            d: 130.0,
+            h: 24.0,
+            D: 0.0,
+            intensityI: 0.0,
+            jmaScale: "",
+            tP: 0.0,
+            tS: 0.0,
+            duration: 70.0,
+            customDuration: 70.0,
+            playbackSpeed: 1.0,
+            baseSway: 0.0,
+            currentGal: 0.0,
+            lpgmClass: 0,
+            
+            shakeType: 'auto',
+            cameraView: 'outside',
+            houseAngle: 0.0,
+            envTime: 'day',
+            brightness: 100.0,
+            // 音響
+            audioEnabled: true,
+            audioMode: 'indoor',
+            masterVolume: 1.0,
+
+            // 構造・防災
+            structureType: 'standard',
+            buildingFloors: 30,
+            multiHouse: false,
+            multiHouseCount: 12,
+            seismicRate: 100.0,
+            furnitureFixed: true,
+            evacuationAction: 'table',
+            shelfX: -1.0,
+            liquefaction: false,
+            secondaryFire: true,
+            secondaryTsunami: false,
+            tsunamiHeight: 10.0,
+            soilFactor: 1.0,
+
+            buildingAge: 89,
+            seismicFactor: 1.85,
+            standardDescription: "伝統構法・老朽木造 (旧耐震以前)",
+
+            epiLat: 38.30,
+            epiLon: 142.37,
+            locLat: 38.27,
+            locLon: 140.87,
+
+            manualIntensityEnabled: false,
+            manualIntensityVal: 6.5,
+            timelineIntensityEnabled: false,
+
+            // 新機能フラグ群
+            splitView: false,
+            stressHeatmap: false,
+            bulletTime: true,
+            jalertVoice: true,
+            faultRupture: true,
+            macroFire: false,
+            mobileShake: false,
+            gyroVr: false,
+            currentLang: 'ja',
+
+            // 建物状態
+            hp: 100.0,
+            isCollapsed: false,
+            glassBroken: false,
+            blackout: false,
+            waterShutdown: false,
+            viewFloor: 30,
+            wallDeformX: 0.0,
+            wallDeformZ: 0.0,
+            roofFallProgress: 0.0,
+            roofVelocity: new THREE.Vector3(0, 0, 0),
+            roofAngularVel: new THREE.Vector3(0, 0, 0),
+
+            lampSwingAngleX: 0.0,
+            lampSwingAngleZ: 0.0,
+            shelfTilt: 0.0,
+
+            tsunamiProgress: 0.0,
+            fireActive: false,
+            bulletTimeActive: false,
+            bulletTimeAngle: 0.0
+        };
+
+        const PRESETS = {
+            hanshin:      { epicenter: "awaji_north", location: "kobe", m: 7.3, h: 16 },
+            tohoku:       { epicenter: "off_sanriku", location: "sendai", m: 9.0, h: 24 },
+            noto:         { epicenter: "noto_suzu", location: "kanazawa", m: 7.6, h: 16 },
+            tokyo_direct: { epicenter: "tokyo_bay", location: "tokyo", m: 7.3, h: 30 },
+            nankai:       { epicenter: "nankai_trough", location: "osaka", m: 9.1, h: 30 }
+        };
+
+        // --- Web Audio API 音響エンジン ---
+        let audioCtx = null;
+        let rumbleNode = null, rumbleGain = null, rumbleFilter = null;
+
+        function initAudio() {
+            if (audioCtx) return;
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+
+                const bufferSize = audioCtx.sampleRate * 2;
+                const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const output = noiseBuffer.getChannelData(0);
+                let lastOut = 0.0;
+                for (let i = 0; i < bufferSize; i++) {
+                    const white = Math.random() * 2 - 1;
+                    output[i] = (lastOut + (0.02 * white)) / 1.02;
+                    lastOut = output[i];
+                    output[i] *= 3.5;
+                }
+
+                rumbleNode = audioCtx.createBufferSource();
+                rumbleNode.buffer = noiseBuffer;
+                rumbleNode.loop = true;
+
+                rumbleFilter = audioCtx.createBiquadFilter();
+                rumbleFilter.type = "lowpass";
+                rumbleFilter.frequency.value = (state.audioMode === 'indoor' ? 95 : 65);
+
+                rumbleGain = audioCtx.createGain();
+                rumbleGain.gain.value = 0.0;
+
+                rumbleNode.connect(rumbleFilter);
+                rumbleFilter.connect(rumbleGain);
+                rumbleGain.connect(audioCtx.destination);
+                rumbleNode.start(0);
+            } catch(e) {
+                console.warn("Web Audio not supported", e);
+            }
+        }
+
+        function updateAudioMode(mode) {
+            state.audioMode = mode;
+            if (rumbleFilter) {
+                rumbleFilter.frequency.value = (mode === 'indoor' ? 95 : 65);
+            }
+            const btn = document.getElementById('btn-audio-mode');
+            btn.innerText = (mode === 'indoor' ? "🏡 家屋内音響" : "🏞️ 屋外音響");
+            document.getElementById('sel-audio-mode').value = mode;
+            saveConfigToStorage();
+        }
+
+        // J-ALERT / EEW 音声アナウンス（音量OFF・ミュート時は喋らないよう修正）
+        function speakEEWAnnouncement() {
+            if (!state.audioEnabled || state.masterVolume <= 0 || !state.jalertVoice || !('speechSynthesis' in window)) return;
+            window.speechSynthesis.cancel();
+            const text = (state.currentLang === 'en') ? "Earthquake Early Warning. Strong shaking expected." : "緊急地震速報。大地震です。強い揺れに警戒してください。";
+            const uttr = new SpeechSynthesisUtterance(text);
+            uttr.lang = (state.currentLang === 'en') ? 'en-US' : 'ja-JP';
+            uttr.volume = Math.min(1.0, state.masterVolume);
+            uttr.rate = 1.15;
+            uttr.pitch = 1.1;
+            window.speechSynthesis.speak(uttr);
+        }
+
+        function playEEWChime() {
+            if (!state.audioEnabled || !audioCtx) return;
+            const now = audioCtx.currentTime;
+            const osc1 = audioCtx.createOscillator(), osc2 = audioCtx.createOscillator(), gain = audioCtx.createGain();
+            osc1.frequency.setValueAtTime(440, now); osc1.frequency.setValueAtTime(659.25, now + 0.15);
+            osc2.frequency.setValueAtTime(880, now); osc2.frequency.setValueAtTime(1318.5, now + 0.15);
+            const v = 0.3 * state.masterVolume;
+            gain.gain.setValueAtTime(v, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+            osc1.connect(gain); osc2.connect(gain); gain.connect(audioCtx.destination);
+            osc1.start(now); osc2.start(now); osc1.stop(now + 0.45); osc2.stop(now + 0.45);
+        }
+
+        function playCreakSound() {
+            if (!state.audioEnabled || !audioCtx || Math.random() > 0.08) return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(140 + Math.random() * 120, now);
+            osc.frequency.linearRampToValueAtTime(80, now + 0.12);
+            const v = (state.audioMode === 'indoor' ? 0.25 : 0.12) * state.masterVolume;
+            gain.gain.setValueAtTime(v, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.12);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(now); osc.stop(now + 0.13);
+        }
+
+        function playGlassShatterSound() {
+            if (!state.audioEnabled || !audioCtx) return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+            osc.type = "square";
+            osc.frequency.setValueAtTime(1200 + Math.random() * 800, now);
+            osc.frequency.exponentialRampToValueAtTime(200, now + 0.3);
+            gain.gain.setValueAtTime(0.4 * state.masterVolume, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(now); osc.stop(now + 0.36);
+        }
+
+        function playCollapseSound() {
+            if (!state.audioEnabled || !audioCtx) return;
+            const now = audioCtx.currentTime;
+            const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
+            osc.type = "sawtooth";
+            osc.frequency.setValueAtTime(100, now); osc.frequency.exponentialRampToValueAtTime(25, now + 0.8);
+            const v = 0.85 * state.masterVolume;
+            gain.gain.setValueAtTime(v, now); gain.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(now); osc.stop(now + 0.95);
+        }
+
+        // --- 2. Three.js シーン構築 ---
+        const container = document.getElementById('canvas-container');
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x07070c);
+        scene.fog = new THREE.FogExp2(0x07070c, 0.025);
+
+        const camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.05, 2000);
+        camera.position.set(16, 12, 20);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, preserveDrawingBuffer: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        container.appendChild(renderer.domElement);
+
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        controls.maxPolarAngle = Math.PI / 2 - 0.01;
+        controls.target.set(0, 2, 0);
+
+        const ambientLight = new THREE.AmbientLight(0xddeeff, 0.65);
+        scene.add(ambientLight);
+
+        const dirLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        dirLight.position.set(15, 25, 10);
+        dirLight.castShadow = true;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        scene.add(dirLight);
+
+        const pointLight = new THREE.PointLight(0x00ff88, 0.8, 20);
+        pointLight.position.set(-8, 4, -8);
+        scene.add(pointLight);
+
+        // 大地プレート
+        const plateGroup = new THREE.Group();
+        scene.add(plateGroup);
+
+        const plateGeo = new THREE.BoxGeometry(14, 0.8, 10);
+        const plateMat = new THREE.MeshStandardMaterial({ color: 0x181c24, roughness: 0.8, metalness: 0.2 });
+        const plateMesh = new THREE.Mesh(plateGeo, plateMat);
+        plateMesh.position.y = -0.4;
+        plateMesh.receiveShadow = true;
+        plateGroup.add(plateMesh);
+
+        // 地割れ・活断層メッシュ
+        const faultRuptureMesh = new THREE.Mesh(
+            new THREE.BoxGeometry(14.2, 0.82, 0.15),
+            new THREE.MeshStandardMaterial({ color: 0xaa2200, roughness: 0.9 })
+        );
+        faultRuptureMesh.position.set(0, -0.38, 0.5);
+        faultRuptureMesh.visible = false;
+        plateGroup.add(faultRuptureMesh);
+
+        const gridHelper = new THREE.GridHelper(14, 14, 0x00ff88, 0x005522);
+        gridHelper.position.y = 0.01;
+        gridHelper.scale.z = 10 / 14;
+        plateGroup.add(gridHelper);
+
+        // 広域街並みミニチュア群
+        const macroCityGroup = new THREE.Group();
+        for (let mx = -40; mx <= 40; mx += 16) {
+            for (let mz = -40; mz <= 40; mz += 16) {
+                if (Math.abs(mx) < 10 && Math.abs(mz) < 10) continue;
+                const mHouse = new THREE.Mesh(new THREE.BoxGeometry(4, 3, 4), new THREE.MeshStandardMaterial({ color: 0x334455 }));
+                mHouse.position.set(mx, 1.5, mz);
+                macroCityGroup.add(mHouse);
+            }
+        }
+        macroCityGroup.visible = false;
+        scene.add(macroCityGroup);
+
+        // 液状化泥水噴出パーティクル
+        const mudCount = 60;
+        const mudGeo = new THREE.BufferGeometry();
+        const mudPos = new Float32Array(mudCount * 3);
+        const mudVel = [];
+        for(let i=0; i<mudCount; i++) {
+            mudPos[i*3] = (Math.random() - 0.5) * 12;
+            mudPos[i*3+1] = 0.05;
+            mudPos[i*3+2] = (Math.random() - 0.5) * 8;
+            mudVel.push(new THREE.Vector3((Math.random()-0.5)*0.3, Math.random()*1.5 + 0.5, (Math.random()-0.5)*0.3));
+        }
+        mudGeo.setAttribute('position', new THREE.BufferAttribute(mudPos, 3));
+        const mudMat = new THREE.PointsMaterial({ color: 0x7a6040, size: 0.25, transparent: true, opacity: 0 });
+        const mudParticles = new THREE.Points(mudGeo, mudMat);
+        plateGroup.add(mudParticles);
+
+        // 家全体グループ
+        const houseGroup = new THREE.Group();
+        plateGroup.add(houseGroup);
+
+        // 免震アイソレータ
+        const isolatorGroup = new THREE.Group();
+        for (let ix of [-1.3, 1.3]) {
+            for (let iz of [-1.3, 1.3]) {
+                const rubber = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.25, 16), new THREE.MeshStandardMaterial({ color: 0x222222, roughness: 0.9 }));
+                rubber.position.set(ix, 0.125, iz);
+                isolatorGroup.add(rubber);
+            }
+        }
+        isolatorGroup.visible = false;
+        houseGroup.add(isolatorGroup);
+
+        // 基礎
+        const baseGeo = new THREE.BoxGeometry(3.2, 0.4, 3.2);
+        const baseMat = new THREE.MeshStandardMaterial({ color: 0x666b73, roughness: 0.9 });
+        const baseMesh = new THREE.Mesh(baseGeo, baseMat);
+        baseMesh.position.y = 0.2;
+        baseMesh.castShadow = true; 
+        baseMesh.receiveShadow = true;
+        houseGroup.add(baseMesh);
+
+        // 壁
+        const wallHeight = 2.2;
+        const wallGeo = new THREE.BoxGeometry(2.8, wallHeight, 2.8);
+        const wallMat = new THREE.MeshStandardMaterial({ color: 0x4a321f, roughness: 0.95, metalness: 0.05, side: THREE.DoubleSide });
+        const wallMesh = new THREE.Mesh(wallGeo, wallMat);
+        wallMesh.position.y = 0.4 + wallHeight / 2;
+        wallMesh.castShadow = true; wallMesh.receiveShadow = true;
+        houseGroup.add(wallMesh);
+
+        const wallEdges = new THREE.LineSegments(new THREE.EdgesGeometry(wallGeo), new THREE.LineBasicMaterial({ color: 0x24140a, linewidth: 2 }));
+        wallMesh.add(wallEdges);
+
+        // 窓ガラスオブジェクト
+        const glassGeo = new THREE.PlaneGeometry(1.0, 0.8);
+        const glassMat = new THREE.MeshStandardMaterial({ color: 0xaaddff, transparent: true, opacity: 0.65, roughness: 0.1, side: THREE.DoubleSide });
+        const windowMesh = new THREE.Mesh(glassGeo, glassMat);
+        windowMesh.position.set(0, 0.2, 1.41);
+        wallMesh.add(windowMesh);
+
+        // 窓ガラス飛散パーティクル
+        const glassShatterCount = 50;
+        const glassShatterGeo = new THREE.BufferGeometry();
+        const glassShatterPos = new Float32Array(glassShatterCount * 3);
+        const glassShatterVel = [];
+        for(let i=0; i<glassShatterCount; i++) {
+            glassShatterPos[i*3] = (Math.random() - 0.5) * 0.8;
+            glassShatterPos[i*3+1] = 1.6 + (Math.random() - 0.5) * 0.6;
+            glassShatterPos[i*3+2] = 1.45;
+            glassShatterVel.push(new THREE.Vector3((Math.random()-0.5)*1.5, (Math.random()-0.5)*1.5, Math.random()*2.0 + 1.0));
+        }
+        glassShatterGeo.setAttribute('position', new THREE.BufferAttribute(glassShatterPos, 3));
+        const glassShatterMat = new THREE.PointsMaterial({ color: 0xcceeff, size: 0.08, transparent: true, opacity: 0 });
+        const glassShatterParticles = new THREE.Points(glassShatterGeo, glassShatterMat);
+        houseGroup.add(glassShatterParticles);
+
+        // 筋交い (Braces)
+        const braceGroup = new THREE.Group();
+        const braceMat = new THREE.MeshStandardMaterial({ color: 0xaa7733, metalness: 0.3 });
+        const b1 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.8, 0.08), braceMat);
+        b1.rotation.z = Math.PI / 4; b1.position.z = 1.39;
+        const b2 = new THREE.Mesh(new THREE.BoxGeometry(0.08, 2.8, 0.08), braceMat);
+        b2.rotation.z = -Math.PI / 4; b2.position.z = -1.39;
+        braceGroup.add(b1); braceGroup.add(b2);
+        braceGroup.visible = false;
+        wallMesh.add(braceGroup);
+
+        // 2階建てピロティ
+        const secondFloorGroup = new THREE.Group();
+        secondFloorGroup.position.y = 0.4 + wallHeight;
+        const f2Wall = new THREE.Mesh(new THREE.BoxGeometry(2.8, 1.8, 2.8), new THREE.MeshStandardMaterial({ color: 0x8a6b4a, roughness: 0.8, side: THREE.DoubleSide }));
+        f2Wall.position.y = 0.9;
+        secondFloorGroup.add(f2Wall);
+        secondFloorGroup.visible = false;
+        houseGroup.add(secondFloorGroup);
+
+        // 超高層ビル・タワーマンションモデル (階数自由構築対応)
+        const highriseGroup = new THREE.Group();
+        const towerFloors = [];
+        highriseGroup.visible = false;
+        houseGroup.add(highriseGroup);
+
+// ★ 超高層ビル・タワーマンションモデル（ペちゃんこ解消・階高1.2m＋窓ガラス付き）
+        function rebuildHighrise(floors) {
+            while (highriseGroup.children.length > 0) {
+                highriseGroup.remove(highriseGroup.children[0]);
+            }
+            towerFloors.length = 0;
+            state.buildingFloors = floors;
+            document.getElementById('lbl-building-floors').innerText = `${floors} 階`;
+
+            const floorHeight = 1.2; // 1フロアの高さを45cmからリアルな1.2mへ大幅拡大
+
+            for (let tf = 0; tf < floors; tf++) {
+                const flGroup = new THREE.Group();
+                flGroup.position.y = 0.2 + tf * floorHeight;
+
+                // フロア外壁
+                const floorMesh = new THREE.Mesh(
+                    new THREE.BoxGeometry(3.0, floorHeight * 0.75, 3.0),
+                    new THREE.MeshStandardMaterial({
+                        color: (tf % 2 === 0 ? 0x3a4b5c : 0x4a5d70),
+                        metalness: 0.3,
+                        roughness: 0.4
+                    })
+                );
+                floorMesh.position.y = (floorHeight * 0.75) / 2;
+                flGroup.add(floorMesh);
+
+                // 窓ガラス帯（ビルらしさを表現）
+                const windowBand = new THREE.Mesh(
+                    new THREE.BoxGeometry(3.02, floorHeight * 0.22, 3.02),
+                    new THREE.MeshStandardMaterial({
+                        color: 0x88ccff,
+                        roughness: 0.1,
+                        metalness: 0.8
+                    })
+                );
+                windowBand.position.y = floorHeight * 0.85;
+                flGroup.add(windowBand);
+
+                towerFloors.push(flGroup);
+                highriseGroup.add(flGroup);
+            }
+
+            // ビル全体の高さに合わせてカメラの注視点と距離を自動調整（全体が綺麗に映る）
+            if (state.structureType === 'highrise') {
+                const totalH = floors * floorHeight;
+                const multiCount = state.multiHouseCount || 1;
+                const multiSpacing = multiCount > 1 ? (multiCount - 1) * 3.6 : 0;
+                
+                controls.target.set(0, Math.min(25, totalH * 0.35), 0);
+                const zoomDist = Math.max(30, 
+                    18 + floors * 0.3 + multiSpacing * 0.5
+                );
+                camera.position.set(
+                    zoomDist * 0.75, 
+                    Math.max(15, totalH * 0.6),
+                    zoomDist * 0.9
+                );
+                controls.maxDistance = Math.max(100, zoomDist * 1.5);
+                controls.update();
+            }
+        }
+        
+        
+
+        // 複数棟（連鎖破壊用）グループの生成
+        const multiHouses = [];
+        const multiHouseGroup = new THREE.Group();
+        plateGroup.add(multiHouseGroup);
+        multiHouseGroup.visible = false;
+
+        function rebuildMultiHouses(count) {
+            while (multiHouseGroup.children.length > 0) {
+                multiHouseGroup.remove(multiHouseGroup.children[0]);
+            }
+            multiHouses.length = 0;
+            state.multiHouseCount = count;
+            document.getElementById('lbl-house-count').innerText = `${count} 軒`;
+
+            const spacing = 3.6;
+            const startX = -((count - 1) * spacing) / 2;
+
+            for (let i = 0; i < count; i++) {
+                const hG = new THREE.Group();
+                hG.position.x = startX + i * spacing;
+
+                const base = baseMesh.clone();
+                const wall = wallMesh.clone();
+                const roof = roofMesh.clone();
+                hG.add(base); hG.add(wall); hG.add(roof);
+
+                multiHouseGroup.add(hG);
+                multiHouses.push({
+                    group: hG,
+                    wall: wall,
+                    roof: roof,
+                    hp: 100,
+                    tilt: 0,
+                    collapsed: false,
+                    fallProgress: 0
+                });
+            }
+            controls.maxDistance = Math.max(80, count * 6);
+        }
+
+        // 屋根
+        const roofGeo = new THREE.ConeGeometry(2.6, 1.4, 4);
+        const roofMat = new THREE.MeshStandardMaterial({ color: 0x992211, roughness: 0.6, metalness: 0.1, side: THREE.DoubleSide });
+        const roofMesh = new THREE.Mesh(roofGeo, roofMat);
+        roofMesh.position.y = 0.4 + wallHeight + 0.7;
+        roofMesh.rotation.y = Math.PI / 4;
+        roofMesh.castShadow = true;
+        houseGroup.add(roofMesh);
+
+        // 室内オブジェクト
+        const interiorGroup = new THREE.Group();
+        houseGroup.add(interiorGroup);
+
+        const floorGeo = new THREE.BoxGeometry(2.7, 0.04, 2.7);
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x889966, roughness: 0.8 });
+        const floorMesh = new THREE.Mesh(floorGeo, floorMat);
+        floorMesh.position.y = 0.42;
+        interiorGroup.add(floorMesh);
+
+        const tableGroup = new THREE.Group();
+        tableGroup.position.set(0, 0.44, 0.2);
+        const tableTop = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.55, 0.04, 16), new THREE.MeshStandardMaterial({ color: 0x5c3a21, roughness: 0.7 }));
+        tableTop.position.y = 0.28;
+        tableGroup.add(tableTop);
+        for (let i = 0; i < 4; i++) {
+            const angle = (i * Math.PI) / 2 + Math.PI / 4;
+            const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.025, 0.025, 0.28, 8), new THREE.MeshStandardMaterial({ color: 0x3d2414 }));
+            leg.position.set(Math.cos(angle) * 0.35, 0.14, Math.sin(angle) * 0.35);
+            tableGroup.add(leg);
+        }
+        interiorGroup.add(tableGroup);
+
+        const shelfGroup = new THREE.Group();
+        shelfGroup.position.set(state.shelfX, 0.44, -0.8);
+        const shelfMesh = new THREE.Mesh(new THREE.BoxGeometry(0.5, 1.2, 0.8), new THREE.MeshStandardMaterial({ color: 0x3d2314, roughness: 0.85 }));
+        shelfMesh.position.y = 0.6;
+        shelfGroup.add(shelfMesh);
+
+        // 散乱・飛び散る本・小物の物理メッシュ
+        const flyingBooks = [];
+        for (let b = 0; b < 6; b++) {
+            const book = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.18, 0.06), new THREE.MeshStandardMaterial({ color: 0xcc3322 }));
+            book.position.set(0, 0.7 + (b * 0.06), (b % 2 === 0 ? 0.15 : -0.15));
+            book.userData = { vel: new THREE.Vector3(0,0,0), dropped: false };
+            shelfGroup.add(book);
+            flyingBooks.push(book);
+        }
+
+        const tensionRods = new THREE.Group();
+        for (let rz of [-0.25, 0.25]) {
+            const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.8, 8), new THREE.MeshStandardMaterial({ color: 0xdddddd, metalness: 0.8 }));
+            rod.position.set(0, 1.6, rz);
+            tensionRods.add(rod);
+        }
+        shelfGroup.add(tensionRods);
+        interiorGroup.add(shelfGroup);
+
+        const avatarGroup = new THREE.Group();
+        const avatarBody = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.15, 0.4, 8), new THREE.MeshStandardMaterial({ color: 0x3388ff }));
+        avatarBody.position.y = 0.2;
+        const avatarHead = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 16), new THREE.MeshStandardMaterial({ color: 0xffccaa }));
+        avatarHead.position.y = 0.45;
+        avatarGroup.add(avatarBody); avatarGroup.add(avatarHead);
+
+        // 懐中電灯・スマホライト
+        const flashlight = new THREE.SpotLight(0xffffff, 0, 8, Math.PI / 6, 0.5);
+        flashlight.position.set(0, 0.3, 0.2);
+        flashlight.target.position.set(0, 0, 2);
+        avatarGroup.add(flashlight);
+        avatarGroup.add(flashlight.target);
+
+        interiorGroup.add(avatarGroup);
+
+        const lampGroup = new THREE.Group();
+        lampGroup.position.set(0, 2.5, 0);
+        const lampCord = new THREE.Mesh(new THREE.CylinderGeometry(0.01, 0.01, 0.7, 8), new THREE.MeshBasicMaterial({ color: 0x111111 }));
+        lampCord.position.y = -0.35; lampGroup.add(lampCord);
+        const lampShade = new THREE.Mesh(new THREE.ConeGeometry(0.25, 0.18, 16, 1, true), new THREE.MeshStandardMaterial({ color: 0xddccaa, roughness: 0.4, side: THREE.DoubleSide }));
+        lampShade.position.y = -0.7; lampGroup.add(lampShade);
+        const bulbLight = new THREE.PointLight(0xffea99, 1.5, 3.5);
+        bulbLight.position.y = -0.72; lampGroup.add(bulbLight);
+        interiorGroup.add(lampGroup);
+
+        // 瓦礫
+        const dustCount = 150;
+        const dustGeo = new THREE.BufferGeometry();
+        const dustPos = new Float32Array(dustCount * 3);
+        const dustVel = [];
+        for(let i=0; i<dustCount; i++) {
+            dustPos[i*3] = (Math.random() - 0.5) * 4; dustPos[i*3+1] = Math.random() * 2 + 0.2; dustPos[i*3+2] = (Math.random() - 0.5) * 4;
+            dustVel.push(new THREE.Vector3((Math.random()-0.5)*4, Math.random()*3+1, (Math.random()-0.5)*4));
+        }
+        dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+        const dustMat = new THREE.PointsMaterial({ color: 0x998877, size: 0.12, transparent: true, opacity: 0 });
+        const dustParticles = new THREE.Points(dustGeo, dustMat);
+        plateGroup.add(dustParticles);
+
+        // 火災パーティクル（改善版：より目立つ）
+        const fireCount = 150;
+        const fireGeo = new THREE.BufferGeometry();
+        const firePos = new Float32Array(fireCount * 3);
+        const fireVel = [];
+        for(let i=0; i<fireCount; i++) {
+            firePos[i*3] = (Math.random() - 0.5) * 3; firePos[i*3+1] = Math.random() * 2 + 0.5; firePos[i*3+2] = (Math.random() - 0.5) * 3;
+            fireVel.push(new THREE.Vector3((Math.random()-0.5)*1.2, Math.random()*3.5 + 2.0, (Math.random()-0.5)*1.2));
+        }
+        fireGeo.setAttribute('position', new THREE.BufferAttribute(firePos, 3));
+        const fireMat = new THREE.PointsMaterial({ color: 0xff4400, size: 0.42, transparent: true, opacity: 0, sizeAttenuation: true });
+        const fireParticles = new THREE.Points(fireGeo, fireMat);
+        houseGroup.add(fireParticles);
+
+        // リアル津波メッシュ
+        const tsunamiGroup = new THREE.Group();
+        const tsunamiGeo = new THREE.BoxGeometry(26, 8, 6, 20, 10, 10);
+        const tsunamiMat = new THREE.MeshStandardMaterial({ color: 0x0066aa, transparent: true, opacity: 0.88, roughness: 0.05, metalness: 0.1 });
+        const tsunamiMesh = new THREE.Mesh(tsunamiGeo, tsunamiMat);
+        tsunamiGroup.add(tsunamiMesh);
+        tsunamiGroup.position.set(0, 4.0, -28);
+        scene.add(tsunamiGroup);
+
+        // --- 視点切替関数 ---
+        function setCameraView(viewMode) {
+            state.cameraView = viewMode;
+            const btnOutside = document.getElementById('btn-view-outside');
+            const btnInside = document.getElementById('btn-view-inside');
+
+            if (viewMode === 'inside') {
+                btnInside.classList.add('active');
+                btnOutside.classList.remove('active');
+                camera.position.set(0.1, 1.25, 0.5);
+                controls.target.set(0, 1.2, -1.0);
+                controls.minDistance = 0.1;
+                controls.maxDistance = 1.4;
+                camera.fov = 75;
+            } else {
+                btnOutside.classList.add('active');
+                btnInside.classList.remove('active');
+                camera.position.set(16, 12, 20);
+                controls.target.set(0, 2, 0);
+                controls.minDistance = 2.0;
+                controls.maxDistance = 80.0;
+                camera.fov = 50;
+            }
+            camera.updateProjectionMatrix();
+            controls.update();
+            saveConfigToStorage();
+        }
+
+        document.getElementById('btn-view-outside').addEventListener('click', () => setCameraView('outside'));
+        document.getElementById('btn-view-inside').addEventListener('click', () => setCameraView('inside'));
+
+        function updateEnvTime(env) {
+            state.envTime = env;
+            const btn = document.getElementById('btn-env-time');
+            
+            if (env === 'day') {
+                btn.innerHTML = "☀️ 昼モード";
+                btn.style.color = "#ffdd88";
+                ambientLight.intensity = 0.65;
+                dirLight.intensity = 1.2;
+            } else if (env === 'sunset') {
+                btn.innerHTML = "🌅 夕方モード";
+                btn.style.color = "#ff9944";
+                ambientLight.intensity = 0.5;
+                dirLight.intensity = 1.5;
+            } else {
+                btn.innerHTML = "🌙 夜モード";
+                btn.style.color = "#5588ff";
+                ambientLight.intensity = 0.25;
+                dirLight.intensity = 0.4;
+            }
+            
+            // 🔆 環境モード切り替え時に明るさを反映
+            updateBrightness(state.brightness);
+        }
+        document.getElementById('btn-env-time').addEventListener('click', () => {
+            const nextEnv = (state.envTime === 'day' ? 'sunset' : (state.envTime === 'sunset' ? 'night' : 'day'));
+            updateEnvTime(nextEnv);
+        });
+        // 🔆 明るさスライダーのイベント処理
+        document.getElementById('rng-brightness').addEventListener('input', (e) => {
+            document.getElementById('txt-brightness').value = e.target.value;
+            updateBrightness(parseInt(e.target.value));
+            saveConfigToStorage();
+        });
+        
+        document.getElementById('txt-brightness').addEventListener('input', (e) => {
+            const val = Math.max(10, Math.min(200, parseInt(e.target.value) || 100));
+            document.getElementById('rng-brightness').value = val;
+            updateBrightness(val);
+            saveConfigToStorage();
+        });
+        // 🔆 明るさ調整関数
+        function updateBrightness(val) {
+            state.brightness = Math.max(10, Math.min(200, val));
+            document.getElementById('lbl-brightness').innerText = `${state.brightness} %`;
+            document.getElementById('rng-brightness').value = state.brightness;
+            document.getElementById('txt-brightness').value = state.brightness;
+            
+            const brightnessMultiplier = state.brightness / 100.0;
+            
+            // 現在の環境モードに応じて明るさを調整
+            if (state.envTime === 'day') {
+                ambientLight.intensity = 0.65 * brightnessMultiplier;
+                dirLight.intensity = 1.2 * brightnessMultiplier;
+            } else if (state.envTime === 'sunset') {
+                ambientLight.intensity = 0.5 * brightnessMultiplier;
+                dirLight.intensity = 1.5 * brightnessMultiplier;
+            } else { // night
+                ambientLight.intensity = 0.25 * brightnessMultiplier;
+                dirLight.intensity = 0.4 * brightnessMultiplier;
+            }
+        }
+        // --- 家の向き更新 ---
+        function updateHouseRotation(angleDeg) {
+            let normalizedAngle = ((angleDeg % 360) + 360) % 360;
+            state.houseAngle = normalizedAngle;
+            houseGroup.rotation.y = THREE.MathUtils.degToRad(normalizedAngle);
+
+            let dirText = "北";
+            if (normalizedAngle >= 22.5 && normalizedAngle < 67.5) dirText = "北東";
+            else if (normalizedAngle >= 67.5 && normalizedAngle < 112.5) dirText = "東";
+            else if (normalizedAngle >= 112.5 && normalizedAngle < 157.5) dirText = "南東";
+            else if (normalizedAngle >= 157.5 && normalizedAngle < 202.5) dirText = "南";
+            else if (normalizedAngle >= 202.5 && normalizedAngle < 247.5) dirText = "南西";
+            else if (normalizedAngle >= 247.5 && normalizedAngle < 292.5) dirText = "西";
+            else if (normalizedAngle >= 292.5 && normalizedAngle < 337.5) dirText = "北西";
+
+            const displayStr = `${Math.round(normalizedAngle)}° (${dirText})`;
+            document.getElementById('lbl-house-angle').innerText = displayStr;
+            document.getElementById('rng-house-angle').value = Math.round(normalizedAngle);
+            document.getElementById('txt-house-angle').value = Math.round(normalizedAngle);
+            document.getElementById('val-house-dir-status').innerText = displayStr;
+            saveConfigToStorage();
+        }
+
+        // --- 音声ON/OFF連動 ---
+        let prevVolume = 100;
+        document.getElementById('btn-audio-toggle').addEventListener('click', (e) => {
+            initAudio();
+            state.audioEnabled = !state.audioEnabled;
+
+            const rngMasterVol = document.getElementById('rng-master-vol');
+            const txtMasterVol = document.getElementById('txt-master-vol');
+            const lblMasterVol = document.getElementById('lbl-master-vol');
+
+            if (!state.audioEnabled) {
+                if (state.masterVolume > 0) prevVolume = Math.round(state.masterVolume * 100);
+                state.masterVolume = 0.0;
+                if (rngMasterVol) rngMasterVol.value = 0;
+                if (txtMasterVol) txtMasterVol.value = 0;
+                if (lblMasterVol) lblMasterVol.innerText = "0 %";
+
+                e.target.innerText = "🔇 音: OFF";
+                e.target.style.color = "#8fa0b5";
+                if (rumbleGain) rumbleGain.gain.value = 0;
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            } else {
+                const restoreVol = prevVolume > 0 ? prevVolume : 100;
+                state.masterVolume = restoreVol / 100.0;
+                if (rngMasterVol) rngMasterVol.value = restoreVol;
+                if (txtMasterVol) txtMasterVol.value = restoreVol;
+                if (lblMasterVol) lblMasterVol.innerText = `${restoreVol} %`;
+
+                e.target.innerText = "🔊 音: ON";
+                e.target.style.color = "#ffaa00";
+            }
+            saveConfigToStorage();
+        });
+
+        document.getElementById('btn-audio-mode').addEventListener('click', () => {
+            initAudio();
+            const nextMode = (state.audioMode === 'indoor' ? 'outdoor' : 'indoor');
+            updateAudioMode(nextMode);
+        });
+
+        // 築年数・構造更新
+        function updateBuildingByAge(age) {
+            state.buildingAge = age;
+            if (age <= 20) {
+                wallMat.color.setHex(0xe8edf2); roofMat.color.setHex(0x2b333e); baseMat.color.setHex(0x88929e); floorMat.color.setHex(0xd0b894);
+                state.seismicFactor = 0.22; state.standardDescription = "2000年改正基準 (最高耐震構造)";
+            } else if (age <= 45) {
+                wallMat.color.setHex(0xc29b68); roofMat.color.setHex(0x8a3324); baseMat.color.setHex(0x666b73); floorMat.color.setHex(0x99aa77);
+                state.seismicFactor = 0.65; state.standardDescription = "新耐震基準 (1981年〜現行水準)";
+            } else if (age <= 80) {
+                wallMat.color.setHex(0x5a3d24); roofMat.color.setHex(0x8b1a0d); baseMat.color.setHex(0x4a4d52); floorMat.color.setHex(0x7a8a60);
+                state.seismicFactor = 1.25; state.standardDescription = "旧耐震基準 (1981年以前・脆弱)";
+            } else {
+                wallMat.color.setHex(0x382212); roofMat.color.setHex(0x6b1408); baseMat.color.setHex(0x3b3a39); floorMat.color.setHex(0x665533);
+                state.seismicFactor = 1.85; state.standardDescription = "伝統構法・老朽木造 (旧耐震以前)";
+            }
+            document.getElementById('lbl-building-age').innerText = `築 ${age} 年`;
+            document.getElementById('rng-building-age').value = Math.min(150, age);
+            document.getElementById('txt-building-age').value = age;
+            document.getElementById('lbl-building-type-desc').innerText = state.standardDescription;
+            document.getElementById('val-standard-status').innerText = state.standardDescription;
+        }
+
+function updateStructureType(type) {
+            state.structureType = type;
+            const isHighrise = (type === 'highrise');
+
+            isolatorGroup.visible = (type === 'isolation');
+            braceGroup.visible = (type === 'brace');
+            secondFloorGroup.visible = (type === 'piloti');
+            highriseGroup.visible = isHighrise;
+
+            // ★ 木造の壁・屋根だけでなく、室内の床・机・家具・基礎もビル時は非表示にして「ペちゃんこ残骸」を解消
+            wallMesh.visible = !isHighrise;
+            roofMesh.visible = !isHighrise;
+            interiorGroup.visible = !isHighrise;
+            baseMesh.visible = !isHighrise;
+
+            document.getElementById('highrise-floors-container').style.display = 
+                isHighrise ? 'block' : 'none';
+
+            if (isHighrise) {
+                rebuildHighrise(state.buildingFloors || 30);
+            } else {
+                // 木造に戻したときはカメラ位置を元の高さに戻す
+                controls.target.set(0, 2, 0);
+                controls.update();
+            }
+
+            roofMesh.position.y = (type === 'piloti' ? 0.4 + wallHeight + 1.8 + 0.7 : 0.4 + wallHeight + 0.7);
+            saveConfigToStorage();
+        }
+        
+        function updateEvacuationAction(action) {
+            state.evacuationAction = action;
+            if (action === 'table') {
+                avatarGroup.position.set(0, 0.44, 0.2); avatarGroup.scale.set(0.7, 0.7, 0.7);
+            } else if (action === 'crouch') {
+                avatarGroup.position.set(1.0, 0.44, 1.0); avatarGroup.scale.set(0.8, 0.8, 0.8);
+            } else {
+                avatarGroup.position.set(0, 0.44, -0.2); avatarGroup.scale.set(1.0, 1.0, 1.0);
+            }
+            saveConfigToStorage();
+        }
+
+        function updateTsunamiHeight(h) {
+            state.tsunamiHeight = Math.max(0.1, h);
+            document.getElementById('lbl-tsunami-height').innerText = `${state.tsunamiHeight.toFixed(1)} m`;
+            document.getElementById('rng-tsunami-height').value = Math.min(50, state.tsunamiHeight);
+            document.getElementById('txt-tsunami-height').value = state.tsunamiHeight.toFixed(1);
+            tsunamiMesh.scale.y = state.tsunamiHeight / 8.0;
+            tsunamiMesh.position.y = (state.tsunamiHeight / 2.0);
+            saveConfigToStorage();
+        }
+
+        function getJMAScaleText(rawI) {
+            if (rawI < 3.5) return "3以下 (軽微)";
+            else if (rawI < 4.5) return "4 (中震)";
+            else if (rawI < 5.0) return "5弱 (強震)";
+            else if (rawI < 5.5) return "5強 (強震)";
+            else if (rawI < 6.0) return "6弱 (烈震)";
+            else if (rawI < 6.5) return "6強 (烈震)";
+            else return "7 (激震・壊滅的)";
+        }
+
+        function calculateLPGMClass(gal, sway, m) {
+            if (m < 6.5 || sway < 0.15) return "階級 0 (なし)";
+            if (sway < 0.4) return "階級 1 (室内のブラインドが揺れる)";
+            if (sway < 0.75) return "階級 2 (家具が動きキャスター移動)";
+            if (sway < 1.2) return "階級 3 (立っているのが困難・固定なし家具転倒)";
+            return "階級 4 (立っていられない・這わないと動けない)";
+        }
+
+        function getTimelineIntensityAt(t) {
+            for (let row of intensityTimeline) {
+                if (t >= row.start && t < row.end) return row.intensity;
+            }
+            if (intensityTimeline.length > 0) {
+                const last = intensityTimeline[intensityTimeline.length - 1];
+                if (t >= last.end) return 0.0;
+            }
+            return 0.0;
+        }
+
+        function calculateSeismicParameters() {
+            state.D = Math.sqrt(state.d * state.d + state.h * state.h);
+            let rawI;
+            if (state.timelineIntensityEnabled) rawI = getTimelineIntensityAt(state.simTime);
+            else if (state.manualIntensityEnabled) rawI = state.manualIntensityVal;
+            else {
+                rawI = 1.5 * state.M - 4.0 * Math.log10(Math.max(1, state.D)) + 1.2;
+                rawI = Math.max(0, rawI);
+            }
+            rawI *= state.soilFactor;
+            state.intensityI = rawI;
+            state.jmaScale = getJMAScaleText(rawI);
+            state.tP = state.D / VP;
+            state.tS = state.D / VS;
+            state.duration = state.customDuration;
+            state.baseSway = Math.pow(1.9, Math.max(0, rawI - 2.5)) * 0.08 * state.soilFactor;
+        }
+
+        // Gal波形 & FFT 周波数スペクトル描画
+        const galCanvas = document.getElementById('gal-canvas');
+        const galCtx = galCanvas.getContext('2d');
+        const galBuffer = new Array(80).fill(0);
+
+        const fftCanvas = document.getElementById('fft-canvas');
+        const fftCtx = fftCanvas.getContext('2d');
+
+        function drawGalOscilloscope(galValue) {
+            galBuffer.push(galValue);
+            galBuffer.shift();
+            galCtx.clearRect(0, 0, galCanvas.width, galCanvas.height);
+            galCtx.strokeStyle = "rgba(0, 255, 136, 0.3)";
+            galCtx.lineWidth = 1;
+            galCtx.beginPath();
+            galCtx.moveTo(0, galCanvas.height / 2); galCtx.lineTo(galCanvas.width, galCanvas.height / 2);
+            galCtx.stroke();
+
+            galCtx.strokeStyle = "#00ffcc";
+            galCtx.lineWidth = 1.5;
+            galCtx.beginPath();
+            const step = galCanvas.width / (galBuffer.length - 1);
+            for (let i = 0; i < galBuffer.length; i++) {
+                const val = Math.max(-2000, Math.min(2000, galBuffer[i]));
+                const y = (galCanvas.height / 2) - (val / 2000) * (galCanvas.height / 2 - 2);
+                if (i === 0) galCtx.moveTo(0, y); else galCtx.lineTo(i * step, y);
+            }
+            galCtx.stroke();
+
+            fftCtx.clearRect(0, 0, fftCanvas.width, fftCanvas.height);
+            const freqs = [
+                { label: "短周期(0.2s)", val: Math.min(1, Math.abs(galValue) / 1000) },
+                { label: "キラーパルス(1.2s)", val: Math.min(1, (state.intensityI > 5.5 ? 0.9 : 0.2) * (Math.abs(galValue) / 800)) },
+                { label: "長周期(4s)", val: Math.min(1, (state.structureType === 'highrise' ? 0.95 : 0.15)) }
+            ];
+            const bw = fftCanvas.width / freqs.length;
+            freqs.forEach((f, idx) => {
+                const bh = f.val * (fftCanvas.height - 8);
+                fftCtx.fillStyle = (idx === 1) ? "#ff3344" : "#00ccff";
+                fftCtx.fillRect(idx * bw + 4, fftCanvas.height - bh, bw - 8, bh);
+                fftCtx.fillStyle = "#8fa0b5";
+                fftCtx.font = "8px monospace";
+                fftCtx.fillText(f.label, idx * bw + 6, 8);
+            });
+            if (freqs[1].val > 0.6) {
+                document.getElementById('val-fft-text').innerText = "⚠️ 1〜2秒周期 (木造共振・キラーパルス警戒)";
+            } else {
+                document.getElementById('val-fft-text').innerText = "正常・低減域";
+            }
+        }
+
+        function downloadCanvasImage(format) {
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = galCanvas.width;
+            tempCanvas.height = galCanvas.height;
+            const ctx = tempCanvas.getContext('2d');
+            ctx.fillStyle = "#07070c";
+            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            ctx.drawImage(galCanvas, 0, 0);
+
+            const a = document.createElement('a');
+            a.download = `gal_graph_${Date.now()}.${format}`;
+            a.href = tempCanvas.toDataURL(format === 'png' ? 'image/png' : 'image/jpeg');
+            a.click();
+        }
+
+        document.getElementById('btn-gal-png').addEventListener('click', () => downloadCanvasImage('png'));
+        document.getElementById('btn-gal-jpg').addEventListener('click', () => downloadCanvasImage('jpg'));
+        document.getElementById('btn-gal-gif').addEventListener('click', () => {
+            alert("📷 加速度グラフのスナップショットをGIF/PNG互換形式で保存します。");
+            downloadCanvasImage('png');
+        });
+
+        // 倒壊物理 & アニメーション更新
+        const eewBanner = document.getElementById('eew-banner');
+        const eewCountdownText = document.getElementById('eew-countdown-text');
+
+        function updatePhysics(delta) {
+            if (!state.isRunning) return;
+
+            // ⚡ 停電・断水機能：建物崩壊時に発動
+            if ((state.blackout || state.waterShutdown) && state.isCollapsed) {
+                if (state.blackout) {
+                    // 停電：メイン照明を極限まで低下、非常灯（赤色ポイントライト）作動
+                    ambientLight.intensity = Math.max(0.05, ambientLight.intensity - delta * 0.8);
+                    dirLight.intensity = Math.max(0.1, dirLight.intensity - delta * 0.6);
+                    pointLight.intensity = 2.5;  // 非常灯が明るく
+                    pointLight.color.setHex(0xff3300);  // 赤色に
+                } else {
+                    // 停電解除時：照明を戻す
+                    if (state.envTime === 'day') {
+                        ambientLight.intensity = Math.min(0.65, ambientLight.intensity + delta * 0.3);
+                        dirLight.intensity = Math.min(1.2, dirLight.intensity + delta * 0.3);
+                    } else {
+                        ambientLight.intensity = Math.min(0.25, ambientLight.intensity + delta * 0.2);
+                        dirLight.intensity = Math.min(0.4, dirLight.intensity + delta * 0.2);
+                    }
+                    pointLight.intensity = 0.8;  // 通常の非常灯
+                    pointLight.color.setHex(0x00ff88);  // 通常色に
+                }
+            }
+
+            state.simTime += delta;
+            const t = state.simTime;
+
+            let waveStateText = "待機中";
+            let waveStateColor = "#8fa0b5";
+            let currentSway = 0;
+
+            if (state.timelineIntensityEnabled) {
+                state.intensityI = getTimelineIntensityAt(t);
+                state.jmaScale = getJMAScaleText(state.intensityI);
+                state.baseSway = Math.pow(1.9, Math.max(0, state.intensityI - 2.5)) * 0.08 * state.soilFactor;
+            }
+
+            // 実観測CSV再生ロジック
+            if (customCsvWave && customCsvWave.length > 0) {
+                const sampleIdx = Math.min(customCsvWave.length - 1, Math.floor(t * 50));
+                state.currentGal = customCsvWave[sampleIdx];
+                currentSway = Math.abs(state.currentGal) / 1000.0;
+                plateGroup.position.x = Math.sin(t * 15.0) * currentSway;
+                plateGroup.position.z = Math.cos(t * 12.0) * currentSway * 0.8;
+                waveStateText = "実観測CSV波形再生中";
+                waveStateColor = "#00ffcc";
+            } 
+            else {
+                if (t >= state.tP && t < state.tS && !state.timelineIntensityEnabled) {
+                    eewBanner.style.display = "flex";
+                    const remain = (state.tS - t).toFixed(1);
+                    eewCountdownText.innerText = `主要動 (S波) 到達まで あと ${remain} 秒`;
+                    if (Math.floor(t * 5) % 3 === 0) playEEWChime();
+                    if (t - delta < state.tP) speakEEWAnnouncement();
+                } else {
+                    eewBanner.style.display = "none";
+                }
+
+                if (t < state.tP && !state.timelineIntensityEnabled) {
+                    waveStateText = `震源破壊中 (P波到達まで ${(state.tP - t).toFixed(1)}s)`;
+                    waveStateColor = "#3399ff";
+                    plateGroup.position.set(0, 0, 0); plateGroup.rotation.set(0, 0, 0);
+                    state.currentGal = 0.0;
+                    if (rumbleGain) rumbleGain.gain.value = 0;
+                } 
+                else if (t >= state.tP && t < state.tS && !state.timelineIntensityEnabled) {
+                    waveStateText = `P波 初期微動 (S波まで ${(state.tS - t).toFixed(1)}s)`;
+                    waveStateColor = "#00ffcc";
+
+                    const pAmp = state.baseSway * 0.18;
+                    plateGroup.position.y = Math.sin(t * 48.0) * pAmp;
+                    plateGroup.position.x = Math.sin(t * 20.0) * (pAmp * 0.2);
+                    plateGroup.position.z = Math.cos(t * 22.0) * (pAmp * 0.2);
+                    plateGroup.rotation.set(0, 0, 0);
+
+                    lampGroup.rotation.z = Math.sin(t * 24.0) * 0.08;
+                    shelfGroup.rotation.z = Math.sin(t * 30.0) * 0.03;
+                    state.currentGal = Math.abs(Math.sin(t * 48.0)) * (pAmp * 4800);
+                    if (rumbleGain && state.audioEnabled) rumbleGain.gain.value = 0.08 * state.masterVolume;
+                } 
+                else {
+                    const sTime = state.timelineIntensityEnabled ? t : (t - state.tS);
+                    const progress = sTime / state.duration;
+
+                    if (progress <= 1.2 || (state.timelineIntensityEnabled && state.intensityI > 0)) {
+                        if (state.timelineIntensityEnabled) waveStateText = "タイムライン制御中";
+                        else if (state.shakeType === 'vertical') waveStateText = "S波 (直下型・縦揺れ突き上げ)";
+                        else if (state.shakeType === 'horizontal') waveStateText = "S波 (海溝型・横揺れローリング)";
+                        else waveStateText = "S波 (主要動・本震複合)";
+                        waveStateColor = "#ff3344";
+
+                        let envelope = 1.0;
+                        if (!state.timelineIntensityEnabled) {
+                            if (sTime < 2.0) envelope = sTime / 2.0;
+                            else if (progress <= 1.0) envelope = Math.exp(-1.8 * (progress - 2.0 / state.duration));
+                            else envelope = Math.max(0, 1.0 - (progress - 1.0) * 5.0) * 0.1;
+                        }
+
+                        currentSway = state.baseSway * envelope;
+
+                        // 余震の加算合成
+                        for (let af of aftershockList) {
+                            if (t >= af.delaySec) {
+                                const afSTime = t - af.delaySec;
+                                if (afSTime < 35.0) {
+                                    const afD = Math.sqrt(af.d * af.d + af.h * af.h);
+                                    const afI = Math.max(0, 1.5 * af.m - 4.0 * Math.log10(Math.max(1, afD)) + 1.2) * state.soilFactor;
+                                    const afSway = Math.pow(1.9, Math.max(0, afI - 2.5)) * 0.08;
+                                    const afEnv = Math.exp(-0.15 * afSTime);
+                                    currentSway += afSway * afEnv;
+                                    waveStateText += ` [余震 M${af.m.toFixed(1)}]`;
+                                }
+                            }
+                        }
+
+                        let swayReduction = 1.0;
+                        if (state.structureType === 'isolation') swayReduction = 0.15;
+                        else if (state.structureType === 'damper') swayReduction = 0.6;
+
+                        if (state.shakeType === 'vertical') {
+                            plateGroup.position.y = Math.sin(sTime * 28.0) * (currentSway * 1.5) + Math.sin(sTime * 56.0) * (currentSway * 0.4);
+                            plateGroup.position.x = Math.sin(sTime * 12.0) * (currentSway * 0.25);
+                            plateGroup.position.z = Math.cos(sTime * 10.0) * (currentSway * 0.25);
+                            plateGroup.rotation.z = -Math.sin(sTime * 12.0) * (currentSway * 0.03);
+                            plateGroup.rotation.x = Math.cos(sTime * 10.0) * (currentSway * 0.03);
+                            state.currentGal = currentSway * 1400;
+                        } else if (state.shakeType === 'horizontal') {
+                            plateGroup.position.x = Math.sin(sTime * 4.8) * (currentSway * 1.35) + Math.sin(sTime * 11.0) * (currentSway * 0.35);
+                            plateGroup.position.z = Math.cos(sTime * 4.0) * (currentSway * 1.15);
+                            plateGroup.position.y = Math.abs(Math.sin(sTime * 8.0)) * (currentSway * 0.06);
+                            plateGroup.rotation.z = -Math.sin(sTime * 4.8) * (currentSway * 0.18);
+                            plateGroup.rotation.x = Math.cos(sTime * 4.0) * (currentSway * 0.18);
+                            state.currentGal = currentSway * 1100;
+                        } else {
+                            plateGroup.position.x = Math.sin(sTime * 6.5) * currentSway + Math.sin(sTime * 14.0) * (currentSway * 0.3);
+                            plateGroup.position.z = Math.cos(sTime * 5.2) * (currentSway * 0.85);
+                            plateGroup.position.y = Math.abs(Math.sin(sTime * 12.0)) * (currentSway * 0.4);
+                            plateGroup.rotation.z = -Math.sin(sTime * 6.5) * (currentSway * 0.12);
+                            plateGroup.rotation.x = Math.cos(sTime * 5.2) * (currentSway * 0.12);
+                            state.currentGal = currentSway * 1250;
+                        }
+
+                        // 地割れ・断層出現ビジュアル
+                        if (state.faultRupture && state.intensityI >= 6.0) {
+                            faultRuptureMesh.visible = true;
+                            faultRuptureMesh.position.y = -0.38 + Math.sin(sTime * 8.0) * 0.15;
+                        }
+
+                        // タワーマンション長周期共振アニメーション (階数自由反映)
+                        if (state.structureType === 'highrise') {
+                            const totalFloors = towerFloors.length;
+                            towerFloors.forEach((fl, idx) => {
+                                const flexRatio = (idx + 1) / totalFloors;
+                                fl.position.x = Math.sin(sTime * 1.8) * (currentSway * flexRatio * 2.8);
+                                fl.rotation.z = Math.sin(sTime * 1.8) * (currentSway * flexRatio * 0.08);
+                            });
+                        }
+
+                        if (rumbleGain && state.audioEnabled) {
+                            rumbleGain.gain.value = Math.min(0.65, currentSway * 0.5) * state.masterVolume;
+                        }
+                        if (currentSway > 0.28) playCreakSound();
+
+                        // ガラス割れ演出
+                        if (state.intensityI >= 6.5 && !state.glassBroken) {
+                            state.glassBroken = true;
+                            windowMesh.visible = false;
+                            glassShatterMat.opacity = 0.9;
+                            playGlassShatterSound();
+                        }
+
+                        // 停電・非常灯＆スマホライト演出
+                        if (state.intensityI >= 6.0) {
+                            if (state.envTime === 'night') {
+                                bulbLight.intensity = 0.0;
+                                flashlight.intensity = 2.5;
+                            } else {
+                                if (Math.random() < 0.1) bulbLight.intensity = Math.random() * 0.4;
+                            }
+                        }
+
+                        lampGroup.rotation.z = Math.sin(sTime * 5.0) * Math.min(1.4, currentSway * 2.2 * swayReduction);
+                        lampGroup.rotation.x = Math.cos(sTime * 4.2) * Math.min(1.4, currentSway * 1.8 * swayReduction);
+
+                        // 家具の剛体物理飛び散り
+                        if (!state.furnitureFixed) {
+                            if (state.intensityI >= 5.5) shelfGroup.rotation.z = Math.sin(sTime * 8.0) * (currentSway * 0.8);
+                            if (state.intensityI >= 6.5 && !state.isCollapsed) {
+                                shelfGroup.rotation.z = THREE.MathUtils.lerp(shelfGroup.rotation.z, 1.4, delta * 3);
+                                flyingBooks.forEach(bk => {
+                                    if (!bk.userData.dropped) {
+                                        bk.userData.dropped = true;
+                                        bk.userData.vel.set((Math.random() - 0.5) * 2, Math.random() * 2 + 1, Math.random() * 2 + 1);
+                                    }
+                                });
+                            }
+                        } else {
+                            shelfGroup.rotation.z = Math.sin(sTime * 20.0) * 0.04;
+                        }
+
+                        flyingBooks.forEach(bk => {
+                            if (bk.userData.dropped) {
+                                bk.position.addScaledVector(bk.userData.vel, delta);
+                                bk.userData.vel.y -= 9.8 * delta;
+                                if (bk.position.y < -0.3) {
+                                    bk.position.y = -0.3;
+                                    bk.userData.vel.set(0, 0, 0);
+                                }
+                            }
+                        });
+
+                        // 液状化（改善版：より激しいアニメーション）
+                        if (state.liquefaction) {
+                            plateGroup.position.y -= delta * 0.28;  // 沈下速度を2倍に
+                            plateGroup.rotation.z += delta * 0.035; // 傾斜速度を上げ
+                            plateGroup.rotation.x += delta * 0.018;
+                            mudMat.opacity = Math.min(0.85, mudMat.opacity + delta * 0.35); // より濃く
+                            const mpos = mudParticles.geometry.attributes.position.array;
+                            for (let i = 0; i < mudCount; i++) {
+                                mpos[i*3+1] += mudVel[i].y * delta * 1.8;  // 速度1.8倍
+                                mpos[i*3] += Math.sin(state.simTime + i) * delta * 0.15; // 横揺れ追加
+                                if (mpos[i*3+1] > 2.2) mpos[i*3+1] = 0.02; // リセット高さ調整
+                            }
+                            mudParticles.geometry.attributes.position.needsUpdate = true;
+                        }
+                        // 耐久力減算 (高層ビル倒壊防止修正版)
+                        if (state.intensityI >= 4.5 && state.hp > 0) {
+                            let modFactor = (100.0 / Math.max(1, state.seismicRate));
+                            if (state.structureType === 'brace') modFactor *= 0.5;
+                            else if (state.structureType === 'damper') modFactor *= 0.4;
+                            else if (state.structureType === 'isolation') modFactor *= 0.1;
+                            else if (state.structureType === 'highrise') modFactor *= 0.02; // ★ 高層ビルは強固なRC/S造のため損傷係数を大幅カット
+
+                            // ★ 高層ビルは木造築年数の脆弱性(seismicFactor)を無視し、現代基準の頑丈さで計算
+                            const baseFactor = (state.structureType === 'highrise') ? 0.1 : state.seismicFactor;
+                            const damageFactor = Math.pow(Math.max(0, state.intensityI - 4.0), 2.8) * 14.0 * baseFactor * modFactor;
+
+                            // ★ 高層ビルは建物自体がペシャンコに潰れないよう最低HP(25%)をキープ（長周期共振を維持）
+                            if (state.structureType === 'highrise') {
+                                state.hp = Math.max(25.0, state.hp - damageFactor * envelope * delta);
+                            } else {
+                                state.hp = Math.max(0, state.hp - damageFactor * envelope * delta);
+                            }
+                        }
+
+           
+                    } else {
+                        waveStateText = "揺れ減衰・終了";
+                        waveStateColor = "#8fa0b5";
+                        plateGroup.position.set(0, 0, 0); plateGroup.rotation.set(0, 0, 0);
+                        state.currentGal = 0.0;
+                        if (rumbleGain) rumbleGain.gain.value = 0;
+
+                        // 津波襲来（改善版：波のうねり効果を追加）
+                        if (state.secondaryTsunami) {
+                            state.tsunamiProgress += delta;
+                            // 波のうねり効果
+                            tsunamiMesh.rotation.z = Math.sin(state.tsunamiProgress * 3.0) * 0.15;
+                            tsunamiMesh.position.y = 4 + Math.sin(state.tsunamiProgress * 2.5) * 1.2;
+                            tsunamiMat.opacity = 0.88 + Math.sin(state.tsunamiProgress * 2.0) * 0.08;
+                            
+                            if (state.tsunamiProgress > 2.0) {
+                                tsunamiGroup.position.z = THREE.MathUtils.lerp(tsunamiGroup.position.z, 2, delta * 1.8);
+                                tsunamiMesh.scale.y = state.tsunamiHeight / 8.0 * (1.0 + Math.sin(state.tsunamiProgress * 4.0) * 0.25);
+                                if (tsunamiGroup.position.z > -5.0 && state.hp <= 0) {
+                                    roofMesh.position.z += delta * 4.5;
+                                    wallMesh.position.z += delta * 3.5;
+                                    wallMesh.rotation.x += delta * 0.3;
+                                }
+                            }
+                        }
+
+                        // 広域延焼
+                        if (state.macroFire && state.isCollapsed) {
+                            macroCityGroup.visible = true;
+                            camera.position.lerp(new THREE.Vector3(40, 50, 60), delta * 0.5);
+                        }
+                    }
+                }
+            }
+
+            drawGalOscilloscope(state.currentGal);
+            document.getElementById('val-lpgm-class').innerText = calculateLPGMClass(state.currentGal, currentSway, state.M);
+
+            // 応力ヒートマップ描画更新
+            if (state.stressHeatmap) {
+                const stressRatio = Math.min(1.0, (100.0 - state.hp) / 100.0);
+                wallMat.color.setRGB(stressRatio, 1.0 - stressRatio, 0.2);
+            }
+
+            // 複数棟の連鎖ドミノ破壊物理演算
+            if (state.multiHouse && multiHouseGroup.visible) {
+                for (let i = 0; i < multiHouses.length; i++) {
+                    const h = multiHouses[i];
+                    if (state.hp <= 0 || (i > 0 && multiHouses[i-1].tilt > 0.45)) {
+                        h.hp = 0;
+                    }
+                    if (h.hp <= 0) {
+                        h.fallProgress += delta;
+                        const delay = i * 0.18;
+                        if (h.fallProgress > delay) {
+                            h.tilt = Math.min(1.35, h.tilt + delta * 2.2);
+                            h.group.rotation.z = -h.tilt;
+                            h.wall.scale.y = Math.max(0.2, 1.0 - h.tilt * 0.6);
+                            h.roof.position.x = h.tilt * 1.5;
+                        }
+                    } else {
+                        h.wall.rotation.z = plateGroup.position.x * 0.15;
+                    }
+                }
+            }
+
+            // 構造ひずみ & 倒壊
+            if (state.hp > 0) {
+                const lagFactor = (state.structureType === 'isolation' ? 0.2 : 1.4);
+                state.wallDeformX = -plateGroup.position.x * lagFactor;
+                state.wallDeformZ = -plateGroup.position.z * lagFactor;
+
+                let verticalDeform = 1.0;
+                if (state.shakeType === 'vertical') verticalDeform = 1.0 - (plateGroup.position.y * 0.25);
+                wallMesh.scale.y = verticalDeform;
+                wallMesh.position.x = state.wallDeformX * 0.6;
+                wallMesh.position.z = state.wallDeformZ * 0.6;
+                wallMesh.position.y = 0.4 + (wallHeight * verticalDeform) / 2;
+                wallMesh.rotation.z = state.wallDeformX * 0.25;
+                wallMesh.rotation.x = -state.wallDeformZ * 0.25;
+
+                roofMesh.position.x = state.wallDeformX * 1.1;
+                roofMesh.position.z = state.wallDeformZ * 1.1;
+                roofMesh.position.y = (state.structureType === 'piloti' ? 0.4 + wallHeight + 1.8 + 0.7 : 0.4 + (wallHeight * verticalDeform) + 0.7);
+                roofMesh.rotation.z = wallMesh.rotation.z * 1.2;
+                roofMesh.rotation.x = wallMesh.rotation.x * 1.2;
+
+                document.getElementById('val-evac-result').innerText = (state.evacuationAction === 'table' ? "机の下で安全確保 (無傷)" : "警戒姿勢");
+                document.getElementById('val-evac-result').style.color = "#00ff88";
+            } 
+            else {
+                if (!state.isCollapsed) {
+                    state.isCollapsed = true;
+                    bulbLight.intensity = 0.0;
+                    playCollapseSound();
+                    state.roofVelocity.set((Math.random() > 0.5 ? 1 : -1) * (1.5 + currentSway * 3), state.shakeType === 'vertical' ? 3.5 : 1.0, (Math.random() - 0.5) * 2.0);
+                    state.roofAngularVel.set((Math.random() - 0.5) * 6, (Math.random() - 0.5) * 3, (Math.random() - 0.5) * 6);
+                    dustMat.opacity = 0.8;
+
+                    if (!state.furnitureFixed) {
+                        shelfGroup.rotation.z = 1.4; shelfGroup.position.y = 0.44;
+                    }
+                    if (state.secondaryFire) fireMat.opacity = 0.9;
+
+                    if (state.bulletTime) {
+                        state.bulletTimeActive = true;
+                        state.playbackSpeed = 0.2;
+                    }
+
+                    const evacRes = document.getElementById('val-evac-result');
+                    if (state.evacuationAction === 'table') {
+                        evacRes.innerText = "机の下で生存 (落下物防御・軽傷)"; evacRes.style.color = "#00ffcc";
+                    } else if (state.evacuationAction === 'crouch') {
+                        evacRes.innerText = "負傷 (倒壊・転倒家具直撃)"; evacRes.style.color = "#ffaa00";
+                    } else {
+                        evacRes.innerText = "死亡・重体 (無防備での圧死)"; evacRes.style.color = "#ff3344";
+                    }
+                }
+
+                if (state.bulletTimeActive) {
+                    state.bulletTimeAngle += delta * 1.2;
+                    camera.position.x = Math.sin(state.bulletTimeAngle) * 18;
+                    camera.position.z = Math.cos(state.bulletTimeAngle) * 18;
+                    camera.lookAt(0, 1.5, 0);
+                }
+
+                if (state.structureType === 'piloti') {
+                    wallMesh.scale.y = Math.max(0.08, wallMesh.scale.y - delta * 3.5);
+                    secondFloorGroup.position.y = 0.4 + (wallHeight * wallMesh.scale.y);
+                } else {
+                    wallMesh.scale.y = Math.max(0.12, wallMesh.scale.y - delta * 2.5);
+                }
+
+                wallMesh.scale.x = Math.min(1.4, wallMesh.scale.x + delta * 0.8);
+                wallMesh.position.y = 0.4 + (wallHeight * wallMesh.scale.y) / 2;
+                wallMesh.rotation.z = THREE.MathUtils.lerp(wallMesh.rotation.z, 0.6, delta * 4);
+
+                state.roofFallProgress += delta;
+                state.roofVelocity.y -= 9.8 * delta;
+                roofMesh.position.x += state.roofVelocity.x * delta;
+                roofMesh.position.y += state.roofVelocity.y * delta;
+                roofMesh.position.z += state.roofVelocity.z * delta;
+                roofMesh.rotation.x += state.roofAngularVel.x * delta;
+                roofMesh.rotation.y += state.roofAngularVel.y * delta;
+                roofMesh.rotation.z += state.roofAngularVel.z * delta;
+
+                if (roofMesh.position.y <= 0.8) {
+                    roofMesh.position.y = 0.8;
+                    state.roofVelocity.set(0, 0, 0);
+                    state.roofAngularVel.multiplyScalar(0.85);
+                }
+
+                if (dustMat.opacity > 0) {
+                    dustMat.opacity = Math.max(0, dustMat.opacity - delta * 0.35);
+                    const pos = dustParticles.geometry.attributes.position.array;
+                    for (let i = 0; i < dustCount; i++) {
+                        pos[i*3] += dustVel[i].x * delta; pos[i*3+1] += dustVel[i].y * delta; pos[i*3+2] += dustVel[i].z * delta;
+                    }
+                    dustParticles.geometry.attributes.position.needsUpdate = true;
+                }
+
+                if (fireMat.opacity > 0) {
+                    const pos = fireParticles.geometry.attributes.position.array;
+                    for (let i = 0; i < fireCount; i++) {
+                        pos[i*3+1] += fireVel[i].y * delta * 1.6;  // 上昇速度1.6倍
+                        pos[i*3] += fireVel[i].x * delta * 0.8;
+                        pos[i*3+2] += fireVel[i].z * delta * 0.8;
+                        if (pos[i*3+1] > 4.5) pos[i*3+1] = 0.5;  // リセット高さを上げ
+                    }
+                    fireParticles.geometry.attributes.position.needsUpdate = true;
+                    // 火災の不透明度を段階的に増加
+                    if (state.secondaryFire && state.isCollapsed) {
+                        fireMat.opacity = Math.min(0.95, fireMat.opacity + delta * 0.4);
+                    }
+                }
+            }
+
+            let sRate = 100;
+            if (state.hp <= 0) sRate -= 60;
+            if (!state.furnitureFixed) sRate -= 20;
+            if (state.evacuationAction === 'none') sRate -= 30;
+            if (state.evacuationAction === 'crouch') sRate -= 10;
+            if (state.secondaryFire && state.isCollapsed) sRate -= 15;
+            sRate = Math.max(0, Math.min(100, sRate));
+            const sDom = document.getElementById('val-survival-rate');
+            sDom.innerText = `${sRate} %`;
+            sDom.style.color = (sRate > 70) ? "#00ff88" : ((sRate > 40) ? "#ffaa00" : "#ff3344");
+
+            updateUI(waveStateText, waveStateColor);
+        }
+
+        // --- UI同期 ---
+        const domTime = document.getElementById('val-time'), domWave = document.getElementById('val-wave'), domIntensity = document.getElementById('val-intensity');
+        const domHpText = document.getElementById('val-hp-text'), domHpBar = document.getElementById('hp-bar-fill'), domStruct = document.getElementById('val-struct-status');
+        const domSpeedStatus = document.getElementById('val-speed-status'), domGalText = document.getElementById('val-gal-text');
+
+        function updateUI(waveText, waveColor) {
+            const totalSec = Math.floor(state.simTime);
+            const m = Math.floor(totalSec / 60).toString().padStart(2, '0');
+            const s = (totalSec % 60).toString().padStart(2, '0');
+            const ms = Math.floor((state.simTime % 1) * 100).toString().padStart(2, '0');
+            domTime.innerText = `${m}:${s}.${ms}`;
+            domWave.innerText = waveText;
+            domWave.style.color = waveColor;
+
+            let intensityPrefix = "";
+            if (state.timelineIntensityEnabled) intensityPrefix = "[時間別] ";
+            else if (state.manualIntensityEnabled) intensityPrefix = "[手動固定] ";
+
+            domIntensity.innerText = `${intensityPrefix}${state.jmaScale} (${state.intensityI.toFixed(1)})`;
+            domSpeedStatus.innerText = `${state.playbackSpeed.toFixed(1)}x`;
+            domGalText.innerText = `${state.currentGal.toFixed(1)} Gal`;
+
+            const hpInt = Math.ceil(state.hp);
+            domHpText.innerText = `${hpInt}%`;
+            domHpBar.style.width = `${hpInt}%`;
+
+            if (hpInt > 60) domHpBar.style.background = "#00ff88";
+            else if (hpInt > 25) domHpBar.style.background = "#ffaa00";
+            else domHpBar.style.background = "#ff3344";
+
+            if (state.hp <= 0) {
+                domStruct.innerText = "完全全壊 (崩壊)"; domStruct.style.color = "#ff3344";
+            } else if (state.hp < 60) {
+                domStruct.innerText = "構造大破 (危険)"; domStruct.style.color = "#ffaa00";
+            } else if (state.hp < 95) {
+                domStruct.innerText = "ひずみ発生 (損傷)"; domStruct.style.color = "#ffff44";
+            } else {
+                domStruct.innerText = "健全"; domStruct.style.color = "#00ff88";
+            }
+        }
+
+        function resetSimulation() {
+            state.isRunning = false;
+            state.simTime = 0.0;
+            state.hp = 100.0;
+            state.isCollapsed = false;
+            state.glassBroken = false;
+            state.bulletTimeActive = false;
+            state.playbackSpeed = parseFloat(document.getElementById('txt-playback-speed').value) || 1.0;
+            state.roofFallProgress = 0.0;
+            state.roofVelocity.set(0, 0, 0);
+            state.roofAngularVel.set(0, 0, 0);
+            state.tsunamiProgress = 0.0;
+
+            windowMesh.visible = true;
+            bulbLight.intensity = 1.5;
+            flashlight.intensity = 0.0;
+
+            plateGroup.position.set(0, 0, 0); plateGroup.rotation.set(0, 0, 0);
+            wallMesh.scale.set(1, 1, 1); wallMesh.position.set(0, 1.5, 0); wallMesh.rotation.set(0, 0, 0);
+            secondFloorGroup.position.set(0, 0.4 + wallHeight, 0);
+            roofMesh.position.set(0, (state.structureType === 'piloti' ? 0.4 + wallHeight + 1.8 + 0.7 : 3.3), 0);
+            roofMesh.rotation.set(0, Math.PI / 4, 0);
+
+            towerFloors.forEach((fl, idx) => {
+                fl.position.set(0, 0.4 + idx * 0.5, 0);
+                fl.rotation.set(0, 0, 0);
+            });
+
+            multiHouses.forEach(h => {
+                h.hp = 100;
+                h.tilt = 0;
+                h.fallProgress = 0;
+                h.group.rotation.set(0, 0, 0);
+                h.wall.scale.set(1, 1, 1);
+                h.wall.rotation.set(0, 0, 0);
+                h.roof.position.set(0, 0.4 + wallHeight + 0.7, 0);
+            });
+
+            faultRuptureMesh.visible = false;
+            macroCityGroup.visible = false;
+
+            lampGroup.rotation.set(0, 0, 0);
+            shelfGroup.rotation.set(0, 0, 0);
+            shelfGroup.position.set(state.shelfX, 0.44, -0.8);
+            tensionRods.visible = state.furnitureFixed;
+
+            flyingBooks.forEach((bk, b) => {
+                bk.position.set(0, 0.7 + (b * 0.06), (b % 2 === 0 ? 0.15 : -0.15));
+                bk.userData = { vel: new THREE.Vector3(0,0,0), dropped: false };
+            });
+
+            tsunamiGroup.position.set(0, 4.0, -28);
+            dustMat.opacity = 0; fireMat.opacity = 0; mudMat.opacity = 0; glassShatterMat.opacity = 0;
+            eewBanner.style.display = "none";
+
+            document.getElementById('val-evac-result').innerText = "待機中";
+            document.getElementById('val-evac-result').style.color = "#00ffcc";
+
+            document.getElementById('btn-trigger').innerText = "地震発生";
+            document.getElementById('btn-trigger').style.background = "linear-gradient(135deg, #ff3344, #aa1122)";
+
+            calculateSeismicParameters();
+            updateUI("待機中", "#8fa0b5");
+        }
+
+        // --- 設定エクスポート & インポート ---
+        const saveIndicator = document.getElementById('save-indicator');
+        let saveTimeout = null;
+
+        function getExportConfig() {
+            return {
+                version: "9.6-ULTIMATE-MASTER",
+                savedAt: new Date().toISOString(),
+                M: state.M, d: state.d, h: state.h,
+                customDuration: state.customDuration,
+                playbackSpeed: state.playbackSpeed,
+                buildingAge: state.buildingAge,
+                houseAngle: state.houseAngle,
+                shakeType: state.shakeType,
+                cameraView: state.cameraView,
+                envTime: state.envTime,
+                brightness: state.brightness,
+                audioMode: state.audioMode,
+                masterVolume: state.masterVolume,
+                structureType: state.structureType,
+                buildingFloors: state.buildingFloors,
+                multiHouse: state.multiHouse,
+                multiHouseCount: state.multiHouseCount,
+                seismicRate: state.seismicRate,
+                furnitureFixed: state.furnitureFixed,
+                evacuationAction: state.evacuationAction,
+                shelfX: state.shelfX,
+                liquefaction: state.liquefaction,
+                secondaryFire: state.secondaryFire,
+                secondaryTsunami: state.secondaryTsunami,
+                tsunamiHeight: state.tsunamiHeight,
+                soilFactor: state.soilFactor,
+                preset: document.getElementById('sel-preset').value,
+                epicenter: document.getElementById('sel-epicenter').value,
+                location: document.getElementById('sel-location').value,
+                epiLat: state.epiLat, epiLon: state.epiLon,
+                locLat: state.locLat, locLon: state.locLon,
+                manualIntensityEnabled: state.manualIntensityEnabled,
+                manualIntensityVal: state.manualIntensityVal,
+                timelineIntensityEnabled: state.timelineIntensityEnabled,
+                intensityTimeline: intensityTimeline,
+                aftershockList: aftershockList,
+                splitView: state.splitView,
+                stressHeatmap: state.stressHeatmap,
+                bulletTime: state.bulletTime,
+                jalertVoice: state.jalertVoice,
+                currentLang: state.currentLang
+            };
+        }
+
+        function saveConfigToStorage() {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(getExportConfig()));
+                saveIndicator.style.opacity = '1';
+                clearTimeout(saveTimeout);
+                saveTimeout = setTimeout(() => { saveIndicator.style.opacity = '0'; }, 1000);
+            } catch (e) { console.warn("LocalStorage save error:", e); }
+        }
+
+        function applyImportConfig(config) {
+            if (!config) return false;
+
+            if (config.M !== undefined) { rngM.value = config.M; txtM.value = config.M; }
+            if (config.d !== undefined) { rngD.value = config.d; txtD.value = config.d; }
+            if (config.h !== undefined) { rngH.value = config.h; txtH.value = config.h; }
+            if (config.customDuration !== undefined) { rngDuration.value = config.customDuration; txtDuration.value = config.customDuration; state.customDuration = config.customDuration; }
+            if (config.playbackSpeed !== undefined) { rngPlaybackSpeed.value = Math.min(10, config.playbackSpeed); txtPlaybackSpeed.value = config.playbackSpeed; state.playbackSpeed = parseFloat(config.playbackSpeed); }
+            if (config.buildingAge !== undefined) updateBuildingByAge(config.buildingAge);
+            if (config.houseAngle !== undefined) updateHouseRotation(config.houseAngle);
+            if (config.envTime !== undefined) updateEnvTime(config.envTime);
+            if (config.brightness !== undefined) updateBrightness(config.brightness);
+            if (config.shakeType !== undefined) { selShakeType.value = config.shakeType; state.shakeType = config.shakeType; }
+            if (config.cameraView !== undefined) setCameraView(config.cameraView);
+
+            if (config.audioMode !== undefined) updateAudioMode(config.audioMode);
+            if (config.masterVolume !== undefined) {
+                state.masterVolume = config.masterVolume;
+                rngMasterVol.value = Math.round(config.masterVolume * 100);
+                txtMasterVol.value = Math.round(config.masterVolume * 100);
+                lblMasterVol.innerText = `${Math.round(config.masterVolume * 100)} %`;
+            }
+
+            if (config.structureType !== undefined) { 
+                selStructureType.value = config.structureType; 
+                updateStructureType(config.structureType); 
+            }
+            if (config.buildingFloors !== undefined) {
+                rngFloors.value = config.buildingFloors;
+                txtFloors.value = config.buildingFloors;
+                rebuildHighrise(config.buildingFloors);
+            }
+            if (config.multiHouse !== undefined) {
+                chkMulti.checked = config.multiHouse;
+                state.multiHouse = config.multiHouse;
+                multiContainer.style.display = config.multiHouse ? 'block' : 'none';
+                multiHouseGroup.visible = config.multiHouse;
+                houseGroup.visible = !config.multiHouse;
+            }
+            if (config.multiHouseCount !== undefined) {
+                rngCount.value = config.multiHouseCount;
+                txtCount.value = config.multiHouseCount;
+                rebuildMultiHouses(config.multiHouseCount);
+            }
+
+            if (config.seismicRate !== undefined) { rngSeismicRate.value = config.seismicRate; txtSeismicRate.value = config.seismicRate; state.seismicRate = config.seismicRate; document.getElementById('lbl-seismic-rate').innerText = `${config.seismicRate} %`; }
+            if (config.furnitureFixed !== undefined) { chkFurnitureFixed.checked = config.furnitureFixed; state.furnitureFixed = config.furnitureFixed; tensionRods.visible = config.furnitureFixed; }
+            if (config.evacuationAction !== undefined) { selEvacuationAction.value = config.evacuationAction; updateEvacuationAction(config.evacuationAction); }
+            if (config.shelfX !== undefined) { state.shelfX = config.shelfX; shelfGroup.position.x = config.shelfX; document.getElementById('rng-shelf-x').value = config.shelfX; }
+            if (config.liquefaction !== undefined) { chkLiquefaction.checked = config.liquefaction; state.liquefaction = config.liquefaction; }
+            if (config.secondaryFire !== undefined) { chkSecondaryFire.checked = config.secondaryFire; state.secondaryFire = config.secondaryFire; }
+            if (config.secondaryTsunami !== undefined) { chkSecondaryTsunami.checked = config.secondaryTsunami; state.secondaryTsunami = config.secondaryTsunami; }
+            if (config.tsunamiHeight !== undefined) updateTsunamiHeight(config.tsunamiHeight);
+            if (config.soilFactor !== undefined) { selSoilType.value = String(config.soilFactor); state.soilFactor = parseFloat(config.soilFactor); }
+
+            if (config.preset) selPreset.value = config.preset;
+            if (config.epicenter) selEpicenter.value = config.epicenter;
+            if (config.location) selLocation.value = config.location;
+            if (config.epiLat !== undefined) inpEpiLat.value = config.epiLat;
+            if (config.epiLon !== undefined) inpEpiLon.value = config.epiLon;
+            if (config.locLat !== undefined) inpLocLat.value = config.locLat;
+            if (config.locLon !== undefined) inpLocLon.value = config.locLon;
+
+            if (config.manualIntensityEnabled !== undefined) { chkManualIntensity.checked = config.manualIntensityEnabled; manualIntensityContainer.style.display = config.manualIntensityEnabled ? "block" : "none"; }
+            if (config.manualIntensityVal !== undefined) { rngManualIntensity.value = config.manualIntensityVal; txtManualIntensity.value = config.manualIntensityVal; }
+            if (config.timelineIntensityEnabled !== undefined) { chkTimelineIntensity.checked = config.timelineIntensityEnabled; timelineContainer.style.display = config.timelineIntensityEnabled ? "block" : "none"; }
+            if (Array.isArray(config.intensityTimeline)) intensityTimeline = config.intensityTimeline;
+            if (Array.isArray(config.aftershockList)) aftershockList = config.aftershockList;
+
+            renderTimelineTable();
+            renderAftershockTable();
+            onCoordinateInputChanged(false);
+            return true;
+        }
+
+        function loadConfigFromStorage() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return false;
+                return applyImportConfig(JSON.parse(raw));
+            } catch (e) { return false; }
+        }
+
+        // --- URL共有機能 ---
+        document.getElementById('btn-share-url').addEventListener('click', () => {
+            const jsonStr = JSON.stringify(getExportConfig());
+            const base64 = btoa(encodeURIComponent(jsonStr));
+            const shareUrl = `${window.location.origin}${window.location.pathname}?data=${base64}`;
+            navigator.clipboard.writeText(shareUrl).then(() => {
+                alert("🔗 実験設定を埋め込んだURLをクリップボードにコピーしました！");
+            });
+        });
+
+        document.getElementById('btn-share-x').addEventListener('click', () => {
+            const text = `【ガチ物理 3D地震倒壊シミュレーター】M${state.M.toFixed(1)} / 計測震度: ${state.jmaScale} の倒壊テストを実行中！ #地震シミュレーター #防災`;
+            const shareUrl = window.location.href;
+            window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`, '_blank');
+        });
+
+        // --- 防災診断書 (画像) ダウンロード機能 ---
+        document.getElementById('btn-download-report').addEventListener('click', () => {
+            const repCanvas = document.createElement('canvas');
+            repCanvas.width = 600; repCanvas.height = 420;
+            const rCtx = repCanvas.getContext('2d');
+
+            rCtx.fillStyle = "#0c1018"; rCtx.fillRect(0, 0, 600, 420);
+            rCtx.strokeStyle = "#00ff88"; rCtx.lineWidth = 3; rCtx.strokeRect(10, 10, 580, 400);
+
+            rCtx.fillStyle = "#00ff88"; rCtx.font = "bold 20px Meiryo, sans-serif";
+            rCtx.fillText("🛡️ 我が家の3D地震サバイバル防災診断書", 30, 45);
+
+            rCtx.fillStyle = "#ffffff"; rCtx.font = "14px Meiryo, sans-serif";
+            rCtx.fillText(`診断日時: ${new Date().toLocaleString()}`, 30, 80);
+            rCtx.fillText(`想定地震: マグニチュード M${state.M.toFixed(1)} / 震源距離 ${state.d}km`, 30, 110);
+            rCtx.fillText(`建物構造: ${state.standardDescription}`, 30, 140);
+            rCtx.fillText(`家具固定: ${state.furnitureFixed ? "✅ 突っ張り棒・ジェル固定完了" : "❌ 未固定 (転倒直撃リスク大)"}`, 30, 170);
+            rCtx.fillText(`避難行動: ${document.getElementById('val-evac-result').innerText}`, 30, 200);
+
+            rCtx.font = "bold 22px Meiryo, sans-serif";
+            rCtx.fillStyle = (state.hp > 0) ? "#00ff88" : "#ff3344";
+            rCtx.fillText(`建物判定: ${domStruct.innerText} (残存耐久度: ${Math.ceil(state.hp)}%)`, 30, 250);
+
+            rCtx.fillStyle = "#00ffcc";
+            rCtx.fillText(`総合生存確率: ${document.getElementById('val-survival-rate').innerText}`, 30, 290);
+
+            rCtx.font = "12px Meiryo, sans-serif";
+            rCtx.fillStyle = "#8fa0b5";
+            rCtx.fillText("※ 本診断書は建築構造物理モデルに基づく推定結果です。日頃の備えを行いましょう。", 30, 360);
+
+            const a = document.createElement('a');
+            a.download = `bousai_report_${Date.now()}.png`;
+            a.href = repCanvas.toDataURL('image/png');
+            a.click();
+        });
+
+        // --- ブックマークスロット (1〜5) 機能 ---
+        document.querySelectorAll('.btn-slot').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const slot = e.target.getAttribute('data-slot');
+                const slotKey = `SIM_SLOT_${slot}`;
+                if (confirm(`実験スロット [枠${slot}] を操作します。\n[OK]: 保存 / [キャンセル]: 復元`)) {
+                    localStorage.setItem(slotKey, JSON.stringify(getExportConfig()));
+                    alert(`✅ スロット [枠${slot}] に現在の設定を保存しました。`);
+                } else {
+                    const saved = localStorage.getItem(slotKey);
+                    if (saved) {
+                        applyImportConfig(JSON.parse(saved));
+                        alert(`📂 スロット [枠${slot}] から設定を復元しました。`);
+                    } else {
+                        alert(`⚠️ スロット [枠${slot}] にはデータが保存されていません。`);
+                    }
+                }
+            });
+        });
+
+        // 実観測CSVドラッグ＆ドロップ読込
+        document.getElementById('inp-csv-wave').addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const text = event.target.result;
+                const lines = text.split(/\r\n|\n/);
+                customCsvWave = [];
+                for (let ln of lines) {
+                    const parts = ln.split(',');
+                    const val = parseFloat(parts[parts.length - 1]);
+                    if (!isNaN(val)) customCsvWave.push(val);
+                }
+                document.getElementById('lbl-csv-status').innerText = `✅ 実観測波形 ${customCsvWave.length}ステップ読込完了`;
+                alert(`✅ 実観測地震波形データ (${customCsvWave.length} 点) を読み込みました！`);
+            };
+            reader.readAsText(file);
+        });
+
+        // 2画面分割表示トグル
+        const splitDivider = document.getElementById('split-divider');
+        const splitLeftLbl = document.getElementById('split-label-left');
+        const splitRightLbl = document.getElementById('split-label-right');
+        document.getElementById('chk-split-view').addEventListener('change', (e) => {
+            state.splitView = e.target.checked;
+            splitDivider.style.display = state.splitView ? "block" : "none";
+            splitLeftLbl.style.display = state.splitView ? "block" : "none";
+            splitRightLbl.style.display = state.splitView ? "block" : "none";
+        });
+
+        // 特殊モードトグルバインド
+        document.getElementById('chk-stress-heatmap').addEventListener('change', (e) => { state.stressHeatmap = e.target.checked; if(!state.stressHeatmap) updateBuildingByAge(state.buildingAge); });
+        document.getElementById('chk-bullet-time').addEventListener('change', (e) => state.bulletTime = e.target.checked);
+        document.getElementById('chk-jalert-voice').addEventListener('change', (e) => state.jalertVoice = e.target.checked);
+        document.getElementById('chk-fault-rupture').addEventListener('change', (e) => { state.faultRupture = e.target.checked; faultRuptureMesh.visible = false; });
+        document.getElementById('chk-macro-fire').addEventListener('change', (e) => state.macroFire = e.target.checked);
+        
+        // ⚡ 停電機能
+        document.getElementById('chk-blackout').addEventListener('change', (e) => state.blackout = e.target.checked);
+        
+        // 💧 断水機能
+        document.getElementById('chk-water-shutdown').addEventListener('change', (e) => state.waterShutdown = e.target.checked);
+        
+        // 📍 階数表示機能（ハイライズビル用）
+        function syncFloorView(val) {
+            state.viewFloor = parseInt(val);
+            document.getElementById('lbl-view-floor').innerText = `${state.viewFloor} 階`;
+            if (state.structureType === 'highrise' && towerFloors && towerFloors.length > 0) {
+                const floorHeight = 3.0;
+                const targetY = state.viewFloor * floorHeight;
+                camera.position.y = targetY + 5;
+                controls.target.y = targetY;
+                controls.update();
+            }
+        }
+        document.getElementById('rng-view-floor').addEventListener('input', (e) => {
+            document.getElementById('txt-view-floor').value = e.target.value;
+            const maxFloor = parseInt(document.getElementById('rng-building-floors').value);
+            document.getElementById('rng-view-floor').max = maxFloor;
+            syncFloorView(e.target.value);
+        });
+        document.getElementById('txt-view-floor').addEventListener('input', (e) => {
+            const maxFloor = parseInt(document.getElementById('rng-building-floors').value);
+            const val = Math.min(parseInt(e.target.value) || 1, maxFloor);
+            document.getElementById('rng-view-floor').value = val;
+            syncFloorView(val);
+        });
+
+        // 地震体験車モード (スマホシェイク連動)
+        document.getElementById('chk-mobile-shake').addEventListener('change', (e) => {
+            state.mobileShake = e.target.checked;
+            if (state.mobileShake && window.DeviceMotionEvent) {
+                window.addEventListener('devicemotion', (evt) => {
+                    if (!state.mobileShake || !state.isRunning) return;
+                    const acc = evt.accelerationIncludingGravity;
+                    if (acc) {
+                        const totalAcc = Math.sqrt(acc.x*acc.x + acc.y*acc.y + acc.z*acc.z);
+                        state.currentGal = totalAcc * 98.0;
+                    }
+                });
+            }
+        });
+
+        // スマホジャイロ連動 & VR見渡し
+        document.getElementById('chk-gyro-vr').addEventListener('change', (e) => {
+            state.gyroVr = e.target.checked;
+            if (state.gyroVr) {
+                setCameraView('inside');
+                if (window.DeviceOrientationEvent) {
+                    window.addEventListener('deviceorientation', (event) => {
+                        if (!state.gyroVr) return;
+                        const alpha = event.alpha ? THREE.MathUtils.degToRad(event.alpha) : 0;
+                        const beta = event.beta ? THREE.MathUtils.degToRad(event.beta) : 0;
+                        camera.rotation.set(beta, alpha, 0);
+                    });
+                }
+            }
+        });
+
+        // 歴史的地震アーカイブ選択
+        document.getElementById('sel-archive-quake').addEventListener('change', (e) => {
+            const aq = ARCHIVE_QUAKES[e.target.value];
+            if (aq) {
+                rngM.value = aq.m; txtM.value = aq.m; state.M = aq.m;
+                rngH.value = aq.h; txtH.value = aq.h; state.h = aq.h;
+                rngD.value = aq.d; txtD.value = aq.d; state.d = aq.d;
+                if (aq.liq) { chkLiquefaction.checked = true; state.liquefaction = true; }
+                onParameterChange();
+            }
+        });
+
+        // 表層地盤選択
+        const selSoilType = document.getElementById('sel-soil-type');
+        selSoilType.addEventListener('change', (e) => {
+            state.soilFactor = parseFloat(e.target.value);
+            onParameterChange();
+        });
+
+        // 間取りカスタマイズ (本棚位置)
+        document.getElementById('rng-shelf-x').addEventListener('input', (e) => {
+            state.shelfX = parseFloat(e.target.value);
+            shelfGroup.position.x = state.shelfX;
+            saveConfigToStorage();
+        });
+
+        // 多言語辞書
+        const I18N = {
+            ja: {
+                title: "STATUS MONITOR", time: "Elapsed Time:", wave: "Wave State:",
+                intensity: "計測震度 (現在地):", lpgm: "長周期地震動階級:", gal: "リアルタイム加速度 (Gal):",
+                hp: "建物構造耐久力:", struct: "建物状態:", evac: "避難判定 (シェイクアウト):"
+            },
+            en: {
+                title: "STATUS MONITOR", time: "Time Elapsed:", wave: "Wave Status:",
+                intensity: "Seismic Intensity:", lpgm: "LPGM Class:", gal: "Realtime Acc (Gal):",
+                hp: "Structural HP:", struct: "Building Status:", evac: "Evacuation Result:"
+            },
+            easy_ja: {
+                title: "じょうきょう (STATUS)", time: "じかん (Time):", wave: "ゆれのじょうたい:",
+                intensity: "ゆれのつよさ (しんど):", lpgm: "ながいゆれレベル:", gal: "かそくど (Gal):",
+                hp: "たてものの つよさ:", struct: "いえの ようす:", evac: "にげる こうどう:"
+            }
+        };
+
+        document.getElementById('sel-language').addEventListener('change', (e) => {
+            state.currentLang = e.target.value;
+            const dict = I18N[state.currentLang] || I18N.ja;
+            document.getElementById('lbl-status-monitor-title').innerText = dict.title;
+            document.getElementById('lbl-status-time').innerText = dict.time;
+            document.getElementById('lbl-status-wave').innerText = dict.wave;
+            document.getElementById('lbl-status-intensity').innerText = dict.intensity;
+            document.getElementById('lbl-status-lpgm').innerText = dict.lpgm;
+            document.getElementById('lbl-status-gal').innerText = dict.gal;
+            document.getElementById('lbl-status-hp').innerText = dict.hp;
+            document.getElementById('lbl-status-struct').innerText = dict.struct;
+            document.getElementById('lbl-status-evac').innerText = dict.evac;
+            saveConfigToStorage();
+        });
+
+        // UIバインディング
+        const rngM = document.getElementById('rng-m'), txtM = document.getElementById('txt-m');
+        const rngD = document.getElementById('rng-d'), txtD = document.getElementById('txt-d');
+        const rngH = document.getElementById('rng-h'), txtH = document.getElementById('txt-h');
+        const lblM = document.getElementById('lbl-m'), lblD = document.getElementById('lbl-d'), lblH = document.getElementById('lbl-h');
+        const selPreset = document.getElementById('sel-preset');
+
+        const rngMasterVol = document.getElementById('rng-master-vol'), txtMasterVol = document.getElementById('txt-master-vol'), lblMasterVol = document.getElementById('lbl-master-vol');
+        const selAudioMode = document.getElementById('sel-audio-mode');
+
+        const rngBuildingAge = document.getElementById('rng-building-age'), txtBuildingAge = document.getElementById('txt-building-age');
+        const rngHouseAngle = document.getElementById('rng-house-angle'), txtHouseAngle = document.getElementById('txt-house-angle');
+        const btnRotLeft = document.getElementById('btn-rot-left'), btnRotRight = document.getElementById('btn-rot-right');
+
+        const selStructureType = document.getElementById('sel-structure-type');
+        const rngSeismicRate = document.getElementById('rng-seismic-rate'), txtSeismicRate = document.getElementById('txt-seismic-rate');
+        const chkFurnitureFixed = document.getElementById('chk-furniture-fixed');
+        const selEvacuationAction = document.getElementById('sel-evacuation-action');
+        const chkLiquefaction = document.getElementById('chk-liquefaction');
+        const chkSecondaryFire = document.getElementById('chk-secondary-fire');
+        const chkSecondaryTsunami = document.getElementById('chk-secondary-tsunami');
+        const rngTsunamiHeight = document.getElementById('rng-tsunami-height'), txtTsunamiHeight = document.getElementById('txt-tsunami-height');
+
+        const selShakeType = document.getElementById('sel-shake-type');
+        const selEpicenter = document.getElementById('sel-epicenter'), selLocation = document.getElementById('sel-location');
+        const inpEpiLat = document.getElementById('inp-epi-lat'), inpEpiLon = document.getElementById('inp-epi-lon');
+        const inpLocLat = document.getElementById('inp-loc-lat'), inpLocLon = document.getElementById('inp-loc-lon');
+
+        const rngDuration = document.getElementById('rng-duration'), txtDuration = document.getElementById('txt-duration'), lblDuration = document.getElementById('lbl-duration');
+        const rngPlaybackSpeed = document.getElementById('rng-playback-speed'), txtPlaybackSpeed = document.getElementById('txt-playback-speed'), lblPlaybackSpeed = document.getElementById('lbl-playback-speed');
+
+        const chkManualIntensity = document.getElementById('chk-manual-intensity'), manualIntensityContainer = document.getElementById('manual-intensity-container');
+        const rngManualIntensity = document.getElementById('rng-manual-intensity'), txtManualIntensity = document.getElementById('txt-manual-intensity'), lblManualIntensity = document.getElementById('lbl-manual-intensity');
+
+        const chkTimelineIntensity = document.getElementById('chk-timeline-intensity'), timelineContainer = document.getElementById('timeline-container'), timelineTbody = document.getElementById('timeline-tbody');
+        const btnAddTimelineRow = document.getElementById('btn-add-timeline-row'), btnResetTimelinePattern = document.getElementById('btn-reset-timeline-pattern');
+
+        const aftershockTbody = document.getElementById('aftershock-tbody');
+        const btnAddAftershock = document.getElementById('btn-add-aftershock');
+        const btnGenAftershocks = document.getElementById('btn-gen-aftershocks');
+
+        const btnTrigger = document.getElementById('btn-trigger'), btnReset = document.getElementById('btn-reset');
+
+        // ビル階数スライダー連動
+        const rngFloors = document.getElementById('rng-building-floors');
+        const txtFloors = document.getElementById('txt-building-floors');
+        syncInputs(rngFloors, txtFloors, (val) => rebuildHighrise(Math.round(val)));
+
+        // 複数棟連鎖破壊トグル & スライダー
+        const chkMulti = document.getElementById('chk-multi-house');
+        const multiContainer = document.getElementById('multi-house-container');
+        const rngCount = document.getElementById('rng-house-count');
+        const txtCount = document.getElementById('txt-house-count');
+
+        chkMulti.addEventListener('change', (e) => {
+            state.multiHouse = e.target.checked;
+            multiContainer.style.display = e.target.checked ? 'block' : 'none';
+            multiHouseGroup.visible = e.target.checked;
+            houseGroup.visible = !e.target.checked;
+            if (e.target.checked) rebuildMultiHouses(state.multiHouseCount);
+        });
+
+        syncInputs(rngCount, txtCount, (val) => rebuildMultiHouses(Math.round(val)));
+
+        // レンジロック機能
+        const btnRangeLock = document.getElementById('btn-range-lock');
+        let isRangeLocked = false;
+        btnRangeLock.addEventListener('click', () => {
+            isRangeLocked = !isRangeLocked;
+            document.body.classList.toggle('range-locked', isRangeLocked);
+            if (isRangeLocked) {
+                btnRangeLock.innerText = "🔒 スライダー: ロック中";
+                btnRangeLock.classList.add('locked');
+            } else {
+                btnRangeLock.innerText = "🔓 スライダー: 解除";
+                btnRangeLock.classList.remove('locked');
+            }
+        });
+
+        // タイムライン描画
+        function renderTimelineTable() {
+            timelineTbody.innerHTML = "";
+            intensityTimeline.forEach((row, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = "timeline-row";
+                tr.innerHTML = `
+                    <td><input type="number" class="t-start" min="0" step="1" value="${row.start}"></td>
+                    <td><input type="number" class="t-end" min="1" step="1" value="${row.end}"></td>
+                    <td><input type="number" class="t-val" min="0" step="0.1" value="${row.intensity}"></td>
+                    <td><button class="btn-del-row" data-idx="${idx}">×</button></td>
+                `;
+                timelineTbody.appendChild(tr);
+            });
+
+            timelineTbody.querySelectorAll('.t-start').forEach((el, i) => el.addEventListener('input', (e) => { intensityTimeline[i].start = parseFloat(e.target.value) || 0; onParameterChange(); }));
+            timelineTbody.querySelectorAll('.t-end').forEach((el, i) => el.addEventListener('input', (e) => { intensityTimeline[i].end = parseFloat(e.target.value) || 0; onParameterChange(); }));
+            timelineTbody.querySelectorAll('.t-val').forEach((el, i) => el.addEventListener('input', (e) => { intensityTimeline[i].intensity = parseFloat(e.target.value) || 0; onParameterChange(); }));
+            timelineTbody.querySelectorAll('.btn-del-row').forEach((btn) => btn.addEventListener('click', (e) => {
+                intensityTimeline.splice(parseInt(e.target.getAttribute('data-idx')), 1);
+                renderTimelineTable(); onParameterChange();
+            }));
+        }
+
+        btnAddTimelineRow.addEventListener('click', () => {
+            const lastEnd = intensityTimeline.length > 0 ? intensityTimeline[intensityTimeline.length - 1].end : 0;
+            intensityTimeline.push({ start: lastEnd, end: lastEnd + 15, intensity: 6.0 });
+            renderTimelineTable(); onParameterChange();
+        });
+
+        btnResetTimelinePattern.addEventListener('click', () => {
+            intensityTimeline = [{ start: 0, end: 8, intensity: 3.2 }, { start: 8, end: 18, intensity: 5.4 }, { start: 18, end: 45, intensity: 7.1 }, { start: 45, end: 70, intensity: 4.5 }];
+            renderTimelineTable(); onParameterChange();
+        });
+
+        // 余震テーブル描画
+        function renderAftershockTable() {
+            aftershockTbody.innerHTML = "";
+            aftershockList.forEach((af, idx) => {
+                const tr = document.createElement('tr');
+                tr.className = "aftershock-row";
+                tr.innerHTML = `
+                    <td><input type="number" class="af-delay" min="0" step="1" value="${af.delaySec}"></td>
+                    <td><input type="number" class="af-m" min="0.1" step="0.1" value="${af.m}"></td>
+                    <td><input type="number" class="af-d" min="0" step="1" value="${af.d}"></td>
+                    <td><input type="number" class="af-h" min="0" step="1" value="${af.h}"></td>
+                    <td><button class="btn-del-row" data-idx="${idx}">×</button></td>
+                `;
+                aftershockTbody.appendChild(tr);
+            });
+
+            aftershockTbody.querySelectorAll('.af-delay').forEach((el, i) => el.addEventListener('input', (e) => { aftershockList[i].delaySec = parseFloat(e.target.value) || 0; saveConfigToStorage(); }));
+            aftershockTbody.querySelectorAll('.af-m').forEach((el, i) => el.addEventListener('input', (e) => { aftershockList[i].m = parseFloat(e.target.value) || 0; saveConfigToStorage(); }));
+            aftershockTbody.querySelectorAll('.af-d').forEach((el, i) => el.addEventListener('input', (e) => { aftershockList[i].d = parseFloat(e.target.value) || 0; saveConfigToStorage(); }));
+            aftershockTbody.querySelectorAll('.af-h').forEach((el, i) => el.addEventListener('input', (e) => { aftershockList[i].h = parseFloat(e.target.value) || 0; saveConfigToStorage(); }));
+            aftershockTbody.querySelectorAll('.btn-del-row').forEach((btn) => btn.addEventListener('click', (e) => {
+                aftershockList.splice(parseInt(e.target.getAttribute('data-idx')), 1);
+                renderAftershockTable(); saveConfigToStorage();
+            }));
+        }
+
+        btnAddAftershock.addEventListener('click', () => {
+            if (aftershockList.length >= 300) { alert("余震は最大300個まで追加できます。"); return; }
+            const lastDelay = aftershockList.length > 0 ? aftershockList[aftershockList.length - 1].delaySec + 30 : 20;
+            aftershockList.push({ delaySec: lastDelay, m: 6.5, d: Math.round(state.d), h: Math.round(state.h) });
+            renderAftershockTable(); saveConfigToStorage();
+        });
+
+        btnGenAftershocks.addEventListener('click', () => {
+            if (!confirm("本震データに基づき、大森公式に沿った余震群（20個）を自動生成しますか？")) return;
+            aftershockList = [];
+            let curTime = 15;
+            for (let i = 0; i < 20; i++) {
+                curTime += Math.round(10 + Math.pow(i + 1, 1.6) * 4);
+                const afM = Number(Math.max(4.5, state.M - 1.2 - (i * 0.1) + (Math.random() * 0.8 - 0.4)).toFixed(1));
+                aftershockList.push({
+                    delaySec: curTime,
+                    m: afM,
+                    d: Math.round(state.d + (Math.random() * 40 - 20)),
+                    h: Math.round(state.h + (Math.random() * 15 - 7))
+                });
+            }
+            renderAftershockTable(); saveConfigToStorage();
+        });
+
+        // 座標同期
+        function onCoordinateInputChanged(updateDistance = true) {
+            state.epiLat = parseCoordinate(inpEpiLat.value); state.epiLon = parseCoordinate(inpEpiLon.value);
+            state.locLat = parseCoordinate(inpLocLat.value); state.locLon = parseCoordinate(inpLocLon.value);
+            if (updateDistance) {
+                const dist = calculateDistance(state.epiLat, state.epiLon, state.locLat, state.locLon);
+                state.d = dist; rngD.value = Math.min(1000, dist); txtD.value = dist; lblD.innerText = `${dist} km`;
+            }
+            onParameterChange();
+        }
+
+        function onDistanceChanged(newDist) {
+            state.d = newDist; rngD.value = Math.min(1000, newDist); txtD.value = newDist; lblD.innerText = `${newDist} km`;
+            const currentBearing = calculateBearing(state.epiLat, state.epiLon, state.locLat, state.locLon);
+            const newLoc = calculateDestinationPoint(state.epiLat, state.epiLon, newDist, currentBearing);
+            state.locLat = Number(newLoc.lat.toFixed(4)); state.locLon = Number(newLoc.lon.toFixed(4));
+            inpLocLat.value = state.locLat; inpLocLon.value = state.locLon; selLocation.value = "custom_coord";
+            onParameterChange();
+        }
+
+        rngD.addEventListener('input', (e) => { selPreset.value = "custom"; onDistanceChanged(parseFloat(e.target.value) || 0); });
+        txtD.addEventListener('input', (e) => { selPreset.value = "custom"; onDistanceChanged(parseFloat(e.target.value) || 0); });
+
+        selEpicenter.addEventListener('change', () => {
+            selPreset.value = "custom";
+            if (selEpicenter.value !== "custom_coord") {
+                const epi = EPICENTERS[selEpicenter.value];
+                if (epi) {
+                    inpEpiLat.value = epi.lat.toFixed(2); inpEpiLon.value = epi.lon.toFixed(2);
+                    rngH.value = epi.depth; txtH.value = epi.depth; state.h = epi.depth; lblH.innerText = `${epi.depth} km`;
+                    if (epi.defaultM) { rngM.value = epi.defaultM; txtM.value = epi.defaultM; }
+                }
+            }
+            onCoordinateInputChanged(true);
+        });
+
+        selLocation.addEventListener('change', () => {
+            selPreset.value = "custom";
+            if (selLocation.value !== "custom_coord") {
+                const loc = LOCATIONS[selLocation.value];
+                if (loc) { inpLocLat.value = loc.lat.toFixed(2); inpLocLon.value = loc.lon.toFixed(2); }
+            }
+            onCoordinateInputChanged(true);
+        });
+
+        inpEpiLat.addEventListener('input', () => { selEpicenter.value = "custom_coord"; selPreset.value = "custom"; onCoordinateInputChanged(true); });
+        inpEpiLon.addEventListener('input', () => { selEpicenter.value = "custom_coord"; selPreset.value = "custom"; onCoordinateInputChanged(true); });
+        inpLocLat.addEventListener('input', () => { selLocation.value = "custom_coord"; selPreset.value = "custom"; onCoordinateInputChanged(true); });
+        inpLocLon.addEventListener('input', () => { selLocation.value = "custom_coord"; selPreset.value = "custom"; onCoordinateInputChanged(true); });
+
+        function syncInputs(rangeEl, textEl, callback) {
+            rangeEl.addEventListener('input', () => { textEl.value = rangeEl.value; callback(parseFloat(rangeEl.value)); });
+            textEl.addEventListener('input', () => {
+                const val = parseFloat(textEl.value) || 0;
+                rangeEl.value = Math.min(parseFloat(rangeEl.max), Math.max(parseFloat(rangeEl.min), val));
+                callback(val);
+            });
+        }
+
+        syncInputs(rngM, txtM, () => { selPreset.value = "custom"; onParameterChange(); });
+        syncInputs(rngH, txtH, () => { selPreset.value = "custom"; onParameterChange(); });
+        syncInputs(rngDuration, txtDuration, () => onParameterChange());
+        syncInputs(rngPlaybackSpeed, txtPlaybackSpeed, () => onParameterChange());
+        syncInputs(rngBuildingAge, txtBuildingAge, (val) => { updateBuildingByAge(val); saveConfigToStorage(); });
+        syncInputs(rngManualIntensity, txtManualIntensity, () => onParameterChange());
+        syncInputs(rngHouseAngle, txtHouseAngle, (val) => updateHouseRotation(val));
+        syncInputs(rngTsunamiHeight, txtTsunamiHeight, (val) => updateTsunamiHeight(val));
+
+        syncInputs(rngMasterVol, txtMasterVol, (val) => {
+            state.masterVolume = val / 100.0;
+            lblMasterVol.innerText = `${Math.round(val)} %`;
+            saveConfigToStorage();
+        });
+
+        syncInputs(rngSeismicRate, txtSeismicRate, (val) => {
+            state.seismicRate = val;
+            document.getElementById('lbl-seismic-rate').innerText = `${val} %`;
+            saveConfigToStorage();
+        });
+
+        btnRotLeft.addEventListener('click', () => updateHouseRotation(state.houseAngle - 15));
+        btnRotRight.addEventListener('click', () => updateHouseRotation(state.houseAngle + 15));
+        document.querySelectorAll('.btn-dir-preset').forEach(btn => btn.addEventListener('click', (e) => updateHouseRotation(parseFloat(e.target.getAttribute('data-angle')))));
+
+        window.addEventListener('keydown', (e) => {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'SELECT') return;
+            if (e.key === 'ArrowLeft') updateHouseRotation(state.houseAngle - 5);
+            else if (e.key === 'ArrowRight') updateHouseRotation(state.houseAngle + 5);
+        });
+
+        selAudioMode.addEventListener('change', (e) => updateAudioMode(e.target.value));
+        selStructureType.addEventListener('change', (e) => updateStructureType(e.target.value));
+        selEvacuationAction.addEventListener('change', (e) => updateEvacuationAction(e.target.value));
+        chkFurnitureFixed.addEventListener('change', (e) => {
+            state.furnitureFixed = e.target.checked;
+            tensionRods.visible = e.target.checked;
+            saveConfigToStorage();
+        });
+        chkLiquefaction.addEventListener('change', (e) => { state.liquefaction = e.target.checked; saveConfigToStorage(); });
+        chkSecondaryFire.addEventListener('change', (e) => { state.secondaryFire = e.target.checked; saveConfigToStorage(); });
+        chkSecondaryTsunami.addEventListener('change', (e) => { state.secondaryTsunami = e.target.checked; saveConfigToStorage(); });
+        selShakeType.addEventListener('change', (e) => { state.shakeType = e.target.value; saveConfigToStorage(); });
+
+        function onParameterChange() {
+            state.M = parseFloat(txtM.value) || 9.0;
+            state.d = parseFloat(txtD.value) || 130.0;
+            state.h = parseFloat(txtH.value) || 24.0;
+            state.customDuration = parseFloat(txtDuration.value) || 70.0;
+            state.playbackSpeed = Math.max(0.0001, parseFloat(txtPlaybackSpeed.value) || 1.0);
+            state.shakeType = selShakeType.value;
+
+            state.manualIntensityEnabled = chkManualIntensity.checked;
+            state.manualIntensityVal = parseFloat(txtManualIntensity.value) || 6.5;
+            state.timelineIntensityEnabled = chkTimelineIntensity.checked;
+
+            lblM.innerText = state.M.toFixed(1);
+            lblD.innerText = `${state.d} km`;
+            lblH.innerText = `${state.h} km`;
+            lblDuration.innerText = `${state.customDuration} 秒`;
+            lblPlaybackSpeed.innerText = `${state.playbackSpeed.toFixed(1)}x`;
+            lblManualIntensity.innerText = state.manualIntensityVal.toFixed(1);
+
+            calculateSeismicParameters();
+            domIntensity.innerText = state.jmaScale;
+            saveConfigToStorage();
+        }
+
+        chkManualIntensity.addEventListener('change', (e) => {
+            if (e.target.checked) { chkTimelineIntensity.checked = false; timelineContainer.style.display = "none"; }
+            manualIntensityContainer.style.display = e.target.checked ? "block" : "none";
+            onParameterChange();
+        });
+
+        chkTimelineIntensity.addEventListener('change', (e) => {
+            if (e.target.checked) { chkManualIntensity.checked = false; manualIntensityContainer.style.display = "none"; }
+            timelineContainer.style.display = e.target.checked ? "block" : "none";
+            onParameterChange();
+        });
+
+        selPreset.addEventListener('change', (e) => {
+            const p = PRESETS[e.target.value];
+            if (p) {
+                selEpicenter.value = p.epicenter; selLocation.value = p.location;
+                const epi = EPICENTERS[p.epicenter], loc = LOCATIONS[p.location];
+                inpEpiLat.value = epi.lat.toFixed(2); inpEpiLon.value = epi.lon.toFixed(2);
+                inpLocLat.value = loc.lat.toFixed(2); inpLocLon.value = loc.lon.toFixed(2);
+                rngM.value = p.m; txtM.value = p.m; rngH.value = p.h; txtH.value = p.h;
+
+                if (e.target.value === "tohoku") { rngDuration.value = 120; txtDuration.value = 120; selShakeType.value = "horizontal"; }
+                else if (e.target.value === "nankai") { rngDuration.value = 150; txtDuration.value = 150; selShakeType.value = "horizontal"; }
+                else if (e.target.value === "hanshin") { rngDuration.value = 25; txtDuration.value = 25; selShakeType.value = "vertical"; }
+                else if (e.target.value === "noto") { rngDuration.value = 45; txtDuration.value = 45; selShakeType.value = "auto"; }
+                else { rngDuration.value = 40; txtDuration.value = 40; selShakeType.value = "auto"; }
+
+                chkManualIntensity.checked = false; manualIntensityContainer.style.display = "none";
+                chkTimelineIntensity.checked = false; timelineContainer.style.display = "none";
+                onCoordinateInputChanged(true);
+            }
+        });
+        
+        const audioModal = document.getElementById('audio-modal');
+        const btnModalStart = document.getElementById('btn-modal-start');
+        const btnModalCancel = document.getElementById('btn-modal-cancel');
+
+        function startEarthquake() {
+            initAudio();
+            if (state.hp <= 0) resetSimulation();
+            state.isRunning = true;
+            btnTrigger.innerText = "地震停止";
+            btnTrigger.style.background = "linear-gradient(135deg, #555566, #222233)";
+        }
+
+        btnTrigger.addEventListener('click', () => {
+            if (!state.isRunning) {
+                audioModal.style.display = "flex";
+            } else {
+                state.isRunning = false;
+                btnTrigger.innerText = "再開";
+                btnTrigger.style.background = "linear-gradient(135deg, #3399ff, #1155aa)";
+                if (rumbleGain) rumbleGain.gain.value = 0;
+                if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+            }
+        });
+
+        btnModalStart.addEventListener('click', () => {
+            audioModal.style.display = "none";
+            startEarthquake();
+        });
+
+        btnModalCancel.addEventListener('click', () => {
+            audioModal.style.display = "none";
+        });
+
+        btnReset.addEventListener('click', resetSimulation);
+
+        // .jishin ファイル保存・読込
+        document.getElementById('btn-export-jishin').addEventListener('click', () => {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(getExportConfig(), null, 2));
+            const dlAnchor = document.createElement('a');
+            const timestamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `earthquake_sim_master_${timestamp}.jishin`);
+            document.body.appendChild(dlAnchor);
+            dlAnchor.click(); dlAnchor.remove();
+        });
+
+        const inpFileJishin = document.getElementById('inp-file-jishin');
+        document.getElementById('btn-import-jishin').addEventListener('click', () => inpFileJishin.click());
+        inpFileJishin.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                try {
+                    applyImportConfig(JSON.parse(event.target.result));
+                    saveConfigToStorage();
+                    alert("✅ .jishin ファイルからすべての設定を完全復元しました！");
+                } catch (err) { alert("⚠️ .jishin ファイルの読み込みに失敗しました。"); }
+            };
+            reader.readAsText(file);
+            inpFileJishin.value = "";
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        // メインレンダー・アニメーションループ (2画面分割A/Bビュー対応)
+        const clock = new THREE.Clock();
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const rawDelta = Math.min(clock.getDelta(), 0.1);
+            const delta = rawDelta * state.playbackSpeed;
+            updatePhysics(delta);
+            controls.update();
+
+            if (state.splitView) {
+                renderer.setScissorTest(true);
+                const w = window.innerWidth, h = window.innerHeight;
+
+                renderer.setScissor(0, 0, w / 2, h);
+                renderer.setViewport(0, 0, w / 2, h);
+                camera.aspect = (w / 2) / h;
+                camera.updateProjectionMatrix();
+                wallMat.color.setHex(0x382212);
+                renderer.render(scene, camera);
+
+                renderer.setScissor(w / 2, 0, w / 2, h);
+                renderer.setViewport(w / 2, 0, w / 2, h);
+                camera.aspect = (w / 2) / h;
+                camera.updateProjectionMatrix();
+                if (!state.stressHeatmap) updateBuildingByAge(state.buildingAge);
+                renderer.render(scene, camera);
+
+                renderer.setScissorTest(false);
+            } else {
+                renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+                renderer.render(scene, camera);
+            }
+        }
+
+        // 初期化実行 (URL共有パラメータの自動復元対応)
+        const urlParams = new URLSearchParams(window.location.search);
+        const sharedData = urlParams.get('data');
+        let loaded = false;
+        if (sharedData) {
+            try {
+                const decoded = JSON.parse(decodeURIComponent(atob(sharedData)));
+                loaded = applyImportConfig(decoded);
+            } catch(e) { console.warn("URL shared data load failed", e); }
+        }
+
+        if (!loaded) loaded = loadConfigFromStorage();
+
+        if (!loaded) {
+            updateBuildingByAge(89);
+            updateHouseRotation(0);
+            updateStructureType('standard');
+            updateEvacuationAction('table');
+            updateTsunamiHeight(10.0);
+            updateAudioMode('indoor');
+            updateEnvTime('day');
+            renderTimelineTable();
+            renderAftershockTable();
+            onCoordinateInputChanged(true);
+        } else {
+            renderTimelineTable();
+            renderAftershockTable();
+            onCoordinateInputChanged(false);
+        }
+
+        resetSimulation();
+        animate();
+    </script>
+</body>
+</html>
