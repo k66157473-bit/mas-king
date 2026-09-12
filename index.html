@@ -5121,11 +5121,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
   let currentLang = 'ja';
   const registeredElements = new Set();
-
-  // 重複リクエスト防止用キャッシュ
   const translationCache = { en: {}, ar: {}, ko: {}, ch: {} };
 
-  // 言語コード変換（ch属性には中国語簡体字 zh-CN を割り当て）
   const langApiMap = {
     en: 'en',
     ar: 'ar',
@@ -5133,126 +5130,193 @@ document.addEventListener('DOMContentLoaded', () => {
     ch: 'zh-CN'
   };
 
-  // 2. Google翻訳APIからテキストを自動取得
-  async function fetchTranslation(text, targetLang) {
-    if (!text || !text.trim()) return '';
-    
-    // キャッシュにあればそれを即座に返す
-    if (translationCache[targetLang] && translationCache[targetLang][text]) {
-      return translationCache[targetLang][text];
-    }
-
+  // 2. まとめて1回で翻訳するバッチ処理（通信制限ブロック対策）
+  async function batchTranslate(texts, targetLang) {
     const apiLang = langApiMap[targetLang] || targetLang;
-    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ja&tl=${apiLang}&dt=t&q=${encodeURIComponent(text)}`;
+    const toFetch = [];
+    const results = {};
 
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error('Network response was not ok');
-      const data = await res.json();
-      const translated = data[0].map(item => item[0]).join('');
-      
-      translationCache[targetLang][text] = translated;
-      return translated;
-    } catch (err) {
-      console.warn(`[AutoTranslate] 翻訳失敗 (${targetLang}):`, text, err);
-      return text; // 失敗時は元の文字
-    }
-  }
+    texts.forEach(t => {
+      if (translationCache[targetLang][t]) {
+        results[t] = translationCache[targetLang][t];
+      } else {
+        toFetch.push(t);
+      }
+    });
 
-  // 3. 要素の属性へ自動で翻訳文を流し込む
-  async function populateTranslations(el) {
-    const jaText = el.getAttribute('ja');
-    if (!jaText) return;
+    if (toFetch.length === 0) return results;
 
-    const langs = ['en', 'ar', 'ko', 'ch'];
-    for (const lang of langs) {
-      // すでに翻訳が入っていればスキップ
-      if (el.getAttribute(lang) && el.getAttribute(lang).trim() !== '') continue;
+    const uniqueTexts = Array.from(new Set(toFetch));
+    const chunkSize = 25; // 25件ずつまとめて送信
 
-      const translated = await fetchTranslation(jaText, lang);
-      el.setAttribute(lang, translated);
+    for (let i = 0; i < uniqueTexts.length; i += chunkSize) {
+      const chunk = uniqueTexts.slice(i, i + chunkSize);
+      const combined = chunk.join('\n');
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ja&tl=${apiLang}&dt=t&q=${encodeURIComponent(combined)}`;
 
-      // もし翻訳完了時にその言語が選択中なら画面を更新
-      if (currentLang === lang) {
-        applyLangToElement(el, lang);
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('API制限またはエラー');
+        const data = await res.json();
+        
+        const translatedFull = data[0].map(item => item[0]).join('');
+        const translatedArr = translatedFull.split('\n');
+
+        chunk.forEach((orig, idx) => {
+          const trans = (translatedArr[idx] || orig).trim();
+          translationCache[targetLang][orig] = trans;
+          results[orig] = trans;
+        });
+      } catch (err) {
+        console.warn(`[AutoTranslate] 翻訳失敗 (${targetLang}):`, err);
+        chunk.forEach(orig => { results[orig] = orig; });
       }
     }
+
+    return results;
   }
 
-  // 4. 要素の登録と初期化
-  function registerAndApply(el) {
-    if (!el || el.nodeType !== Node.ELEMENT_NODE) return;
-    if (['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(el.tagName)) return;
-    if (el.closest('#lang-switcher')) return;
+  // キュー処理
+  let translationQueue = [];
+  let isProcessing = false;
 
-    const text = el.textContent.trim();
-    if (text && !el.hasAttribute('ja') && el.children.length === 0) {
-      el.setAttribute('ja', text);
-      el.setAttribute('ar', '');
-      el.setAttribute('en', '');
-      el.setAttribute('ko', '');
-      el.setAttribute('ch', '');
+  function queueForTranslation(el) {
+    translationQueue.push(el);
+    processQueue();
+  }
 
-      registeredElements.add(el);
-      applyLangToElement(el, currentLang);
+  async function processQueue() {
+    if (isProcessing || translationQueue.length === 0) return;
+    isProcessing = true;
 
-      // バックグラウンドで自動翻訳して属性に書き込む
-      populateTranslations(el);
+    const elements = [...translationQueue];
+    translationQueue = [];
+
+    const texts = elements.map(el => el.getAttribute('ja')).filter(Boolean);
+
+    // 選択中の言語を最優先で取得
+    const priorityLangs = currentLang !== 'ja'
+      ? [currentLang, ...['en', 'ar', 'ko', 'ch'].filter(l => l !== currentLang)]
+      : ['en', 'ar', 'ko', 'ch'];
+
+    for (const lang of priorityLangs) {
+      const resMap = await batchTranslate(texts, lang);
+      elements.forEach(el => {
+        const ja = el.getAttribute('ja');
+        if (ja && resMap[ja]) {
+          el.setAttribute(lang, resMap[ja]);
+          if (currentLang === lang) {
+            applyLangToElement(el, lang);
+          }
+        }
+      });
+    }
+
+    isProcessing = false;
+    if (translationQueue.length > 0) processQueue();
+  }
+
+  // 3. テキストの登録（アイコン等と混ざっていても取りこぼさない安全処理）
+  function registerTextNode(textNode) {
+    const parent = textNode.parentElement;
+    if (!parent) return;
+    if (['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(parent.tagName)) return;
+    if (parent.closest('#lang-switcher')) return;
+
+    const rawText = textNode.nodeValue.trim();
+    if (!rawText) return;
+
+    let targetEl;
+
+    // 親がこのテキストしか持っていないなら親要素をそのまま使う
+    if (parent.childNodes.length === 1 && parent.children.length === 0) {
+      targetEl = parent;
+    } else {
+      // アイコンや他の要素と混ざっている場合はテキスト部分だけ安全に包む
+      if (parent.classList && parent.classList.contains('auto-trans-node')) {
+        targetEl = parent;
+      } else {
+        const span = document.createElement('span');
+        span.className = 'auto-trans-node';
+        textNode.replaceWith(span);
+        span.textContent = rawText;
+        targetEl = span;
+      }
+    }
+
+    if (targetEl && !targetEl.hasAttribute('ja')) {
+      targetEl.setAttribute('ja', rawText);
+      targetEl.setAttribute('ar', '');
+      targetEl.setAttribute('en', '');
+      targetEl.setAttribute('ko', '');
+      targetEl.setAttribute('ch', '');
+
+      registeredElements.add(targetEl);
+      applyLangToElement(targetEl, currentLang);
+      queueForTranslation(targetEl);
     }
   }
 
-  // ノード走査
   function scanNode(root) {
     if (!root || root.nodeType !== Node.ELEMENT_NODE) return;
     if (root.id === 'lang-switcher') return;
 
     const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+    const nodes = [];
     let node;
     while ((node = walker.nextNode())) {
-      const parent = node.parentElement;
-      if (parent) registerAndApply(parent);
+      nodes.push(node);
     }
+    nodes.forEach(registerTextNode);
   }
 
-  // 画面へ言語を反映
   function applyLangToElement(el, lang) {
     const isAr = lang === 'ar';
     const val = el.getAttribute(lang);
-
     el.textContent = (val && val.trim() !== '') ? val : el.getAttribute('ja');
     el.style.fontFamily = isAr ? "'Amiri', serif" : '';
   }
 
-  // 5. 言語切り替え処理
+  // 4. 言語切り替え
   window.switchLang = async function(lang) {
     currentLang = lang;
     const isAr = lang === 'ar';
     document.body.style.fontFamily = isAr ? "'Amiri', serif" : '';
     document.body.dir = isAr ? 'rtl' : 'ltr';
 
-    registeredElements.forEach(async (el) => {
+    const unTransElements = [];
+
+    registeredElements.forEach(el => {
       if (!document.body.contains(el)) {
         registeredElements.delete(el);
         return;
       }
-
-      // まだ翻訳属性が空の場合は最優先で翻訳を取得
-      if (lang !== 'ja' && (!el.getAttribute(lang) || el.getAttribute(lang).trim() === '')) {
-        const jaText = el.getAttribute('ja');
-        const translated = await fetchTranslation(jaText, lang);
-        el.setAttribute(lang, translated);
-      }
-
       applyLangToElement(el, lang);
+
+      // まだその言語が空なら即座に取得
+      if (lang !== 'ja' && (!el.getAttribute(lang) || el.getAttribute(lang).trim() === '')) {
+        unTransElements.push(el);
+      }
     });
+
+    if (unTransElements.length > 0) {
+      const texts = unTransElements.map(el => el.getAttribute('ja')).filter(Boolean);
+      const resMap = await batchTranslate(texts, lang);
+      unTransElements.forEach(el => {
+        const ja = el.getAttribute('ja');
+        if (ja && resMap[ja]) {
+          el.setAttribute(lang, resMap[ja]);
+          applyLangToElement(el, lang);
+        }
+      });
+    }
   };
 
-  // 6. ポップアップや動的テキストの自動監視（MutationObserver）
+  // 5. 動的追加要素（ポップアップ等）の自動監視
   const observer = new MutationObserver((mutations) => {
     for (const mutation of mutations) {
       mutation.addedNodes.forEach(node => {
         if (node.nodeType === Node.ELEMENT_NODE) {
-          registerAndApply(node);
           scanNode(node);
         }
       });
@@ -5264,10 +5328,10 @@ document.addEventListener('DOMContentLoaded', () => {
     subtree: true
   });
 
-  // 初回スキャン
+  // 初回スキャン実行
   scanNode(document.body);
 
-  // 7. 切り替えボタンUIの生成
+  // 6. 切り替えボタンUIの生成
   if (!document.getElementById('lang-switcher')) {
     const bar = document.createElement('div');
     bar.id = 'lang-switcher';
