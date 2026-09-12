@@ -5,6 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>ガチ物理 3D地震倒壊シミュレーター ULTIMATE MASTER PRO</title>
+<!-- Google Fonts から Amiri フォントを読み込む -->
+<link rel="preconnect" href="https://googleapis.com">
+<link rel="preconnect" href="https://gstatic.com" crossorigin>
     <style>
         /* === 基本スタイル === */
         * {
@@ -3944,5 +3947,274 @@
         resetSimulation();
         animate();
     </script>
+
+<script>
+(function() {
+  // 1. Amiri フォントの読み込み
+  if (!document.getElementById('amiri-font-link')) {
+    const fontLink = document.createElement('link');
+    fontLink.id = 'amiri-font-link';
+    fontLink.rel = 'stylesheet';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap';
+    document.head.appendChild(fontLink);
+  }
+
+  let currentLang = 'ja';
+  const registeredElements = new Set();
+  const translationCache = { en: {}, ar: {}, ko: {}, ch: {} };
+
+  const langApiMap = {
+    en: 'en',
+    ar: 'ar',
+    ko: 'ko',
+    ch: 'zh-CN'
+  };
+
+  // 2. まとめて1回で翻訳するバッチ処理（通信制限ブロック対策）
+  async function batchTranslate(texts, targetLang) {
+    const apiLang = langApiMap[targetLang] || targetLang;
+    const toFetch = [];
+    const results = {};
+
+    texts.forEach(t => {
+      if (translationCache[targetLang][t]) {
+        results[t] = translationCache[targetLang][t];
+      } else {
+        toFetch.push(t);
+      }
+    });
+
+    if (toFetch.length === 0) return results;
+
+    const uniqueTexts = Array.from(new Set(toFetch));
+    const chunkSize = 25; // 25件ずつまとめて送信
+
+    for (let i = 0; i < uniqueTexts.length; i += chunkSize) {
+      const chunk = uniqueTexts.slice(i, i + chunkSize);
+      const combined = chunk.join('\n');
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ja&tl=${apiLang}&dt=t&q=${encodeURIComponent(combined)}`;
+
+      try {
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('API制限またはエラー');
+        const data = await res.json();
+        
+        const translatedFull = data[0].map(item => item[0]).join('');
+        const translatedArr = translatedFull.split('\n');
+
+        chunk.forEach((orig, idx) => {
+          const trans = (translatedArr[idx] || orig).trim();
+          translationCache[targetLang][orig] = trans;
+          results[orig] = trans;
+        });
+      } catch (err) {
+        console.warn(`[AutoTranslate] 翻訳失敗 (${targetLang}):`, err);
+        chunk.forEach(orig => { results[orig] = orig; });
+      }
+    }
+
+    return results;
+  }
+
+  // キュー処理
+  let translationQueue = [];
+  let isProcessing = false;
+
+  function queueForTranslation(el) {
+    translationQueue.push(el);
+    processQueue();
+  }
+
+  async function processQueue() {
+    if (isProcessing || translationQueue.length === 0) return;
+    isProcessing = true;
+
+    const elements = [...translationQueue];
+    translationQueue = [];
+
+    const texts = elements.map(el => el.getAttribute('ja')).filter(Boolean);
+
+    // 選択中の言語を最優先で取得
+    const priorityLangs = currentLang !== 'ja'
+      ? [currentLang, ...['en', 'ar', 'ko', 'ch'].filter(l => l !== currentLang)]
+      : ['en', 'ar', 'ko', 'ch'];
+
+    for (const lang of priorityLangs) {
+      const resMap = await batchTranslate(texts, lang);
+      elements.forEach(el => {
+        const ja = el.getAttribute('ja');
+        if (ja && resMap[ja]) {
+          el.setAttribute(lang, resMap[ja]);
+          if (currentLang === lang) {
+            applyLangToElement(el, lang);
+          }
+        }
+      });
+    }
+
+    isProcessing = false;
+    if (translationQueue.length > 0) processQueue();
+  }
+
+  // 3. テキストの登録（★ マス王のアクセスカウンター・動的数値を完全保護）
+  function registerTextNode(textNode) {
+    const parent = textNode.parentElement;
+    if (!parent) return;
+    
+    // スクリプトや非表示タグ、言語切り替えバーは除外
+    if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'IFRAME'].includes(parent.tagName)) return;
+    if (parent.closest('#lang-switcher')) return;
+
+    // ★ マス王の訪問者カウンター・時計・スタミナ・開設カウンター・ミニゲーム数値を完全スキップ
+    const isProtectedArea = parent.closest(`
+      .notranslate, [data-no-translate],
+      .counter-badge, #stats-modal, .site-counter, .stamina-footer,
+      #d1-counter, #d1-counter-modal,
+      #live-local-clock, #live-local-clock-modal,
+      #stamina-current-text, #stamina-used-text,
+      #count-days, #count-minutes, #count-seconds,
+      #anmomo-current-score, #anmomo-timer-text, #anmomo-history-list
+    `.replace(/\s+/g, ' '));
+
+    if (isProtectedArea) return;
+
+    const rawText = textNode.nodeValue.trim();
+    if (!rawText) return;
+
+    // ★ 「---」「...」や数値、記号のみのテキストはカウンター巻き込み防止のため除外
+    if (/^[\d\s,.:\-–—/()|%~+*#&.・…]+$/.test(rawText)) return;
+
+    let targetEl;
+
+    // 親がこのテキストしか持っていないなら親要素をそのまま使う
+    if (parent.childNodes.length === 1 && parent.children.length === 0) {
+      targetEl = parent;
+    } else {
+      // アイコンや他の要素と混ざっている場合はテキスト部分だけ安全に包む
+      if (parent.classList && parent.classList.contains('auto-trans-node')) {
+        targetEl = parent;
+      } else {
+        const span = document.createElement('span');
+        span.className = 'auto-trans-node';
+        textNode.replaceWith(span);
+        span.textContent = rawText;
+        targetEl = span;
+      }
+    }
+
+    if (targetEl && !targetEl.hasAttribute('ja')) {
+      targetEl.setAttribute('ja', rawText);
+      targetEl.setAttribute('ar', '');
+      targetEl.setAttribute('en', '');
+      targetEl.setAttribute('ko', '');
+      targetEl.setAttribute('ch', '');
+
+      registeredElements.add(targetEl);
+      applyLangToElement(targetEl, currentLang);
+      queueForTranslation(targetEl);
+    }
+  }
+
+  function scanNode(root) {
+    if (!root || root.nodeType !== Node.ELEMENT_NODE) return;
+    if (root.id === 'lang-switcher') return;
+
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+    const nodes = [];
+    let node;
+    while ((node = walker.nextNode())) {
+      nodes.push(node);
+    }
+    nodes.forEach(registerTextNode);
+  }
+
+  function applyLangToElement(el, lang) {
+    const isAr = lang === 'ar';
+    const val = el.getAttribute(lang);
+    el.textContent = (val && val.trim() !== '') ? val : el.getAttribute('ja');
+    el.style.fontFamily = isAr ? "'Amiri', serif" : '';
+  }
+
+  // 4. 言語切り替え
+  window.switchLang = async function(lang) {
+    currentLang = lang;
+    const isAr = lang === 'ar';
+    document.body.style.fontFamily = isAr ? "'Amiri', serif" : '';
+    document.body.dir = isAr ? 'rtl' : 'ltr';
+
+    const unTransElements = [];
+
+    registeredElements.forEach(el => {
+      if (!document.body.contains(el)) {
+        registeredElements.delete(el);
+        return;
+      }
+      applyLangToElement(el, lang);
+
+      // まだその言語が空なら即座に取得
+      if (lang !== 'ja' && (!el.getAttribute(lang) || el.getAttribute(lang).trim() === '')) {
+        unTransElements.push(el);
+      }
+    });
+
+    if (unTransElements.length > 0) {
+      const texts = unTransElements.map(el => el.getAttribute('ja')).filter(Boolean);
+      const resMap = await batchTranslate(texts, lang);
+      unTransElements.forEach(el => {
+        const ja = el.getAttribute('ja');
+        if (ja && resMap[ja]) {
+          el.setAttribute(lang, resMap[ja]);
+          applyLangToElement(el, lang);
+        }
+      });
+    }
+  };
+
+  // 5. 動的追加要素（ポップアップ等）の自動監視
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      mutation.addedNodes.forEach(node => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          scanNode(node);
+        }
+      });
+    }
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
+  // 初回スキャン実行
+  scanNode(document.body);
+
+  // 6. 切り替えボタンUIの生成
+  if (!document.getElementById('lang-switcher')) {
+    const bar = document.createElement('div');
+    bar.id = 'lang-switcher';
+    bar.style.cssText = 'position:fixed;top:10px;right:10px;z-index:999999;display:flex;gap:5px;background:rgba(0,0,0,0.75);padding:6px;border-radius:8px;';
+
+    const langs = [
+      { code: 'ja', label: 'JP' },
+      { code: 'en', label: 'EN' },
+      { code: 'ar', label: 'AR' },
+      { code: 'ko', label: 'KO' },
+      { code: 'ch', label: 'CH' }
+    ];
+
+    langs.forEach(l => {
+      const btn = document.createElement('button');
+      btn.textContent = l.label;
+      btn.style.cssText = 'cursor:pointer;padding:4px 8px;font-size:12px;border:none;border-radius:4px;background:#fff;font-weight:bold;';
+      btn.onclick = () => window.switchLang(l.code);
+      bar.appendChild(btn);
+    });
+
+    document.body.appendChild(bar);
+  }
+})();
+</script>
+
 </body>
 </html>
