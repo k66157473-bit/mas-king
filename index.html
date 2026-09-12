@@ -3198,7 +3198,17 @@ document.getElementById('save-confirm-btn').addEventListener('click', () => {
 
     // 更新履歴データ
     const changelogData = [
-
+{
+  version: 'v5.8.0',
+  date: '2026-09-12 21:33',
+  type: 'feat',
+  title: '多言語切り替え時の自動翻訳API連携および各属性への自動テキスト注入に対応しました',
+  items: [
+    'Google翻訳APIと連携し、画面上のテキストを自動翻訳して各属性（en/ar/ko/ch）へバックグラウンド注入する機能を追加しました',
+    '同一テキストの重複リクエストを防ぐ翻訳キャッシュ機構を実装しました',
+    '未取得の言語ボタンが選択された場合でも、最優先で翻訳を取得し即座に画面反映・属性保存する処理を追加しました'
+  ]
+},
 {
   version: 'v5.7.0',
   date: '2026-09-12 16:20',
@@ -5098,6 +5108,191 @@ document.addEventListener('DOMContentLoaded', () => {
     </button>
   </div>
 </div>
+<script>
+(function() {
+  // 1. Amiri フォントの読み込み
+  if (!document.getElementById('amiri-font-link')) {
+    const fontLink = document.createElement('link');
+    fontLink.id = 'amiri-font-link';
+    fontLink.rel = 'stylesheet';
+    fontLink.href = 'https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap';
+    document.head.appendChild(fontLink);
+  }
+
+  let currentLang = 'ja';
+  const registeredElements = new Set();
+
+  // 重複リクエスト防止用キャッシュ
+  const translationCache = { en: {}, ar: {}, ko: {}, ch: {} };
+
+  // 言語コード変換（ch属性には中国語簡体字 zh-CN を割り当て）
+  const langApiMap = {
+    en: 'en',
+    ar: 'ar',
+    ko: 'ko',
+    ch: 'zh-CN'
+  };
+
+  // 2. Google翻訳APIからテキストを自動取得
+  async function fetchTranslation(text, targetLang) {
+    if (!text || !text.trim()) return '';
+    
+    // キャッシュにあればそれを即座に返す
+    if (translationCache[targetLang] && translationCache[targetLang][text]) {
+      return translationCache[targetLang][text];
+    }
+
+    const apiLang = langApiMap[targetLang] || targetLang;
+    const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=ja&tl=${apiLang}&dt=t&q=${encodeURIComponent(text)}`;
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Network response was not ok');
+      const data = await res.json();
+      const translated = data[0].map(item => item[0]).join('');
+      
+      translationCache[targetLang][text] = translated;
+      return translated;
+    } catch (err) {
+      console.warn(`[AutoTranslate] 翻訳失敗 (${targetLang}):`, text, err);
+      return text; // 失敗時は元の文字
+    }
+  }
+
+  // 3. 要素の属性へ自動で翻訳文を流し込む
+  async function populateTranslations(el) {
+    const jaText = el.getAttribute('ja');
+    if (!jaText) return;
+
+    const langs = ['en', 'ar', 'ko', 'ch'];
+    for (const lang of langs) {
+      // すでに翻訳が入っていればスキップ
+      if (el.getAttribute(lang) && el.getAttribute(lang).trim() !== '') continue;
+
+      const translated = await fetchTranslation(jaText, lang);
+      el.setAttribute(lang, translated);
+
+      // もし翻訳完了時にその言語が選択中なら画面を更新
+      if (currentLang === lang) {
+        applyLangToElement(el, lang);
+      }
+    }
+  }
+
+  // 4. 要素の登録と初期化
+  function registerAndApply(el) {
+    if (!el || el.nodeType !== Node.ELEMENT_NODE) return;
+    if (['SCRIPT', 'STYLE', 'NOSCRIPT'].includes(el.tagName)) return;
+    if (el.closest('#lang-switcher')) return;
+
+    const text = el.textContent.trim();
+    if (text && !el.hasAttribute('ja') && el.children.length === 0) {
+      el.setAttribute('ja', text);
+      el.setAttribute('ar', '');
+      el.setAttribute('en', '');
+      el.setAttribute('ko', '');
+      el.setAttribute('ch', '');
+
+      registeredElements.add(el);
+      applyLangToElement(el, currentLang);
+
+      // バックグラウンドで自動翻訳して属性に書き込む
+      populateTranslations(el);
+    }
+  }
+
+  // ノード走査
+  function scanNode(root) {
+    if (!root || root.nodeType !== Node.ELEMENT_NODE) return;
+    if (root.id === 'lang-switcher') return;
+
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, null, false);
+    let node;
+    while ((node = walker.nextNode())) {
+      const parent = node.parentElement;
+      if (parent) registerAndApply(parent);
+    }
+  }
+
+  // 画面へ言語を反映
+  function applyLangToElement(el, lang) {
+    const isAr = lang === 'ar';
+    const val = el.getAttribute(lang);
+
+    el.textContent = (val && val.trim() !== '') ? val : el.getAttribute('ja');
+    el.style.fontFamily = isAr ? "'Amiri', serif" : '';
+  }
+
+  // 5. 言語切り替え処理
+  window.switchLang = async function(lang) {
+    currentLang = lang;
+    const isAr = lang === 'ar';
+    document.body.style.fontFamily = isAr ? "'Amiri', serif" : '';
+    document.body.dir = isAr ? 'rtl' : 'ltr';
+
+    registeredElements.forEach(async (el) => {
+      if (!document.body.contains(el)) {
+        registeredElements.delete(el);
+        return;
+      }
+
+      // まだ翻訳属性が空の場合は最優先で翻訳を取得
+      if (lang !== 'ja' && (!el.getAttribute(lang) || el.getAttribute(lang).trim() === '')) {
+        const jaText = el.getAttribute('ja');
+        const translated = await fetchTranslation(jaText, lang);
+        el.setAttribute(lang, translated);
+      }
+
+      applyLangToElement(el, lang);
+    });
+  };
+
+  // 6. ポップアップや動的テキストの自動監視（MutationObserver）
+  const observer = new MutationObserver((mutations) => {
+    for (const mutation of mutations) {
+      mutation.addedNodes.forEach(node => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          registerAndApply(node);
+          scanNode(node);
+        }
+      });
+    }
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
+  // 初回スキャン
+  scanNode(document.body);
+
+  // 7. 切り替えボタンUIの生成
+  if (!document.getElementById('lang-switcher')) {
+    const bar = document.createElement('div');
+    bar.id = 'lang-switcher';
+    bar.style.cssText = 'position:fixed;top:10px;right:10px;z-index:999999;display:flex;gap:5px;background:rgba(0,0,0,0.75);padding:6px;border-radius:8px;';
+
+    const langs = [
+      { code: 'ja', label: 'JP' },
+      { code: 'en', label: 'EN' },
+      { code: 'ar', label: 'AR' },
+      { code: 'ko', label: 'KO' },
+      { code: 'ch', label: 'CH' }
+    ];
+
+    langs.forEach(l => {
+      const btn = document.createElement('button');
+      btn.textContent = l.label;
+      btn.style.cssText = 'cursor:pointer;padding:4px 8px;font-size:12px;border:none;border-radius:4px;background:#fff;font-weight:bold;';
+      btn.onclick = () => window.switchLang(l.code);
+      bar.appendChild(btn);
+    });
+
+    document.body.appendChild(bar);
+  }
+})();
+</script>
 </body>
 </html>
 
