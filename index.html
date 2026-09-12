@@ -2133,11 +2133,6 @@ function selectImage(idx, loadedImg = null) {
       };
     }
 
-    function getTouchDistance(touches) {
-      const dx = touches[0].clientX - touches[1].clientX;
-      const dy = touches[0].clientY - touches[1].clientY;
-      return Math.sqrt(dx * dx + dy * dy);
-    }
 // === 【修正 1】ピンチズーム時の誤爆防止処理 ===
 
 let pinchEndTime = 0; // ピンチ終了後のクールダウンタイマー
@@ -2173,9 +2168,6 @@ function onPointerDown(e) {
   startX = coords.x;
   startY = coords.y;
 
-  // ★重要: stamp / dropper / text は down 時点では即時実行せず、
-  // onPointerUp で「ドラッグ移動がなかった（タップした）」と確認できた時に実行します
-
   // 四角選択ドラッグ枠の初期化
   selectionBox.style.transform = `translate3d(${coords.cssX}px, ${coords.cssY}px, 0)`;
   selectionBox.style.width = '0px';
@@ -2188,12 +2180,56 @@ function onPointerDown(e) {
   }
 }
 
-// ポインターアップ
+// ポインタームーブ（rAFによる高速・なめらか描画）
+function onPointerMove(e) {
+  if (e.touches && e.touches.length >= 2) {
+    isPinching = true;
+    isInteracting = false;
+    selectionBox.style.display = 'none';
+    loupe.style.display = 'none';
+    const dist = getTouchDistance(e.touches);
+    const scale = dist / initialPinchDistance;
+    updateZoom(initialPinchZoom * scale);
+    return;
+  }
+
+  if (!isInteracting) return;
+  if (e.cancelable) e.preventDefault();
+
+  latestCoords = getEventCoords(e);
+
+  if (!isRafScheduled) {
+    isRafScheduled = true;
+    requestAnimationFrame(() => {
+      if (isInteracting && latestCoords) {
+        const rect = canvas.getBoundingClientRect();
+        const curCssX = latestCoords.cssX;
+        const curCssY = latestCoords.cssY;
+        const startCssX = (startX / canvas.width) * rect.width;
+        const startCssY = (startY / canvas.height) * rect.height;
+
+        const boxLeft = Math.min(startCssX, curCssX);
+        const boxTop = Math.min(startCssY, curCssY);
+        const boxWidth = Math.abs(curCssX - startCssX);
+        const boxHeight = Math.abs(curCssY - startCssY);
+
+        selectionBox.style.transform = `translate3d(${boxLeft}px, ${boxTop}px, 0)`;
+        selectionBox.style.width = `${boxWidth}px`;
+        selectionBox.style.height = `${boxHeight}px`;
+
+        showLoupe(latestCoords);
+      }
+      isRafScheduled = false;
+    });
+  }
+}
+
+// ポインターアップ（1つだけに統合）
 function onPointerUp(e) {
   if (isPinching) {
     if (!e.touches || e.touches.length === 0) {
       isPinching = false;
-      pinchEndTime = Date.now(); // ピンチ終了時刻を記録
+      pinchEndTime = Date.now();
     }
     selectionBox.style.display = 'none';
     loupe.style.display = 'none';
@@ -2205,7 +2241,6 @@ function onPointerUp(e) {
   selectionBox.style.display = 'none';
   loupe.style.display = 'none';
 
-  // ピンチ直後なら描画しない
   if (Date.now() - pinchEndTime < 300) return;
 
   const coords = getEventCoords(e);
@@ -2217,7 +2252,6 @@ function onPointerUp(e) {
   const w = Math.abs(endX - startX);
   const h = Math.abs(endY - startY);
 
-  // ★タップ系ツールの判定（移動量がごくわずかな場合のみ発動）
   if (w <= 5 && h <= 5) {
     if (currentMode === 'stamp') {
       applyStamp(startX, startY);
@@ -2231,87 +2265,10 @@ function onPointerUp(e) {
     }
   }
 
-  // ドラッグ加工ツールの判定
   if (w > 2 || h > 2 || currentMode === 'arrow' || currentMode === 'eraser' || currentMode === 'move') {
     executeToolAction(x, y, Math.max(w, 1), Math.max(h, 1), startX, startY, endX, endY);
   }
-      selectionBox.style.transform = `translate3d(${coords.cssX}px, ${coords.cssY}px, 0)`;
-      selectionBox.style.width = '0px';
-      selectionBox.style.height = '0px';
-      selectionBox.style.display = 'block';
-
-      showLoupe(coords);
-    }
-
-    // ポインタームーブ（rAFによる高速・なめらか描画）
-    function onPointerMove(e) {
- if (e.touches && e.touches.length >= 2) {
-        isPinching = true;
-        isInteracting = false;
-        selectionBox.style.display = 'none';
-        loupe.style.display = 'none';
-        const dist = getTouchDistance(e.touches);
-        const scale = dist / initialPinchDistance;
-        updateZoom(initialPinchZoom * scale);
-        return;
-      }      
-
-      if (!isInteracting) return;
-      if (e.cancelable) e.preventDefault();
-
-      latestCoords = getEventCoords(e);
-
-      if (!isRafScheduled) {
-        isRafScheduled = true;
-        requestAnimationFrame(() => {
-          if (isInteracting && latestCoords) {
-            const rect = canvas.getBoundingClientRect();
-            const curCssX = latestCoords.cssX;
-            const curCssY = latestCoords.cssY;
-            const startCssX = (startX / canvas.width) * rect.width;
-            const startCssY = (startY / canvas.height) * rect.height;
-
-            const boxLeft = Math.min(startCssX, curCssX);
-            const boxTop = Math.min(startCssY, curCssY);
-            const boxWidth = Math.abs(curCssX - startCssX);
-            const boxHeight = Math.abs(curCssY - startCssY);
-
-            selectionBox.style.transform = `translate3d(${boxLeft}px, ${boxTop}px, 0)`;
-            selectionBox.style.width = `${boxWidth}px`;
-            selectionBox.style.height = `${boxHeight}px`;
-
-            showLoupe(latestCoords);
-          }
-          isRafScheduled = false;
-        });
-      }
-    }
-
-    // ポインターアップ
-    function onPointerUp(e) {
-      if (isPinching) {
-        if (!e.touches || e.touches.length < 2) isPinching = false;
-        return;
-      }
-      if (!isInteracting) return;
-      isInteracting = false;
-      selectionBox.style.display = 'none';
-      loupe.style.display = 'none';
-
-      const coords = getEventCoords(e);
-      const endX = coords.x;
-      const endY = coords.y;
-
-      const x = Math.min(startX, endX);
-      const y = Math.min(startY, endY);
-      const w = Math.abs(endX - startX);
-      const h = Math.abs(endY - startY);
-
-      if (w > 2 || h > 2 || currentMode === 'arrow' || currentMode === 'eraser' || currentMode === 'move') {
-        executeToolAction(x, y, Math.max(w, 1), Math.max(h, 1), startX, startY, endX, endY);
-      }
-    }
-
+}
     canvas.addEventListener('mousedown', onPointerDown);
     window.addEventListener('mousemove', onPointerMove);
     window.addEventListener('mouseup', onPointerUp);
@@ -3241,7 +3198,7 @@ document.getElementById('save-confirm-btn').addEventListener('click', () => {
     '背景が透過されたPNGイラスト等を「JPEG」で保存した際、透明部分が真っ黒に塗りつぶされてしまうブラウザ仕様の不具合を解消しました',
     'JPEG形式選択時は自動的に下地を白色でプレ合成してから書き出す仕様に変更し、自然で美しい写真・画像として保存できるようにしました'
   ]
-}
+},
 {
       version: 'v5.3.0',
       date: '2026-09-12 13:34',
