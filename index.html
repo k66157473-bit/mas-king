@@ -642,6 +642,11 @@
 <a href="https://forms.gle/WaSuEdA8hWj6A8xF6" target="_blank" class="btn" style="text-decoration:none;">
   💌 バグ報告・機能要望
 </a>
+
+<a href="./jishin-shumirator.html" target="_blank" class="btn" style="text-decoration:none;"> 
+ おまけ:3D地震シュミレーター
+</a>
+
 <button type="button" class="tab-btn" onclick="openAnmomoDashboard()" style="color:#ec4899; font-weight:bold;">🍑 アン桃</button>
     </div>
   </header>
@@ -2133,46 +2138,103 @@ function selectImage(idx, loadedImg = null) {
       const dy = touches[0].clientY - touches[1].clientY;
       return Math.sqrt(dx * dx + dy * dy);
     }
+// === 【修正 1】ピンチズーム時の誤爆防止処理 ===
 
-    // ポインターダウン
-    function onPointerDown(e) {
-      if (!canvas.width) return;
+let pinchEndTime = 0; // ピンチ終了後のクールダウンタイマー
 
-      // 2本指タッチ時はピンチズーム
-      if (e.touches && e.touches.length >= 2) {
-        isPinching = true;
-        isInteracting = false;
-        selectionBox.style.display = 'none';
-        loupe.style.display = 'none';
-        initialPinchDistance = getTouchDistance(e.touches);
-        initialPinchZoom = currentZoom;
-        return;
-      }
+// ポインターダウン
+function onPointerDown(e) {
+  if (!canvas.width) return;
 
-      if (e.type === 'touchstart') {
-        e.preventDefault();
-      }
+  // 2本指タッチ時はピンチズームモードへ移行し、直前の描画を安全にキャンセル
+  if (e.touches && e.touches.length >= 2) {
+    isPinching = true;
+    isInteracting = false;
+    selectionBox.style.display = 'none';
+    loupe.style.display = 'none';
+    initialPinchDistance = getTouchDistance(e.touches);
+    initialPinchZoom = currentZoom;
+    return;
+  }
 
+  // ピンチ操作終了直後（300ms以内）の指離れによる誤爆をブロック
+  if (Date.now() - pinchEndTime < 300) {
+    isInteracting = false;
+    return;
+  }
+
+  if (e.type === 'touchstart') {
+    e.preventDefault();
+  }
+
+  isPinching = false;
+  isInteracting = true;
+  const coords = getEventCoords(e);
+  startX = coords.x;
+  startY = coords.y;
+
+  // ★重要: stamp / dropper / text は down 時点では即時実行せず、
+  // onPointerUp で「ドラッグ移動がなかった（タップした）」と確認できた時に実行します
+
+  // 四角選択ドラッグ枠の初期化
+  selectionBox.style.transform = `translate3d(${coords.cssX}px, ${coords.cssY}px, 0)`;
+  selectionBox.style.width = '0px';
+  selectionBox.style.height = '0px';
+
+  // タップ系ツール以外の場合のみ選択枠とルーペを表示
+  if (currentMode !== 'stamp' && currentMode !== 'dropper' && currentMode !== 'text') {
+    selectionBox.style.display = 'block';
+    showLoupe(coords);
+  }
+}
+
+// ポインターアップ
+function onPointerUp(e) {
+  if (isPinching) {
+    if (!e.touches || e.touches.length === 0) {
       isPinching = false;
-      isInteracting = true;
-      const coords = getEventCoords(e);
-      startX = coords.x;
-      startY = coords.y;
+      pinchEndTime = Date.now(); // ピンチ終了時刻を記録
+    }
+    selectionBox.style.display = 'none';
+    loupe.style.display = 'none';
+    return;
+  }
 
-      if (currentMode === 'stamp') {
-        applyStamp(startX, startY);
-        isInteracting = false;
-        return;
-      } else if (currentMode === 'dropper') {
-        applyDropper(startX, startY);
-        isInteracting = false;
-        return;
-      } else if (currentMode === 'text') {
-        applyText(startX, startY);
-        isInteracting = false;
-        return;
-      }
+  if (!isInteracting) return;
+  isInteracting = false;
+  selectionBox.style.display = 'none';
+  loupe.style.display = 'none';
 
+  // ピンチ直後なら描画しない
+  if (Date.now() - pinchEndTime < 300) return;
+
+  const coords = getEventCoords(e);
+  const endX = coords.x;
+  const endY = coords.y;
+
+  const x = Math.min(startX, endX);
+  const y = Math.min(startY, endY);
+  const w = Math.abs(endX - startX);
+  const h = Math.abs(endY - startY);
+
+  // ★タップ系ツールの判定（移動量がごくわずかな場合のみ発動）
+  if (w <= 5 && h <= 5) {
+    if (currentMode === 'stamp') {
+      applyStamp(startX, startY);
+      return;
+    } else if (currentMode === 'dropper') {
+      applyDropper(startX, startY);
+      return;
+    } else if (currentMode === 'text') {
+      applyText(startX, startY);
+      return;
+    }
+  }
+
+  // ドラッグ加工ツールの判定
+  if (w > 2 || h > 2 || currentMode === 'arrow' || currentMode === 'eraser' || currentMode === 'move') {
+    executeToolAction(x, y, Math.max(w, 1), Math.max(h, 1), startX, startY, endX, endY);
+  }
       selectionBox.style.transform = `translate3d(${coords.cssX}px, ${coords.cssY}px, 0)`;
       selectionBox.style.width = '0px';
       selectionBox.style.height = '0px';
@@ -2439,41 +2501,52 @@ function selectImage(idx, loadedImg = null) {
       moveCanvas.style.width = `${moveState.w * scaleX}px`;
       moveCanvas.style.height = `${moveState.h * scaleY}px`;
     }
+let moveLastClientX = 0;
+let moveLastClientY = 0;
 
-    function onMoveDragStart(e) {
-      isDraggingMove = true;
-      const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
-      const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
-      const canvasRect = canvas.getBoundingClientRect();
+function onMoveDragStart(e) {
+  isDraggingMove = true;
+  const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
+  const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
 
-      // Canvasピクセル単位でのドラッグオフセット計算
-      const curCanvasX = ((clientX - canvasRect.left) / canvasRect.width) * canvas.width;
-      const curCanvasY = ((clientY - canvasRect.top) / canvasRect.height) * canvas.height;
+  // 開始時のスクリーン座標を記録
+  moveLastClientX = clientX;
+  moveLastClientY = clientY;
+  e.stopPropagation();
+}
 
-      moveDragOffset.x = curCanvasX - moveState.x;
-      moveDragOffset.y = curCanvasY - moveState.y;
-      e.stopPropagation();
-    }
+function onMoveDragMove(e) {
+  if (!isDraggingMove) return;
+  if (e.cancelable) e.preventDefault();
 
-    function onMoveDragMove(e) {
-      if (!isDraggingMove) return;
-      if (e.cancelable) e.preventDefault();
-      const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
-      const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
-      const canvasRect = canvas.getBoundingClientRect();
+  const clientX = (e.touches && e.touches.length > 0) ? e.touches[0].clientX : e.clientX;
+  const clientY = (e.touches && e.touches.length > 0) ? e.touches[0].clientY : e.clientY;
 
-      const curCanvasX = ((clientX - canvasRect.left) / canvasRect.width) * canvas.width;
-      const curCanvasY = ((clientY - canvasRect.top) / canvasRect.height) * canvas.height;
+  // 前回のイベントからのスクリーン上での指の移動差分（delta）を計算
+  const deltaScreenX = clientX - moveLastClientX;
+  const deltaScreenY = clientY - moveLastClientY;
 
-      moveState.x = curCanvasX - moveDragOffset.x;
-      moveState.y = curCanvasY - moveDragOffset.y;
-      updateMoveOverlayPosition();
-    }
+  moveLastClientX = clientX;
+  moveLastClientY = clientY;
 
-    function onMoveDragEnd() {
-      isDraggingMove = false;
-    }
+  // Canvasの実際の表示サイズ比率（1画面ピクセルがキャンバス上の何ピクセルに相当するか）を取得
+  const rect = canvas.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return;
 
+  const scaleCanvasPerScreenX = canvas.width / rect.width;
+  const scaleCanvasPerScreenY = canvas.height / rect.height;
+
+  // 移動差分のみをキャンバス座標系に換算して加算
+  moveState.x += deltaScreenX * scaleCanvasPerScreenX;
+  moveState.y += deltaScreenY * scaleCanvasPerScreenY;
+
+  // 枠位置を即座に更新
+  updateMoveOverlayPosition();
+}
+
+function onMoveDragEnd() {
+  isDraggingMove = false;
+}
     moveOverlay.addEventListener('mousedown', onMoveDragStart);
     window.addEventListener('mousemove', onMoveDragMove);
     window.addEventListener('mouseup', onMoveDragEnd);
@@ -3088,19 +3161,42 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
       document.getElementById('quality-val').textContent = `${e.target.value}%`;
     });
 
-    document.getElementById('save-confirm-btn').addEventListener('click', () => {
-      consumeStamina(CONSUME_PER_ACTION);
-      const format = document.getElementById('save-format').value;
-      const quality = parseInt(document.getElementById('save-quality').value, 10) / 100;
-      const ext = format === 'image/jpeg' ? 'jpg' : (format === 'image/webp' ? 'webp' : 'png');
 
-      const a = document.createElement('a');
-      a.download = `masked_${Date.now()}.${ext}`;
-      a.href = canvas.toDataURL(format, quality);
-      a.click();
-      document.getElementById('save-modal').style.display = 'none';
-    });
+document.getElementById('save-confirm-btn').addEventListener('click', () => {
+  if (!canvas.width) return;
+  consumeStamina(CONSUME_PER_ACTION);
 
+  const format = document.getElementById('save-format').value;
+  const quality = parseInt(document.getElementById('save-quality').value, 10) / 100;
+  const ext = format === 'image/jpeg' ? 'jpg' : (format === 'image/webp' ? 'webp' : 'png');
+
+  let exportDataUrl = '';
+
+  // JPEG 形式で保存する場合のみ、透明部分を白で塗りつぶす
+  if (format === 'image/jpeg') {
+    const tempCanvas = document.createElement('canvas');
+    tempCanvas.width = canvas.width;
+    tempCanvas.height = canvas.height;
+    const tCtx = tempCanvas.getContext('2d');
+
+    // 1. 白背景を敷く
+    tCtx.fillStyle = '#ffffff';
+    tCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+    // 2. その上に現在のキャンバス内容を描画合成
+    tCtx.drawImage(canvas, 0, 0);
+
+    exportDataUrl = tempCanvas.toDataURL('image/jpeg', quality);
+  } else {
+    exportDataUrl = canvas.toDataURL(format, quality);
+  }
+
+  const a = document.createElement('a');
+  a.download = `masked_${Date.now()}.${ext}`;
+  a.href = exportDataUrl;
+  a.click();
+  document.getElementById('save-modal').style.display = 'none';
+});
     // クリップボードコピー（★ 30位の修正：アラート停止を廃止しトースト化）
     document.getElementById('copy-btn').addEventListener('click', async () => {
       if (!canvas.width) return;
@@ -3116,6 +3212,45 @@ document.getElementById('dummy-start-btn').addEventListener('click', () => {
 
     // 更新履歴データ
     const changelogData = [
+{
+  version: 'v5.6.0',
+  date: '2026-09-12 13:50',
+  type: 'fix',
+  title: 'スマホで2本指ピンチズーム時の1本指マスク誤爆を完全防止',
+  items: [
+    '2本指で画面を拡大・縮小しようとした際、指を置いた瞬間に意図しない黒塗りや連番スタンプが押されてしまう問題を解消しました',
+    '連番スタンプや文字入れツールをタップ確定時のみ発動するよう改善し、ピンチ操作中およびピンチ終了直後（300ms）の誤描画ガードを新設しました'
+  ]
+},
+{
+  version: 'v5.5.0',
+  date: '2026-09-12 13:48',
+  type: 'fix',
+  title: 'ズーム時における「選択移動」のドラッグ速度・追従精度の修正',
+  items: [
+    '画像を拡大ズームした状態で選択範囲をドラッグ移動した際、枠が指先を飛び越えて高速で移動してしまう現象を修正しました',
+    '移動計算を差分トラッキング方式へと刷新し、どの拡大倍率でも指先やマウスカーソルと1:1の完全な同期移動ができるように改善しました'
+  ]
+},
+{
+  version: 'v5.4.0',
+  date: '2026-09-12 13:47',
+  type: 'fix',
+  title: '透過画像をJPEG形式で書き出した際の黒塗り化を修正（白背景自動補正）',
+  items: [
+    '背景が透過されたPNGイラスト等を「JPEG」で保存した際、透明部分が真っ黒に塗りつぶされてしまうブラウザ仕様の不具合を解消しました',
+    'JPEG形式選択時は自動的に下地を白色でプレ合成してから書き出す仕様に変更し、自然で美しい写真・画像として保存できるようにしました'
+  ]
+}
+{
+      version: 'v5.3.0',
+      date: '2026-09-12 13:34',
+      type: 'feat',
+      title: 'おまけの地震シュミレーターボタンを追加しました',
+      items: [
+        'ヘッダーにおまけ:3D地震シュミレーターボタンを追加しました'
+      ]
+    },
 {
       version: 'v5.2.0',
       date: '2026-09-11 18:58',
