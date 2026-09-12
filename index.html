@@ -4833,7 +4833,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     }, 2000);
   }
 })();
-
 (function() {
   const startDate = new Date('2026-08-28T19:00:00');
 
@@ -4857,7 +4856,7 @@ window.addEventListener('DOMContentLoaded', async () => {
 
   // 1秒ごとに実行（ページ読み込み時にも即座に実行）
   updateCounter();
-  setInterval(updateCounter(), 1000);
+  setInterval(updateCounter, 1000);
 })();
 // 👑 ページ内の「R̄」を自動で安全な数値参照に置換する処理
 document.addEventListener('DOMContentLoaded', () => {
