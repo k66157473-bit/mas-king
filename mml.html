@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>MML再生テスト</title>
+    <!-- PicoAudioライブラリの読み込み -->
+    <script src="https://jsdelivr.net"></script>
+</head>
+<body>
+
+    <h1>HTMLでMMLを再生する</h1>
+    <button id="playBtn">再生</button>
+    <button id="stopBtn">停止</button>
+
+    <script>
+        // 1. PicoAudioの初期化
+        const picoAudio = new PicoAudio();
+        picoAudio.init();
+
+        // 2. MMLデータの定義（ドレミファソラシド）
+        const mmlData = "t120 c d e f g a b c2";
+
+        // 3. ボタンの動作設定
+        document.getElementById('playBtn').addEventListener('click', () => {
+            // MMLをセットして再生
+            picoAudio.setData(picoAudio.parseMML(mmlData));
+            picoAudio.play();
+        });
+
+        document.getElementById('stopBtn').addEventListener('click', () => {
+            // 停止
+            picoAudio.stop();
+        });
+    </script>
+
+</body>
+</html>
