@@ -1318,51 +1318,262 @@
     </div>
   </div>
 </div>
-
-<!-- 使い方説明書画面 -->
+<!-- =========================================================
+     使い方説明書画面
+     日本語・英語・アラビア語・韓国語・中国語
+     ========================================================= -->
 <div id="guide-view" class="view-panel">
   <div class="guide-container">
     <div class="security-banner">
-      <h2 ja="マス王   R̄は、ローカル マスキング 無料で非常にセキュアなサイトです。" en="King of Hiding   R̄ is a free, highly secure, completely local masking tool." ar="ملك الإخفاء   R̄ هي أداة إخفاء وتمويه مجانية فائقة الأمان تعمل محلياً بالكامل." ko="숨기기 왕   R̄은 완전 무료 로컬 방식의 매우 안전한 이미지 가공 사이트입니다." ch="隐藏之王   R̄ 是一款完全在本地运行、极其安全的免费图像遮盖工具。">マス王   R̄は、ローカル マスキング 無料で非常にセキュアなサイトです。</h2>
-      <p ja="🔒 完全ローカル処理・Exif自動消去保証: 画像データは外部サーバーに1バイトも送信されません。位置情報や撮影日時のExifデータも保存時に自動完全削除されます。" en="🔒 Fully Local Processing & Exif Wipe: Your image is never sent to external servers. Exif GPS and timestamp data are completely wiped on save." ar="🔒 معالجة محلية بالكامل ومسح بيانات Exif: لن يتم إرسال أي بايت من بياناتك إلى خوادم خارجية، مع حذف بيانات الموقع والتاريخ تلقائياً." ko="🔒 완전 로컬 처리·Exif 자동 삭제 보장: 이미지 데이터는 외부 서버로 1바이트도 전송되지 않습니다. 위치 정보와 촬영 일시 Exif도 자동 삭제됩니다." ch="🔒 完全本地处理·自动擦除Exif: 您的图像数据绝不会上传至外部服务器，保存时将自动彻底清除GPS地理位置及拍摄时间等Exif隐私。">🔒 <strong>完全ローカル処理・Exif自動消去保証:</strong> 画像データは外部サーバーに1バイトも送信されません。位置情報や撮影日時のExifデータも保存時に自動完全削除されます。</p>
-      <p ja=".maskファイルで復元可能: .maskファイルを保存し、別の端末でmaskファイルをアップロードすれば、サーバーを介さずに安全に復元・同期ができます。" en="Restore via .mask File: Save the .mask project to restore and synchronize seamlessly on other devices without any server." ar="استعادة سلسة عبر ملفات .mask: يمكنك حفظ ومزامنة أعمالك على أجهزة أخرى بدون خوادم." ko=".mask 파일로 완벽 복원: .mask 파일을 저장하고 다른 기기에서 불러오면 서버 없이도 안전하게 복원 및 동기화됩니다." ch="支持通过.mask工程文件随时复原: 保存.mask文件后可在任何设备上快速恢复工作状态与地震仿真配置，无需服务器介入。"><strong>.maskファイルで復元可能:</strong> .maskファイルを保存し、別の端末でmaskファイルをアップロードすれば、サーバーを介さずに安全に復元・同期ができます。</p>
-      <p ja="アカウント登録はいりません: 面倒なアカウント登録はいりません。すぐ使えます。また、サーバーからパスワードやメールアドレスなどが流出する心配もありません。" en="No Account Needed: Start immediately without tedious registration. No risk of email or password leaks." ar="لا حاجة لحساب: ابدأ فوراً بدون تسجيل مع انعدام خطر تسرب البيانات." ko="회원가입 불필요: 번거로운 계정 등록 없이 즉시 사용 가능합니다. 유출 걱정이 없습니다." ch="无需注册账号: 彻底免去繁琐的注册流程，随时打开即用，绝无密码或邮箱泄露风险。"><strong>アカウント登録はいりません:</strong> 面倒なアカウント登録はいりません。すぐ使えます。また、サーバーからパスワードやメールアドレスなどが流出する心配もありません。</p>
-      <p ja="右クリック完全対応: 画像の右クリック保存やコピーも制限なく快適にご利用いただけます。" en="Full Right-Click Support: Right-click save and copy without arbitrary limitations." ar="دعم النقر بزر الفأرة الأيمن بالكامل لحفظ ونسخ الصور بكل حرية." ko="우클릭 완전 지원: 이미지 우클릭 저장 및 복사도 제한 없이 쾌적하게 지원합니다." ch="完全支持右键操作: 支持右键自由保存和复制图像，体验丝滑无阻。"><strong>右クリック完全対応:</strong> 画像の右クリック保存やコピーも制限なく快適にご利用いただけます。</p>
+
+      <h2>
+        <span
+          data-i18n
+          ja="📖 マスキングツール「<ruby>マス王   R̄<rp>(</rp><rt>マスキング Royal edition</rt><rp>)</rp></ruby>」の使い方"
+          en="📖 How to Use '<ruby>King of Hiding   R̄<rp>(</rp><rt>Masking Royal edition</rt><rp>)</rp></ruby>'"
+          ar="📖 كيفية استخدام '<ruby>ملك الإخفاء   R̄<rp>(</rp><rt>النسخة الملكية للإخفاء</rt><rp>)</rp></ruby>'"
+          ko="📖 '<ruby>숨기기 왕   R̄<rp>(</rp><rt>마스킹 로열 에디션</rt><rp>)</rp></ruby>' 사용 설명서"
+          ch="📖 图像遮盖工具「<ruby>隐藏之王   R̄<rp>(</rp><rt>遮盖皇家版</rt><rp>)</rp></ruby>」使用指南"
+        >📖 マスキングツール「<ruby>マス王   R̄<rp>(</rp><rt>マスキング Royal edition</rt><rp>)</rp></ruby>」の使い方</span>
+      </h2>
+
+      <h3>
+        <span
+          data-i18n
+          ja="1. 基本操作・画像読み込み・.maskファイル"
+          en="1. Basic Operations &amp; .mask Projects"
+          ar="1. العمليات الأساسية وملفات .mask"
+          ko="1. 기본 조작·이미지 불러오기·.mask 파일"
+          ch="1. 基础操作·载入图像·.mask项目文件"
+        >1. 基本操作・画像読み込み・.maskファイル</span>
+      </h3>
+
+      <ul>
+
+        <li>
+          <span
+            data-i18n
+            ja="<strong>画像の追加:</strong> 画面中央タップ、ドラッグ＆ドロップ、または <kbd>Ctrl</kbd>+<kbd>V</kbd> で即座に展開。"
+            en="<strong>Add Image:</strong> Tap center, Drag &amp; Drop, or <kbd>Ctrl</kbd>+<kbd>V</kbd> to open instantly."
+            ar="<strong>إضافة صور:</strong> بالنقر أو السحب والإفلات أو لصق <kbd>Ctrl</kbd>+<kbd>V</kbd>."
+            ko="<strong>이미지 추가:</strong> 화면 중앙 탭, 드래그 앤 드롭 또는 <kbd>Ctrl</kbd>+<kbd>V</kbd>로 즉시 열기."
+            ch="<strong>载入图片:</strong> 点击界面中央、拖拽文件或通过 <kbd>Ctrl</kbd>+<kbd>V</kbd> 快捷粘贴即刻展开。"
+          ><strong>画像の追加:</strong> 画面中央タップ、ドラッグ＆ドロップ、または <kbd>Ctrl</kbd>+<kbd>V</kbd> で即座に展開。</span>
+        </li>
+
+        <li>
+          <span
+            data-i18n
+            ja="<strong>カメラで写真を取ってすぐ加工:</strong> 撮影ボタンをおし被写体を取るだけですぐ加工できる。"
+            en="<strong>Camera Snap:</strong> Tap camera button to take photo and mask right away."
+            ar="<strong>التقاط بالكاميرا:</strong> التقط صوراً وابدأ التمويه مباشرة."
+            ko="<strong>카메라 촬영 가공:</strong> 촬영 버튼으로 바로 사진을 찍어 마스킹 가능."
+            ch="<strong>拍照即刻处理:</strong> 点击拍照按钮录入被摄物，立即可进入图像编辑。"
+          ><strong>カメラで写真を取ってすぐ加工:</strong> 撮影ボタンをおし被写体を取るだけですぐ加工できる。</span>
+        </li>
+
+        <li>
+          <span
+            data-i18n
+            ja="<strong>📦 .mask 保存 / 📂 .mask 読込:</strong> 作業中の全画像・全履歴・スタミナ・設定・マウスストーカー位置・3D地震設定を独自の <code>data.mask</code> として手元に書き出し・復元可能。"
+            en="<strong>📦 Save/Load .mask:</strong> Export full images, Git history, stamina, settings, and 3D earthquake configs safely."
+            ar="<strong>📦 حفظ/استيراد .mask:</strong> تصدير كافة الصور وسجلات Git وإعدادات محاكي الزلازل بالكامل."
+            ko="<strong>📦 .mask 저장/불러오기:</strong> 작업 중인 모든 이미지와 Git 기록, 지진 시뮬레이터 설정까지 완벽 보관 및 복원."
+            ch="<strong>📦 保存/载入.mask:</strong> 将编辑图片、Git历史、体力、鼠标轨迹及3D地震仿真参数打包为data.mask安全归档。"
+          ><strong>📦 .mask 保存 / 📂 .mask 読込:</strong> 作業中の全画像・全履歴・スタミナ・設定・マウスストーカー位置・3D地震設定を独自の <code>data.mask</code> として手元に書き出し・復元可能。</span>
+        </li>
+
+        <li>
+          <span
+            data-i18n
+            ja="<strong>📱 スマホ最適化:</strong> 2本指ピンチで拡大縮小、パン移動、1本指での滑らかな高速マスキングに対応。"
+            en="<strong>📱 Mobile Optimized:</strong> 2-finger pinch zoom/pan, smooth 1-finger masking."
+            ar="<strong>📱 تحسين الهواتف:</strong> التكبير بإصبعين والتحريك، والتمويه السلس بإصبع واحد."
+            ko="<strong>📱 모바일 최적화:</strong> 두 손가락 핀치 줌, 팬 이동, 부드러운 터치 마스킹 완벽 대응."
+            ch="<strong>📱 移动端深度优化:</strong> 支持双指捏合缩放/平移，单指流畅高精度涂抹遮盖。"
+          ><strong>📱 スマホ最適化:</strong> 2本指ピンチで拡大縮小、パン移動、1本指での滑らかな高速マスキングに対応。</span>
+        </li>
+
+      </ul>
+
+      <h3>
+        <span
+          data-i18n
+          ja="2. 隠す・塗る・ぼかす・消す（マスキング＆復元）"
+          en="2. Hide, Fill, Blur &amp; Erase"
+          ar="2. الإخفاء والتعبئة والتمويه والمحو"
+          ko="2. 가리기·칠하기·블러·지우기 (마스킹 &amp; 복원)"
+          ch="2. 隐藏·着色·模糊·擦除（遮罩与复原）"
+        >2. 隠す・塗る・ぼかす・消す（マスキング＆復元）</span>
+      </h3>
+
+      <ul>
+
+        <li>
+          <span
+            data-i18n
+            ja="<strong>🎨 カラー塗り:</strong> カラーピッカーやスポイトで選択した好きな色で四角く塗りつぶし。"
+            en="<strong>🎨 Color Fill:</strong> Fill rectangles with custom colors or eyedropper picks."
+            ar="<strong>🎨 تعبئة لون:</strong> تعبئة مستطيلات بلونك المختار أو المستخرج."
+            ko="<strong>🎨 컬러 채우기:</strong> 색상 선택기나 스포이트로 지정한 색으로 사각형 채우기."
+            ch="<strong>🎨 颜色填充:</strong> 选定调色盘或吸管提取的任意色彩进行矩形遮蔽。"
+          ><strong>🎨 カラー塗り:</strong> カラーピッカーやスポイトで選択した好きな色で四角く塗りつぶし。</span>
+        </li>
+
+        <li>
+          <span
+            data-i18n
+            ja="<strong>⭕ 円形マスク:</strong> 好きな色や画像から抽出した色で丸型に塗りつぶし。"
+            en="<strong>⭕ Circle Mask:</strong> Circular masking with color picker linkage."
+            ar="<strong>⭕ قناع دائري:</strong> تمويه دائري بألوان قابلة للتخصيص."
+            ko="<strong>⭕ 원형 마스크:</strong> 원하는 색상으로 동그랗게 마스킹."
+            ch="<strong>⭕ 圆形遮罩:</strong> 联动色彩拾取器，以平滑的椭圆/圆形进行覆蓋。"
+          ><strong>⭕ 円形マスク:</strong> 好きな色や画像から抽出した色で丸型に塗りつぶし。</span>
+        </li>
+
+        <li>
+          <span
+            data-i18n
+            ja="<strong>🧹 消しゴム（選択復元）:</strong> ドラッグした範囲の加工を消去し、元画像のピクセルを綺麗に元通り復元。"
+            en="<strong>🧹 Eraser:</strong> Restore original image pixels in selected drag area."
+            ar="<strong>🧹 ممحاة:</strong> استرجاع بكسلات الصورة الأصلية في المنطقة المحددة."
+            ko="<strong>🧹 지우개 (선택 복원):</strong> 드래그한 영역의 가공을 지우고 원본 픽셀로 복원."
+            ch="<strong>🧹 橡皮擦（局部复原）:</strong> 抹除遮罩涂层，精准恢复原始图像区域。"
+          ><strong>🧹 消しゴム（選択復元）:</strong> ドラッグした範囲の加工を消去し、元画像のピクセルを綺麗に元通り復元。</span>
+        </li>
+
+        <li>
+          <span
+            data-i18n
+            ja="<strong>🔀 選択移動:</strong> 囲んだ部分を切り抜いて/コピーしてドラッグ移動し、別の場所に一発配置。"
+            en="<strong>🔀 Move/Copy:</strong> Cut/copy selected area and drag to place anywhere."
+            ar="<strong>🔀 نقل/نسخ:</strong> تحديد ونقل أو نسخ أي جزء في الصورة بسهولة."
+            ko="<strong>🔀 선택 이동:</strong> 선택 영역을 잘라내거나 복사하여 다른 위치로 드래그 배치."
+            ch="<strong>🔀 选区移动:</strong> 框选目标区域，拖拽平移至指定位置完成快速拼贴与覆蓋。"
+          ><strong>🔀 選択移動:</strong> 囲んだ部分を切り抜いて/コピーしてドラッグ移動し、別の場所に一発配置。</span>
+        </li>
+
+        <li>
+          <span
+            data-i18n
+            ja="<strong>黒塗り / 白塗り / モザイク / すりガラス / ぼかし / スポットライト:</strong> スライダーで強度やサイズを自在に調整可能。"
+            en="<strong>Black / White / Mosaic / Glass / Blur / Spotlight:</strong> Freely adjust strength and block size."
+            ar="<strong>أسود / أبيض / فسيفساء / زجاج / بلور / سبوت:</strong> تحكم تام بالقوة والحجم."
+            ko="<strong>블랙 / 화이트 / 모자이크 / 반투명유리 / 블러 / 스포트라이트:</strong> 슬라이더로 강도 조절."
+            ch="<strong>黑涂 / 白涂 / 马赛克 / 毛玻璃 / 模糊 / 聚光灯:</strong> 滑块无级调节处理强度与晶格大小。"
+          ><strong>黒塗り / 白塗り / モザイク / すりガラス / ぼかし / スポットライト:</strong> スライダーで強度やサイズを自在に調整可能。</span>
+        </li>
+
+        <li>
+          <span
+            data-i18n
+            ja="<strong>境界ぼかし（フェザー）:</strong> チェックを入れるとマスクの四隅の境目を自然になじませます。"
+            en="<strong>Feathering:</strong> Blends the boundary edges smoothly."
+            ar="<strong>تنعيم الحواف:</strong> لدمج حواف القناع بسلاسة طبيعية."
+            ko="<strong>경계 블러 (페더):</strong> 마스크 경계선을 부드럽게 보정."
+            ch="<strong>边缘羽化（Feather）:</strong> 开启后可淡化边框接缝，使遮盖融入背景。"
+          ><strong>境界ぼかし（フェザー）:</strong> チェックを入れるとマスクの四隅の境目を自然になじませます。</span>
+        </li>
+
+        <li>
+          <span
+            data-i18n
+            ja="<strong>センシティブシールド:</strong> グロ画像を自動で検知して、厚めのモザイクをかけます。API不使用です。"
+            en="<strong>Sensitive Shield:</strong> Detects gore and shocking colors with heavy mosaic auto-guard."
+            ar="<strong>درع المحتوى الحساس:</strong> كشف تلقائي للدماء والمحتوى الصادم وتغطيته بفسيفساء سميكة."
+            ko="<strong>센시티브 쉴드:</strong> 출혈이나 혐오 영역을 자동 감지하여 두터운 모자이크 적용."
+            ch="<strong>敏感内容护盾:</strong> 智能本地识别流血及高危惊悚图像，自动打上深厚马赛克与警告胶带。"
+          ><strong>センシティブシールド:</strong> グロ画像を自動で検知して、厚めのモザイクをかけます。API不使用です。</span>
+        </li>
+
+      </ul>
+
+      <h3>
+        <span
+          data-i18n
+          ja="3. 注釈・ハイライト・ダミー置換"
+          en="3. Annotation, Highlights &amp; Dummy Replace"
+          ar="3. التعليقات التوضيحية والاستبدال الوهمي"
+          ko="3. 주석·하이라이트·더미 텍스트 대체"
+          ch="3. 批注·高亮·虚假信息替代"
+        >3. 注釈・ハイライト・ダミー置換</span>
+      </h3>
+
+      <ul>
+
+        <li>
+          <span
+            data-i18n
+            ja="<strong>ダミー置換:</strong> 氏名・電話番号・メール・住所などをリアルなダミー文字で自然に上書き。<strong>指やマウスで直感ドラッグ移動</strong>して確定。"
+            en="<strong>Dummy Replace:</strong> Cover names/addresses with realistic fake info via interactive dragging."
+            ar="<strong>استبدال وهمي:</strong> إخفاء الأسماء والعناوين ببيانات وهمية واقعية وسحب تفاعلي."
+            ko="<strong>더미 교체:</strong> 이름·전화번호·주소 등을 자연스러운 가상 정보로 드래그 덮어쓰기."
+            ch="<strong>虚假替代:</strong> 使用拟真的虚假姓名、电话、地址等覆蓋真实信息，支持拖拽定位。"
+          ><strong>ダミー置換:</strong> 氏名・電話番号・メール・住所などをリアルなダミー文字で自然に上書き。<strong>指やマウスで直感ドラッグ移動</strong>して確定。</span>
+        </li>
+
+        <li>
+          <span
+            data-i18n
+            ja="<strong>文字入れ:</strong> 自由テキストを指やマウスで<strong>直感ドラッグ微調整移動</strong>してから確定配置可能。"
+            en="<strong>Text Tool:</strong> Type text and drag to position with millimeter precision."
+            ar="<strong>أداة النص:</strong> اكتب نصوصك واسحبها لضبط الموضع بدقة فائقة."
+            ko="<strong>텍스트 도구:</strong> 입력한 글자를 드래그하여 정확한 위치에 미세 조정 배치."
+            ch="<strong>文字工具:</strong> 键入说明文本，提供实时虚线框支持任意拖拽微调定位后盖章。"
+          ><strong>文字入れ:</strong> 自由テキストを指やマウスで<strong>直感ドラッグ微調整移動</strong>してから確定配置可能。</span>
+        </li>
+
+        <li>
+          <span
+            data-i18n
+            ja="<strong>連番スタンプ:</strong> タップするたびに ① ② ③ と自動カウントアップ。"
+            en="<strong>Number Stamp:</strong> Increments ① ② ③ automatically on every tap."
+            ar="<strong>ختم الترقيم:</strong> تزايد تلقائي للأرقام ① ② ③ مع كل نقرة."
+            ko="<strong>연번 스탬프:</strong> 터치할 때마다 ① ② ③ 번호가 자동 증가."
+            ch="<strong>序号图章:</strong> 每次点击自动累加 ① ② ③ 标记，撤销时支持数值同步回退。"
+          ><strong>連番スタンプ:</strong> タップするたびに ① ② ③ と自動カウントアップ。</span>
+        </li>
+
+      </ul>
+
+      <h3>
+        <span
+          data-i18n
+          ja="4. 3D地震倒壊シミュレーション"
+          en="4. 3D Earthquake Simulator"
+          ar="4. محاكي انهيار الزلازل 3D"
+          ko="4. 3D 지진 붕괴 시뮬레이터"
+          ch="4. 3D真实物理地震崩塌仿真"
+        >4. 3D地震倒壊シミュレーション</span>
+      </h3>
+
+      <ul>
+
+        <li>
+          <span
+            data-i18n
+            ja="<strong>完全統合タブ:</strong> 別のファイルに飛ばず、上部タブからワンタップで直下型・海溝型地震や津波・火災の本格倒壊実験を実行可能。"
+            en="<strong>Integrated Tab:</strong> Simulate crustal and trench earthquake collapse right in this app."
+            ar="<strong>تبويب متكامل:</strong> محاكاة انهيار فيزيائي للزلازل ثلاثية الأبعاد بدون مغادرة الموقع."
+            ko="<strong>완전 통합 탭:</strong> 다른 페이지 이동 없이 앱 내에서 직하형·해구형 지진 붕괴 시뮬레이션 가능."
+            ch="<strong>完全内置无跳转:</strong> 页面内直接切换进入专业级三维物理地震倒塌模拟实验。"
+          ><strong>完全統合タブ:</strong> 別のファイルに飛ばず、上部タブからワンタップで直下型・海溝型地震や津波・火災の本格倒壊実験を実行可能。</span>
+        </li>
+
+        <li>
+          <span
+            data-i18n
+            ja="<strong>.mask完全保存:</strong> 地震の設定や余震リストもすべてマス王の <code>.mask</code> プロジェクトに完全統合。"
+            en="<strong>.mask Integration:</strong> All earthquake settings and parameters are saved together inside .mask."
+            ar="<strong>تكامل مع .mask:</strong> جميع إعدادات محاكي الزلازل تحفظ وتستعاد بالكامل داخل ملف .mask."
+            ko="<strong>.mask 완전 저장:</strong> 지진 시뮬레이터의 상세 수치도 .mask 파일에 완벽 통합 저장."
+            ch="<strong>.mask全量合一:</strong> 废止过往的.jishin格式，所有地震仿真参数全部整合至.mask工程中一键保存。"
+          ><strong>.mask完全保存:</strong> 地震の設定や余震リストもすべてマス王の <code>.mask</code> プロジェクトに完全統合。</span>
+        </li>
+
+      </ul>
+
     </div>
-
-    <h2 ja="📖 マスキングツール「マス王   R̄」の使い方" en="📖 How to Use 'King of Hiding   R̄'" ar="📖 كيفية استخدام 'ملك الإخفاء   R̄'" ko="📖 '숨기기 왕   R̄' 사용 설명서" ch="📖 图像遮盖工具「隐藏之王   R̄」使用指南">📖 マスキングツール「<ruby> マス王   R̄ <rp>(</rp><rt>マスキング Royal edition</rt><rp>)</rp></ruby>」の使い方</h2>
-    
-    <h3 ja="1. 基本操作・画像読み込み・.maskファイル" en="1. Basic Operations & .mask Projects" ar="1. العمليات الأساسية وملفات .mask" ko="1. 기본 조작·이미지 불러오기·.mask 파일" ch="1. 基础操作·载入图像·.mask项目文件">1. 基本操作・画像読み込み・.maskファイル</h3>
-    <ul>
-      <li ja="画像の追加: 画面中央タップ、ドラッグ＆ドロップ、または Ctrl+V で即座に展開。" en="Add Image: Tap center, Drag & Drop, or Ctrl+V to open instantly." ar="إضافة صور: بالنقر أو السحب والإفلات أو لصق Ctrl+V." ko="이미지 추가: 화면 중앙 탭, 드래그 앤 드롭 또는 Ctrl+V로 즉시 열기." ch="载入图片: 点击界面中央、拖拽文件或通过 Ctrl+V 快捷粘贴即刻展开。"><strong>画像の追加:</strong> 画面中央タップ、ドラッグ＆ドロップ、または <kbd>Ctrl</kbd>+<kbd>V</kbd> で即座に展開。</li>
-      <li ja="カメラで写真を取ってすぐ加工: 撮影ボタンを押し被写体を撮るだけですぐ加工できる。" en="Camera Snap: Tap camera button to take photo and mask right away." ar="التقاط بالكاميرا: التقط صوراً وابدأ التمويه مباشرة." ko="카메라 촬영 가공: 촬영 버튼으로 바로 사진을 찍어 마스킹 가능." ch="拍照即刻处理: 点击拍照按钮录入被摄物，立即可进入图像编辑。"><strong>カメラで写真を取ってすぐ加工:</strong> 撮影ボタンをおし被写体を取るだけですぐ加工できる。</li>
-      <li ja="📦 .mask 保存 / 📂 .mask 読込: 作業中の全画像・全履歴・スタミナ・設定・マウスストーカー位置・3D地震シミュレーター設定を手元に保存・復元可能。" en="📦 Save/Load .mask: Export full images, Git history, stamina, settings, and 3D earthquake configs safely." ar="📦 حفظ/استيراد .mask: تصدير كافة الصور وسجلات Git وإعدادات محاكي الزلازل بالكامل." ko="📦 .mask 저장/불러오기: 작업 중인 모든 이미지와 Git 기록, 지진 시뮬레이터 설정까지 완벽 보관 및 복원." ch="📦 保存/载入.mask: 将编辑图片、Git历史、体力、鼠标轨迹及3D地震仿真参数打包为data.mask安全归档。"><strong>📦 .mask 保存 / 📂 .mask 読込:</strong> 作業中の全画像・全履歴・スタミナ・設定・マウスストーカー位置・3D地震設定を独自の <code>data.mask</code> として手元に書き出し・復元可能。</li>
-      <li ja="📱 スマホ最適化: 2本指ピンチで拡大縮小、パン移動、1本指での滑らかな高速マスキングに対応。" en="📱 Mobile Optimized: 2-finger pinch zoom/pan, smooth 1-finger masking." ar="📱 تحسين الهواتف: التكبير بإصبعين والتحريك، والتمويه السلس بإصبع واحد." ko="📱 모바일 최적화: 두 손가락 핀치 줌, 팬 이동, 부드러운 터치 마스킹 완벽 대응." ch="📱 移动端深度优化: 支持双指捏合缩放/平移，单指流畅高精度涂抹遮盖。"><strong>📱 スマホ最適化:</strong> 2本指ピンチで拡大縮小、パン移動、1本指での滑らかな高速マスキングに対応。</li>
-    </ul>
-
-    <h3 ja="2. 隠す・塗る・ぼかす・消す（マスキング＆復元）" en="2. Hide, Fill, Blur & Erase" ar="2. الإخفاء والتعبئة والتمويه والمحو" ko="2. 가리기·칠하기·블러·지우기 (마스킹 & 복원)" ch="2. 隐藏·着色·模糊·擦除（遮罩与复原）">2. 隠す・塗る・ぼかす・消す（マスキング＆復元）</h3>
-    <ul>
-      <li ja="🎨 カラー塗り: カラーピッカーやスポイトで選択した好きな色で四角く塗りつぶし。" en="🎨 Color Fill: Fill rectangles with custom colors or eyedropper picks." ar="🎨 تعبئة لون: تعبئة مستطيلات بلونك المختار أو المستخرج." ko="🎨 컬러 채우기: 색상 선택기나 스포이트로 지정한 색으로 사각형 채우기." ch="🎨 颜色填充: 选定调色盘或吸管提取的任意色彩进行矩形遮蔽。"><strong>🎨 カラー塗り:</strong> カラーピッカーやスポイトで選択した好きな色で四角く塗りつぶし。</li>
-      <li ja="⭕ 円形マスク: 好きな色や画像から抽出した色で丸型に塗りつぶし。" en="⭕ Circle Mask: Circular masking with color picker linkage." ar="⭕ قناع دائري: تمويه دائري بألوان قابلة للتخصيص." ko="⭕ 원형 마스크: 원하는 색상으로 동그랗게 마스킹." ch="⭕ 圆形遮罩: 联动色彩拾取器，以平滑的椭圆/圆形进行覆蓋。"><strong>⭕ 円形マスク:</strong> 好きな色や画像から抽出した色で丸型に塗りつぶし。</li>
-      <li ja="🧹 消しゴム（選択復元）: ドラッグした範囲の加工を消去し、元画像のピクセルを綺麗に元通り復元。" en="🧹 Eraser: Restore original image pixels in selected drag area." ar="🧹 ممحاة: استرجاع بكسلات الصورة الأصلية في المنطقة المحددة." ko="🧹 지우개 (선택 복원): 드래그한 영역의 가공을 지우고 원본 픽셀로 복원." ch="🧹 橡皮擦（局部复原）: 抹除遮罩涂层，精准恢复原始图像区域。"><strong>🧹 消しゴム（選択復元）:</strong> ドラッグした範囲の加工を消去し、元画像のピクセルを綺麗に元通り復元。</li>
-      <li ja="🔀 選択移動: 囲んだ部分を切り抜いて/コピーしてドラッグ移動し、別の場所に一発配置。" en="🔀 Move/Copy: Cut/copy selected area and drag to place anywhere." ar="🔀 نقل/نسخ: تحديد ونقل أو نسخ أي جزء في الصورة بسهولة." ko="🔀 선택 이동: 선택 영역을 잘라내거나 복사하여 다른 위치로 드래그 배치." ch="🔀 选区移动: 框选目标区域，拖拽平移至指定位置完成快速拼贴与覆蓋。"><strong>🔀 選択移動:</strong> 囲んだ部分を切り抜いて/コピーしてドラッグ移動し、別の場所に一発配置。</li>
-      <li ja="黒塗り / 白塗り / モザイク / すりガラス / ぼかし / スポットライト: スライダーで強度やサイズを自在に調整可能。" en="Black / White / Mosaic / Glass / Blur / Spotlight: Freely adjust strength and block size." ar="أسود / أبيض / فسيفساء / زجاج / بلور / سبوت: تحكم تام بالقوة والحجم." ko="블랙 / 화이트 / 모자이크 / 반투명유리 / 블러 / 스포트라이트: 슬라이더로 강도 조절." ch="黑涂 / 白涂 / 马赛克 / 毛玻璃 / 模糊 / 聚光灯: 滑块无级调节处理强度与晶格大小。"><strong>黒塗り / 白塗り / モザイク / すりガラス / ぼかし / スポットライト:</strong> スライダーで強度やサイズを自在に調整可能。</li>
-      <li ja="境界ぼかし（フェザー）: チェックを入れるとマスクの四隅の境目を自然になじませます。" en="Feathering: Blends the boundary edges smoothly." ar="تنعيم الحواف: لدمج حواف القناع بسلاسة طبيعية." ko="경계 블러 (페더): 마스크 경계선을 부드럽게 보정." ch="边缘羽化（Feather）: 开启后可淡化边框接缝，使遮盖融入背景。"><strong>境界ぼかし（フェザー）:</strong> チェックを入れるとマスクの四隅の境目を自然になじませます。</li>
-      <li ja="センシティブシールド: グロ画像や流血領域を自動検知して厚めのモザイクを適用。" en="Sensitive Shield: Detects gore and shocking colors with heavy mosaic auto-guard." ar="درع المحتوى الحساس: كشف تلقائي للدماء والمحتوى الصادم وتغطيته بفسيفساء سميكة." ko="센시티브 쉴드: 출혈이나 혐오 영역을 자동 감지하여 두터운 모자이크 적용." ch="敏感内容护盾: 智能本地识别流血及高危惊悚图像，自动打上深厚马赛克与警告胶带。"><strong>センシティブシールド:</strong> グロ画像を自動で検知して、厚めのモザイクをかけます。API不使用です。</li>
-    </ul>
-
-    <h3 ja="3. 注釈・ハイライト・ダミー置換" en="3. Annotation, Highlights & Dummy Replace" ar="3. التعليقات التوضيحية والاستبدال الوهمي" ko="3. 주석·하이라이트·더미 텍스트 대체" ch="3. 批注·高亮·虚假信息替代">3. 注釈・ハイライト・ダミー置換</h3>
-    <ul>
-      <li ja="ダミー置換: 氏名・電話・住所などをリアルなダミー情報で自然に上書き。直感ドラッグ移動で確定。" en="Dummy Replace: Cover names/addresses with realistic fake info via interactive dragging." ar="استبدال وهمي: إخفاء الأسماء والعناوين ببيانات وهمية واقعية وسحب تفاعلي." ko="더미 교체: 이름·전화번호·주소 등을 자연스러운 가상 정보로 드래그 덮어쓰기." ch="虚假替代: 使用拟真的虚假姓名、电话、地址等覆蓋真实信息，支持拖拽定位。"><strong>ダミー置換:</strong> 氏名・電話番号・メール・住所などをリアルなダミー文字で自然に上書き。<strong>指やマウスで直感ドラッグ移動</strong>して確定。</li>
-      <li ja="文字入れツール: 入力したテキストをドラッグで狙い通りに微調整配置。" en="Text Tool: Type text and drag to position with millimeter precision." ar="أداة النص: اكتب نصوصك واسحبها لضبط الموضع بدقة فائقة." ko="텍스트 도구: 입력한 글자를 드래그하여 정확한 위치에 미세 조정 배치." ch="文字工具: 键入说明文本，提供实时虚线框支持任意拖拽微调定位后盖章。"><strong>文字入れ:</strong> 自由テキストを指やマウスで<strong>直感ドラッグ微調整移動</strong>してから確定配置可能。</li>
-      <li ja="連番スタンプ: タップするたびに ① ② ③ と自動カウントアップ。" en="Number Stamp: Increments ① ② ③ automatically on every tap." ar="ختم الترقيم: تزايد تلقائي للأرقام ① ② ③ مع كل نقرة." ko="연번 스탬프: 터치할 때마다 ① ② ③ 번호가 자동 증가." ch="序号图章: 每次点击自动累加 ① ② ③ 标记，撤销时支持数值同步回退。"><strong>連番スタンプ:</strong> タップするたびに ① ② ③ と自動カウントアップ。</li>
-    </ul>
-
-    <h3 ja="4. 3D地震倒壊シミュレーション" en="4. 3D Earthquake Simulator" ar="4. محاكي انهيار الزلازل 3D" ko="4. 3D 지진 붕괴 시뮬레이터" ch="4. 3D真实物理地震崩塌仿真">4. 3D地震倒壊シミュレーション</h3>
-    <ul>
-      <li ja="完全統合タブ: 外部ページに飛ばず、アプリ内のタブで即座に直下型・海溝型地震の物理倒壊実験が可能。" en="Integrated Tab: Simulate crustal and trench earthquake collapse right in this app." ar="تبويب متكامل: محاكاة انهيار فيزيائي للزلازل ثلاثية الأبعاد بدون مغادرة الموقع." ko="완전 통합 탭: 다른 페이지 이동 없이 앱 내에서 직하형·해구형 지진 붕괴 시뮬레이션 가능." ch="完全内置无跳转: 页面内直接切换进入专业级三维物理地震倒塌模拟实验。"><strong>完全統合タブ:</strong> 別のファイルに飛ばず、上部タブからワンタップで直下型・海溝型地震や津波・火災の本格倒壊実験を実行可能。</li>
-      <li ja=".mask完全保存: 地震シミュレーターの実験パラメータもすべて .mask ファイルに統合保存されます。" en=".mask Integration: All earthquake settings and parameters are saved together inside .mask." ar="تكامل مع .mask: جميع إعدادات محاكي الزلازل تحفظ وتستعاد بالكامل داخل ملف .mask." ko=".mask 완전 저장: 지진 시뮬레이터의 상세 수치도 .mask 파일에 완벽 통합 저장." ch=".mask全量合一: 废止过往的.jishin格式，所有地震仿真参数全部整合至.mask工程中一键保存。"><strong>.mask完全保存:</strong> 地震の設定や余震リストもすべてマス王の <code>.mask</code> プロジェクトに完全統合。</li>
-    </ul>
   </div>
 </div>
 <!-- リンク集画面 -->
@@ -4385,677 +4596,1932 @@
       }
     });
 
-    // --- 更新履歴データ（9/13 10:00 追加） ---
+function getChangelogText(value, lang = window.currentSelectedLang || 'ja') {
+  if (value == null) {
+    return '';
+  }
+
+  /* 多言語オブジェクト */
+  if (typeof value === 'object' && !Array.isArray(value)) {
+    return (
+      value[lang] ??
+      value.ja ??
+      value.en ??
+      value.ar ??
+      value.ko ??
+      value.ch ??
+      ''
+    );
+  }
+
+  /* 従来の文字列もそのまま対応 */
+  return String(value);
+}
+
+function getAllChangelogText(value) {
+  if (
+    value &&
+    typeof value === 'object' &&
+    !Array.isArray(value)
+  ) {
+    return Object.values(value)
+      .filter(v => typeof v === 'string')
+      .join(' ');
+  }
+
+  return String(value ?? '');
+}
+
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+// --- 更新履歴データ（多言語対応＆構文エラー修正版） ---
     const changelogData = [
+      {
+        version: 'v6.1.0',
+        date: '2026-09-13 11:30',
+        type: 'feat',
+        title: {
+          ja: '更新履歴データの完全多言語オブジェクト化対応',
+          en: 'Full Multilingual Object Support for Changelog Data',
+          ar: 'دعم كائنات متعددة اللغات بالكامل لسجل التحديثات',
+          ko: '변경 이력 데이터의 완전한 다언어 객체화 지원',
+          ch: '更新日志数据的全多语言对象化支持'
+        },
+        items: [
+          {
+            ja: '更新履歴の全タイトルおよび詳細項目を、日本語・英語・アラビア語・韓国語・中国語の各言語オブジェクト形式に完全移行しました',
+            en: 'Migrated all changelog titles and detail items to fully structured multilingual object formats for JA, EN, AR, KO, and CH.',
+            ar: 'تم نقل كافة عناوين وتفاصيل سجل التحديثات إلى تنسيق كائنات متعددة اللغات يدعم جميع اللغات.',
+            ko: '변경 이력의 모든 제목 및 상세 항목을 일본어, 영어, 아랍어, 한국어, 중국어 다언어 객체 형식으로 완전 이관했습니다.',
+            ch: '已将更新日志的所有标题和详细条目完全迁移为支持多语言（日、英、阿、韩、中）的对象结构格式。'
+          },
+          {
+            ja: '言語を切り替えた際、更新履歴の表示内容が選択した言語へリアルタイムかつ正確に反映されるよう改善しました',
+            en: 'Improved the changelog display to update in real-time and accurately reflect the selected language upon switching.',
+            ar: 'تم تحسين عرض سجل التحديثات ليتم تحديثه في الوقت الفعلي بدقة بناءً على اللغة المختارة.',
+            ko: '언어 전환 시 변경 이력 표시 내용이 선택한 언어로 실시간 정확하게 반영되도록 개선했습니다.',
+            ch: '优化了更新日志的显示机制，在切换语言时可实时且准确地反映所选语言的文本内容。'
+          }
+        ]
+      },
       {
         version: 'v6.0.0',
         date: '2026-09-13 10:00',
         type: 'feat',
-        title: '3D地震倒壊シミュレーターの完全統合・.mask統合・多言語オフライン完全化・文字入れドラッグ微調整対応',
+        title: {
+          ja: '3D地震倒壊シミュレーターの完全統合・.mask統合・多言語オフライン完全化・文字入れドラッグ微調整対応',
+          en: 'Full Integration of 3D Earthquake Sim, .mask Merge, Complete Offline Multilingual Support, and Text Drag Fine-Tuning',
+          ar: 'التكامل الكامل لمحاكي الزلازل 3D، ودمج .mask، والدعم الكامل للغات بدون إنترنت، وتعديل سحب النصوص',
+          ko: '3D 지진 붕괴 시뮬레이터 완전 통합, .mask 통합, 다국어 오프라인 완전 지원, 텍스트 드래그 미세 조정 대응',
+          ch: '3D地震模拟器完全内置·.mask工程合一·多语言离线全功能化·文字拖拽微调支持'
+        },
         items: [
-          '別ページだった「3D地震倒壊シミュレーター」をアプリ内タブへ完全統合し、.jishinファイルを廃止して.maskファイル1本で全画像・全設定・地震データを完全保存・復元できるよう統合しました',
-          '言語選択（日本語/英語/アラビア語/韓国語/中国語）をリロード後も記憶し、.maskファイルへも完全保存・同期できるよう対応しました',
-          '外部APIに依存せず完全ローカルで瞬時に切り替わる静的属性辞書エンジン（ja/en/ar/ko/ch）へ移行し、外国語表記における「マス王」を「隠す王 (King of Hiding / ملك الإخفاء / 숨기기 왕 / 隐藏之王)」へと完全統一しました',
-          '選択言語に応じてダミー文字置換のプリセット（氏名・電話・住所・企業・通貨）が自動的に現地形式へ切り替わるよう最適化しました',
-          'アラビア語フォントとして「Amiri」と「Noto Sans Arabic」を選択・記憶・.mask保存できるフォント切り替え機能を追加しました',
-          '🔤 文字入れツールにおいて、文字入力後に指やマウスでドラッグして直感的に位置を微調整してから確定配置できるよう改善しました'
+          {
+            ja: '別ページだった「3D地震倒壊シミュレーター」をアプリ内タブへ完全統合し、.jishinファイルを廃止して.maskファイル1本で全画像・全設定・地震データを完全保存・復元できるよう統合しました',
+            en: 'Fully integrated the "3D Earthquake Simulator" into an in-app tab, abolished .jishin files, and merged everything into a single .mask file for complete save/restore of images, settings, and earthquake data.',
+            ar: 'تم دمج "محاكي الزلازل 3D" بالكامل داخل التطبيق، وإلغاء ملفات .jishin ودمج كل شيء في ملف .mask واحد لحفظ واستعادة الصور والإعدادات.',
+            ko: '별도 페이지였던 "3D 지진 붕괴 시뮬레이터"를 앱 내 탭으로 완전히 통합하고, .jishin 파일을 폐기하며 .mask 파일 하나로 모든 이미지·설정·지진 데이터를 완벽히 보관 및 복원하도록 통합했습니다.',
+            ch: '将原本独立的“3D地震模拟器”完全内置至应用内标签页，废弃旧的.jishin文件，实现仅凭单个.mask文件即可完整保存与恢复所有图像、编辑设置及地震仿真数据。'
+          },
+          {
+            ja: '言語選択（日本語/英語/アラビア語/韓国語/中国語）をリロード後も記憶し、.maskファイルへも完全保存・同期できるよう対応しました',
+            en: 'Remember language selection (JA/EN/AR/KO/CH) across reloads and fully save/sync it within .mask files.',
+            ar: 'حفظ اختيار اللغة (يابانية/إنجليزية/عربية/كورية/صينية) بعد إعادة التحميل وتزامنها بالكامل داخل ملف .mask.',
+            ko: '언어 선택(일본어/영어/아랍어/한국어/중국어)을 새로고침 후에도 기억하며, .mask 파일에도 완벽히 저장 및 동기화되도록 대응했습니다.',
+            ch: '实现语言选择（日/英/阿/韩/中）在页面刷新后自动记忆，并支持在.mask工程文件中进行完整保存与同步。'
+          },
+          {
+            ja: '外部APIに依存せず完全ローカルで瞬時に切り替わる静的属性辞書エンジン（ja/en/ar/ko/ch）へ移行し、外国語表記における「マス王」を「隠す王 (King of Hiding / ملك الإخفاء / 숨기기 왕 / 隐藏之王)」へと完全統一しました',
+            en: 'Migrated to a completely local, instantaneous static attribute dictionary engine (ja/en/ar/ko/ch) independent of external APIs, unifying the foreign translation of "Mas-King" to "King of Hiding".',
+            ar: 'التحول إلى محرك قاموس محلي بالكامل (ja/en/ar/ko/ch) دون الاعتماد على واجهات خارجية، وتوحيد تسمية "ملك الإخفاء" باللغات الأجنبية.',
+            ko: '외부 API에 의존하지 않고 완전 로컬에서 즉시 전환되는 정적 속성 사전 엔진(ja/en/ar/ko/ch)으로 이전하고, 외국어 표기 "마스오"를 "숨기기 왕(King of Hiding)"으로 완전히 통일했습니다.',
+            ch: '迁移至不依赖外部API、完全在本地瞬间切换的静态属性字典引擎（ja/en/ar/ko/ch），并将外文标识中的“マス王”统一规范为“隐藏之王 (King of Hiding)”。'
+          },
+          {
+            ja: '選択言語に応じてダミー文字置換のプリセット（氏名・電話・住所・企業・通貨）が自動的に現地形式へ切り替わるよう最適化しました',
+            en: 'Optimized dummy text replacement presets (name, phone, address, company, currency) to automatically switch to local formats based on the selected language.',
+            ar: 'تحسين إعدادات استبدال النصوص الوهمية (الاسم، الهاتف، العنوان، الشركة، العملة) لتتطابق تلقائياً مع النمط المحلي للغة المختارة.',
+            ko: '선택한 언어에 따라 더미 텍스트 대체 프리셋(성명, 전화번호, 주소, 기업, 통화)이 현지 형식으로 자동 전환되도록 최적화했습니다.',
+            ch: '优化虚假文本替换预设（姓名、电话、地址、公司、货币），使其能根据当前选定的语言自动切换为当地常见格式。'
+          },
+          {
+            ja: 'アラビア語フォントとして「Amiri」と「Noto Sans Arabic」を選択・記憶・.mask保存できるフォント切り替え機能を追加しました',
+            en: 'Added a font switching feature for Arabic, allowing selection, memory, and .mask saving of "Amiri" and "Noto Sans Arabic".',
+            ar: 'إضافة ميزة تبديل الخط للغة العربية مع إمكانية اختيار وحفظ خطي "أميري" و"نوتو سانس عربي" داخل ملف .mask.',
+            ko: '아랍어 글꼴로 "Amiri"와 "Noto Sans Arabic"을 선택·기억·.mask 저장할 수 있는 글꼴 전환 기능을 추가했습니다.',
+            ch: '新增阿拉伯语字体切换功能，支持在“Amiri”与“Noto Sans Arabic”之间选择、记忆并随同.mask文件一起保存。'
+          },
+          {
+            ja: '🔤 文字入れツールにおいて、文字入力後に指やマウスでドラッグして直感的に位置を微調整してから確定配置できるよう改善しました',
+            en: 'Improved the text insertion tool so that after typing, users can intuitively drag with a finger or mouse to fine-tune the position before final placement.',
+            ar: 'تحسين أداة إدخال النصوص بحيث يمكن سحب النص بالإصبع أو الفأرة لضبط الموضع بدقة قبل التثبيت النهائي.',
+            ko: '🔤 텍스트 입력 툴에서 글자 입력 후 손가락이나 마우스로 드래그하여 직관적으로 위치를 미세 조정한 뒤 확정 배치할 수 있도록 개선했습니다.',
+            ch: '🔤 改进文字输入工具，在键入文字后，可通过手指或鼠标直接拖拽来直观地微调摆放位置，确认无误后再盖章固化。'
+          }
         ]
       },
       {
         version: 'v5.8.0',
         date: '2026-09-12 21:33',
         type: 'feat',
-        title: '多言語切り替え時の自動翻訳API連携および各属性への自動テキスト注入に対応しました',
+        title: {
+          ja: '多言語切り替え時の自動翻訳API連携および各属性への自動テキスト注入に対応しました',
+          en: 'Auto-Translation API Integration and Background Text Injection for Multilingual Switching',
+          ar: 'تكامل واجهة برمجة تطبيقات الترجمة الآلية للتبديل بين اللغات',
+          ko: '다국어 전환 시 자동 번역 API 연동 및 각 속성별 자동 텍스트 주입 대응',
+          ch: '多语言切换时的自动翻译API联动及属性文本自动注入支持'
+        },
         items: [
-          'Google翻訳APIと連携し、画面上のテキストを自動翻訳して各属性（en/ar/ko/ch）へバックグラウンド注入する機能を追加しました',
-          '同一テキストの重複リクエストを防ぐ翻訳キャッシュ機構を実装しました',
-          '未取得の言語ボタンが選択された場合でも、最優先で翻訳を取得し即座に画面反映・属性保存する処理を追加しました'
+          {
+            ja: 'Google翻訳APIと連携し、画面上のテキストを自動翻訳して各属性（en/ar/ko/ch）へバックグラウンド注入する機能を追加しました',
+            en: 'Integrated with Google Translate API to auto-translate on-screen text and inject it into attributes (en/ar/ko/ch) in the background.',
+            ar: 'التكامل مع ترجمة جوجل للترجمة الآلية للنصوص وحقنها في السمات (en/ar/ko/ch) في الخلفية.',
+            ko: 'Google 번역 API와 연동하여 화면의 텍스트를 자동 번역하고 각 속성(en/ar/ko/ch)에 백그라운드로 주입하는 기능을 추가했습니다.',
+            ch: '联动Google翻译API，实现自动翻译界面文本并将其在后台注入至各语言属性（en/ar/ko/ch）中。'
+          },
+          {
+            ja: '同一テキストの重複リクエストを防ぐ翻訳キャッシュ機構を実装しました',
+            en: 'Implemented a translation caching mechanism to prevent duplicate requests for identical text.',
+            ar: 'تنفيذ آلية تخزين مؤقت للترجمة لمنع الطلبات المكررة لنفس النص.',
+            ko: '동일한 텍스트에 대한 중복 요청을 방지하는 번역 캐시 메커니즘을 구현했습니다.',
+            ch: '实现翻译缓存机制，有效防止针对相同文本的重复网络请求。'
+          },
+          {
+            ja: '未取得の言語ボタンが選択された場合でも、最優先で翻訳を取得し即座に画面反映・属性保存する処理を追加しました',
+            en: 'Added a process to prioritize fetching translations immediately when an unfetched language button is selected, reflecting and saving instantly.',
+            ar: 'إضافة إجراء لضمان جلب الترجمة فوراً عند اختيار لغة غير محملة وتحديث الشاشة وحفظها.',
+            ko: '미수집된 언어 버튼이 선택된 경우에도 최우선으로 번역을 가져와 즉시 화면에 반영하고 속성을 저장하는 처리를 추가했습니다.',
+            ch: '新增优先获取机制，当选中尚未加载的语言按钮时，将以最高优先级获取翻译并立即刷新界面及保存属性。'
+          }
         ]
       },
       {
         version: 'v5.7.0',
         date: '2026-09-12 16:20',
         type: 'feat',
-        title: 'プロフィールにサイト開設から何日経ったかのカウントダウン＆聖書の一句を引用した言葉を追加しました',
+        title: {
+          ja: 'プロフィールにサイト開設から何日経ったかのカウントダウン＆聖書の一句を引用した言葉を追加しました',
+          en: 'Added Launch Countdown and Bible Verse Quotation to Profile',
+          ar: 'إضافة عداد الأيام منذ إطلاق الموقع وآية من الكتاب المقدس في الملف الشخصي',
+          ko: '프로필에 사이트 개설 경과 일수 카운트다운 및 성경 구절 인용구 추가',
+          ch: '在个人简介中新增网站上线天数倒计时及圣经名言引用'
+        },
         items: [
-          'プロフィールにサイト開設から何日経ったかのカウントダウン＆聖書の一句を引用した言葉を追加しました',
-          'サイト開設から何日/何分/何秒たったかのカウントダウン/聖書の一句を交えての今後の目標を追加しました'
+          {
+            ja: 'プロフィールにサイト開設から何日経ったかのカウントダウン＆聖書の一句を引用した言葉を追加しました',
+            en: 'Added launch countdown and a Bible verse quote to the developer profile.',
+            ar: 'تمت إضافة عداد تنازلي تاريخ الإطلاق وآية مقطوعة من الكتاب المقدس إلى ملف المطور.',
+            ko: '프로필에 사이트 개설 후 경과 일수 카운트다운과 성경 구절을 인용하여 추가했습니다.',
+            ch: '在开发者个人简介模块中加入了建站上线至今的天数实时倒计时及圣经经文寄语。'
+          },
+          {
+            ja: 'サイト開設から何日/何分/何秒たったかのカウントダウン/聖書の一句を交えての今後の目標を追加しました',
+            en: 'Added precise days/minutes/seconds countdown since launch alongside future goals inspired by scripture.',
+            ar: 'إضافة عداد دقيق بالأيام والدقائق والثواني منذ الإطلاق مع الأهداف المستقبلية.',
+            ko: '사이트 개설 후 일/분/초 단위의 카운트다운과 성경 구절을 곁들인 향후 목표를 추가했습니다.',
+            ch: '详细展示自建站以来的天/分/秒精确倒计时，并结合圣经教导阐述了长期持续更新的长远目标。'
+          }
         ]
       },
       {
         version: 'v5.6.0',
         date: '2026-09-12 13:50',
         type: 'fix',
-        title: 'スマホで2本指ピンチズーム時の1本指マスク誤爆を完全防止',
+        title: {
+          ja: 'スマホで2本指ピンチズーム時の1本指マスク誤爆を完全防止',
+          en: 'Completely Prevent Accidental 1-Finger Masking During 2-Finger Pinch Zoom on Mobile',
+          ar: 'منع كامل للرسم بالخطأ عند التكبير بإصبعين على الهواتف المحمولة',
+          ko: '모바일에서 두 손가락 핀치 줌 시 한 손가락 마스크 오작동 완벽 방지',
+          ch: '彻底防止移动端双指缩放时的单指误触涂抹问题'
+        },
         items: [
-          '2本指で画面を拡大・縮小しようとした際、指を置いた瞬間に意図しない黒塗りや連番スタンプが押されてしまう問題を解消しました',
-          '連番スタンプや文字入れツールをタップ確定時のみ発動するよう改善し、ピンチ操作中およびピンチ終了直後（300ms）の誤描画ガードを新設しました'
+          {
+            ja: '2本指で画面を拡大・縮小しようとした際、指を置いた瞬間に意図しない黒塗りや連番スタンプが押されてしまう問題を解消しました',
+            en: 'Resolved an issue where unintended blackouts or number stamps were triggered the moment fingers were placed for pinch zoom.',
+            ar: 'تم حل مشكلة حدوث تظليل أو ختم غير مبرر عند محاولة التكبير بإصبعين.',
+            ko: '두 손가락으로 화면을 확대·축소하려 할 때 손가락을 대는 순간 의도치 않게 검은 칠이나 번호 스탬프가 찍히던 문제를 해결했습니다.',
+            ch: '解决了在移动端尝试进行双指捏合缩放时，落指瞬间误触触发黑色涂抹或序号图章的顽疾。'
+          },
+          {
+            ja: '連番スタンプや文字入れツールをタップ確定時のみ発動するよう改善し、ピンチ操作中およびピンチ終了直後（300ms）の誤描画ガードを新設しました',
+            en: 'Improved number stamps and text tools to activate only on explicit tap confirmation, adding guards during and immediately after pinch gestures (300ms).',
+            ar: 'تحسين أدوات الختم والنص لتتفاعل فقط عند النقر المؤكد، وإضافة حماية أثناء وبعد التكبير.',
+            ko: '번호 스탬프와 텍스트 툴이 탭 확정 시에만 작동하도록 개선하고, 핀치 조작 중 및 종료 직후(300ms) 오작동 방지 가드를 신설했습니다.',
+            ch: '优化序号图章与文字工具，改为仅在轻触确认时触发，并新增了针对双指缩放操作期间及结束后的 300ms 防误触保护机制。'
+          }
         ]
       },
       {
         version: 'v5.5.0',
         date: '2026-09-12 13:48',
         type: 'fix',
-        title: 'ズーム時における「選択移動」のドラッグ速度・追従精度の修正',
+        title: {
+          ja: 'ズーム時における「選択移動」のドラッグ速度・追従精度の修正',
+          en: 'Fix Drag Speed and Tracking Precision for "Move/Copy" Tool During Zoom',
+          ar: 'تصحيح سرعة ودقة سحب أداة "نقل/نسخ" أثناء التكبير',
+          ko: '줌 시 "선택 이동" 드래그 속도 및 추적 정밀도 수정',
+          ch: '修复缩放状态下“选区移动”工具的拖拽速度与跟随精度问题'
+        },
         items: [
-          '画像を拡大ズームした状態で選択範囲をドラッグ移動した際、枠が指先を飛び越えて高速で移動してしまう現象を修正しました',
-          '移動計算を差分トラッキング方式へと刷新し、どの拡大倍率でも指先やマウスカーソルと1:1の完全な同期移動ができるように改善しました'
+          {
+            ja: '画像を拡大ズームした状態で選択範囲をドラッグ移動した際、枠が指先を飛び越えて高速で移動してしまう現象を修正しました',
+            en: 'Fixed an issue where selection boxes jumped ahead of fingertips and moved too fast when dragging while zoomed in.',
+            ar: 'تم إصلاح مشكلة قفز إطار التحديد بسرعة مفرطة أمام الإصبع عند السحب أثناء التكبير.',
+            ko: '이미지를 확대 줌한 상태에서 선택 영역을 드래그 이동할 때 테두리가 손가락을 앞질러 고속으로 이동해 버리던 현상을 수정했습니다.',
+            ch: '修复了在放大缩放状态下拖拽移动选区时，边框会超越南辕北辙飞速位移的异常现象。'
+          },
+          {
+            ja: '移動計算を差分トラッキング方式へと刷新し、どの拡大倍率でも指先やマウスカーソルと1:1の完全な同期移動ができるように改善しました',
+            en: 'Refreshed movement calculations to a differential tracking method, enabling 1:1 synchronized movement with fingertips or cursors at any zoom level.',
+            ar: 'تحديث حسابات الحركة لتعتمد على التتبع التفاضلي، مما يتيح حركة متزامنة 1:1 مع المؤشر عند أي مستوى تكبير.',
+            ko: '이동 계산을 차분 트래킹 방식으로 갱신하여, 어떤 확대 배율에서도 손가락이나 마우스 커서와 1:1 완벽 동기 이동이 가능하도록 개선했습니다.',
+            ch: '将位移计算逻辑升级为差分追踪算法，确保在任意缩放倍率下，选区都能与手指或鼠标指针保持 1:1 的完美同步平移。'
+          }
         ]
       },
       {
         version: 'v5.4.0',
         date: '2026-09-12 13:47',
         type: 'fix',
-        title: '透過画像をJPEG形式で書き出した際の黒塗り化を修正（白背景自動補正）',
+        title: {
+          ja: '透過画像をJPEG形式で書き出した際の黒塗り化を修正（白背景自動補正）',
+          en: 'Fix Blackouts When Exporting Transparent Images as JPEG (Auto White Background)',
+          ar: 'إصلاح تحول الصور الشفافة إلى اللون الأسود عند التصدير بصيغة JPEG',
+          ko: '투명 이미지를 JPEG 형식으로 내보낼 때 검게 변하는 현상 수정 (흰 배경 자동 보정)',
+          ch: '修复透明背景图片导出为JPEG格式时变成纯黑色的问题（白色背景自动合成）'
+        },
         items: [
-          '背景が透過されたPNGイラスト等を「JPEG」で保存した際、透明部分が真っ黒に塗りつぶされてしまうブラウザ仕様の不具合を解消しました',
-          'JPEG形式選択時は自動的に下地を白色でプレ合成してから書き出す仕様に変更し、自然で美しい写真・画像として保存できるようにしました'
+          {
+            ja: '背景が透過されたPNGイラスト等を「JPEG」で保存した際、透明部分が真っ黒に塗りつぶされてしまうブラウザ仕様の不具合を解消しました',
+            en: 'Resolved browser-spec issues where transparent parts of PNG illustrations turned completely black when saved as JPEG.',
+            ar: 'تم حل مشكلة تحول الأجزاء الشفافة في صور PNG إلى اللون الأسود حال حفظها بصيغة JPEG.',
+            ko: '배경이 투명한 PNG 일러스트 등을 "JPEG"로 저장할 때 투명 부분이 새까맣게 채워지던 브라우저 사양의 결함을 해소했습니다.',
+            ch: '解决了将背景透明的PNG插画等另存为“JPEG”格式时，透明区域被浏览器默认渲染成纯黑色的兼容性缺陷。'
+          },
+          {
+            ja: 'JPEG形式選択時は自動的に下地を白色でプレ合成してから書き出す仕様に変更し、自然で美しい写真・画像として保存できるようにしました',
+            en: 'Changed the specification to automatically pre-composite a white background before export when JPEG is selected, ensuring natural and clean image output.',
+            ar: 'تم تغيير آلية التصدير بحيث يتم دمج خلفية بيضاء تلقائياً عند اختيار صيغة JPEG لضمان حفظ صورة طبيعية ونقية.',
+            ko: 'JPEG 형식 선택 시 자동으로 하지를 흰색으로 사전 합성한 뒤 내보내도록 사양을 변경하여, 자연스럽고 깨끗한 사진 및 이미지로 저장할 수 있게 했습니다.',
+            ch: '调整了导出逻辑，在选择JPEG格式时自动预先合成白色底色，确保用户能够保存下自然美观的常规图像。'
+          }
         ]
       },
       {
         version: 'v5.3.0',
         date: '2026-09-12 13:34',
         type: 'feat',
-        title: 'おまけの地震シュミレーターボタンを追加しました',
+        title: {
+          ja: 'おまけの地震シュミレーターボタンを追加しました',
+          en: 'Added Bonus Earthquake Simulator Button',
+          ar: 'إضافة زر محاكي الزلازل الإضافي',
+          ko: '보너스 지진 시뮬레이터 버튼 추가',
+          ch: '新增趣味彩蛋地震模拟器按钮'
+        },
         items: [
-          'ヘッダーにおまけ:3D地震シュミレーターボタンを追加しました'
+          {
+            ja: 'ヘッダーにおまけ:3D地震シュミレーターボタンを追加しました',
+            en: 'Added a bonus 3D Earthquake Simulator button to the header.',
+            ar: 'تم إضافة زر محاكي الزلازل الثلاثي الأبعاد إلى رأس الصفحة.',
+            ko: '헤더에 보너스 3D 지진 시뮬레이터 버튼을 추가했습니다.',
+            ch: '在页面顶部导航栏中新增了趣味十足的“3D地震模拟器”快捷直达按钮。'
+          }
         ]
       },
       {
         version: 'v5.2.0',
         date: '2026-09-11 18:58',
         type: 'feat',
-        title: 'テーマ設定を含む全データ.mask＆IndexedDB完全保存に対応',
+        title: {
+          ja: 'テーマ設定を含む全データ.mask＆IndexedDB完全保存に対応',
+          en: 'Full .mask & IndexedDB Save Support Including Theme Settings',
+          ar: 'دعم الحفظ الكامل في .mask و IndexedDB بما في ذلك إعدادات السمة',
+          ko: '테마 설정 포함 모든 데이터 .mask 및 IndexedDB 완전 저장 대응',
+          ch: '支持包含主题设置在内的所有数据至.mask及IndexedDB中进行完整保存'
+        },
         items: [
-          '.maskプロジェクトファイルおよびIndexedDBへの保存項目に、選択中のテーマを追加しました',
-          'PCとスマホ間での.maskファイル共有時に、作業画像だけでなくテーマ設定や全履歴・アン桃スコアまで100%完全同期できるよう強化しました'
+          {
+            ja: '.maskプロジェクトファイルおよびIndexedDBへの保存項目に、選択中のテーマを追加しました',
+            en: 'Added the currently selected theme to items saved in .mask project files and IndexedDB.',
+            ar: 'تمت إضافة السمة الحالية إلى العناصر المحفوظة في ملفات مشروع .mask و IndexedDB.',
+            ko: '.mask 프로젝트 파일 및 IndexedDB 저장 항목에 현재 선택된 테마를 추가했습니다.',
+            ch: '在.mask工程文件及IndexedDB本地存储的归档条目中追加了当前选中的主题外观状态。'
+          },
+          {
+            ja: 'PCとスマホ間での.maskファイル共有時に、作業画像だけでなくテーマ設定や全履歴・アン桃スコアまで100%完全同期できるよう強化しました',
+            en: 'Enhanced .mask file sharing between PC and mobile to 100% fully sync not just images, but theme settings, history, and Anmomo scores.',
+            ar: 'تم تعزيز مشاركة ملفات .mask بين الكمبيوتر والهاتف لمزامنة الصور وإعدادات السمة والتاريخ ونتائج أنمومو بنسبة 100%.',
+            ko: 'PC와 스마트폰 간 .mask 파일 공유 시 작업 이미지뿐만 아니라 테마 설정과 전체 히스토리, 안모모 스코어까지 100% 완벽 동기화되도록 강화했습니다.',
+            ch: '强化了跨PC与手机分享.mask文件时的全量对齐能力，不仅是编辑图像，连同主题设置、全量历史记录乃至安桃小游戏得分均可100%同步。'
+          }
         ]
       },
       {
         version: 'v5.1.0',
         date: '2026-09-11 18:03',
         type: 'change',
-        title: 'サイトタイトルを マス王   R̄に変更しました',
+        title: {
+          ja: 'サイトタイトルを マス王   R̄に変更しました',
+          en: 'Changed Site Title to King of Hiding   R̄',
+          ar: 'تم تغيير عنوان الموقع إلى ملك الإخفاء   R̄',
+          ko: '사이트 타이틀을 숨기기 왕   R̄(으)로 변경했습니다',
+          ch: '已将网站标题正式更改为 隐藏之王   R̄'
+        },
         items: [
-          'マス王から マス王   R̄へ変更しました。意味は、マス王 Royal editionです。'
+          {
+            ja: 'マス王から マス王   R̄へ変更しました。意味は、マス王 Royal editionです。',
+            en: 'Changed from Mas-King to King of Hiding   R̄ (Masking Royal edition).',
+            ar: 'تم التغيير من ملك الإخفاء إلى ملك الإخفاء   R̄ (النسخة الملكية).',
+            ko: '숨기기 왕에서 숨기기 왕   R̄(으)로 변경했습니다. 마스킹 로열 에디션(Masking Royal edition)을 의미합니다.',
+            ch: '由原本的“隐藏之王”升级更名为“隐藏之王   R̄”（即遮盖皇家版 Masking Royal edition）。'
+          }
         ]
       },
       {
         version: 'v5.0.0',
         date: '2026-09-11 18:00',
         type: 'fix',
-        title: '連番Undo巻き戻し・ズーム時ダミー配置・変形後消しゴムの重要修正',
+        title: {
+          ja: '連番Undo巻き戻し・ズーム時ダミー配置・変形後消しゴムの重要修正',
+          en: 'Important Fixes for Number Stamp Undo, Zoom Dummy Placement, and Eraser After Transform',
+          ar: 'إصلاحات هامة لختم الأرقام، موضع النصوص الوهمية عند التكبير، والممحاة بعد التحويل',
+          ko: '연번 스탬프 Undo 되감기, 줌 시 더미 배치, 변형 후 지우개 중요 수정',
+          ch: '修复序号图章撤销回退、缩放状态下虚假文本定位及变形后橡皮擦重要缺陷'
+        },
         items: [
-          '連番スタンプでUndo(元に戻す)を実行した際、スタンプの番号カウンターが自動で1つ前に巻き戻るよう修正しました',
-          '画面を拡大・縮小ズームした状態でダミー置換文字を配置した際、プレビューと焼き付け位置・サイズのズレを完全に解消しました',
-          '画像の回転・切り抜き・リサイズ変形を行った後でも、消しゴムツールで元画像を正常に復元できるよう改善しました'
+          {
+            ja: '連番スタンプでUndo(元に戻す)を実行した際、スタンプの番号カウンターが自動で1つ前に巻き戻るよう修正しました',
+            en: 'Fixed an issue where the stamp counter automatically rewinds by 1 when performing Undo on number stamps.',
+            ar: 'تم إرجاع عداد الختم تلقائياً خطوة للوراء عند تنفيذ التراجع (Undo) لختم الأرقام.',
+            ko: '연번 스탬프에서 Undo(실행 취소)를 실행했을 때 스탬프 번호 카운터가 자동으로 하나 전으로 되감기도록 수정했습니다.',
+            ch: '修复了执行序号图章的Undo（撤销）操作时，图章内部计数器未能同步向后回退1个数字的Bug。'
+          },
+          {
+            ja: '画面を拡大・縮小ズームした状態でダミー置換文字を配置した際、プレビューと焼き付け位置・サイズのズレを完全に解消しました',
+            en: 'Completely resolved preview and baking misalignment of dummy replacement text when placed while zoomed in or out.',
+            ar: 'تم القضاء تماماً على أي إزاحة في موضع أو حجم النصوص الوهمية عند وضعها أثناء التكبير أو التصغير.',
+            ko: '화면을 확대·축소 줌한 상태에서 더미 대체 텍스트를 배치할 때 프리뷰와 렌더링 위치·크기의 오차를 완전히 해소했습니다.',
+            ch: '彻底消除了在缩放画布状态下放置虚假替换文本时，前端预览与实际最终像素渲染之间存在的位置和尺寸偏差。'
+          },
+          {
+            ja: '画像の回転・切り抜き・リサイズ変形を行った後でも、消しゴムツールで元画像を正常に復元できるよう改善しました',
+            en: 'Improved the eraser tool so it can successfully restore original pixels even after image rotation, cropping, or resizing.',
+            ar: 'تحسين أداة الممحاة لاستعادة البكسلات الأصلية بنجاح حتى بعد تدوير الصورة أو قصها أو تغيير حجمها.',
+            ko: '이미지 회전, 자르기, 리사이즈 변형을 거친 후에도 지우개 툴로 원본 이미지를 정상적으로 복원할 수 있도록 개선했습니다.',
+            ch: '改善了橡皮擦底层逻辑，确保在对图像执行旋转、裁剪或尺寸调整等几何变换后，橡皮擦仍能精准复原原始像素。'
+          }
         ]
       },
       {
         version: 'v4.9.0',
         date: '2026-09-10 18:30',
         type: 'feat',
-        title: 'カメラ撮影＆即座マスキング機能の搭載',
+        title: {
+          ja: 'カメラ撮影＆即座マスキング機能の搭載',
+          en: 'Camera Capture and Instant Masking Feature',
+          ar: 'ميزة التقاط الكاميرا والتمويه الفوري',
+          ko: '카메라 촬영 및 즉시 마스킹 기능 탑재',
+          ch: '搭载相机拍照与即时打码功能'
+        },
         items: [
-          'スマホやPCのカメラで写真をパシャッと撮影し、その場ですぐにマスキング編集を開始できる「📷 撮影」機能を追加しました',
-          '外カメラ/内カメラの切り替えやフラッシュ演出・振動フィードバックを搭載（※撮影データは外部サーバーに一切送信されません）'
+          {
+            ja: 'スマホやPCのカメラで写真をパシャッと撮影し、その場ですぐにマスキング編集を開始できる「📷 撮影」機能を追加しました',
+            en: 'Added a "📷 Shoot" feature allowing users to snap photos via mobile/PC cameras and immediately start masking.',
+            ar: 'تم إضافة ميزة التقاط الصور عبر كاميرا الهاتف أو الحاسوب والبدء في التمويه فوراً.',
+            ko: '스마트폰이나 PC 카메라로 사진을 찰칵 촬영하고 그 자리에서 바로 마스킹 편집을 시작할 수 있는 "📷 촬영" 기능을 추가했습니다.',
+            ch: '新增“📷 拍照”功能，支持直接调用手机或电脑摄像头拍摄照片，拍完后立即可进入画布进行隐私打码。'
+          },
+          {
+            ja: '外カメラ/内カメラの切り替えやフラッシュ演出・振動フィードバックを搭載（※撮影データは外部サーバーに一切送信されません）',
+            en: 'Equipped with front/rear camera switching, flash effects, and vibration feedback (*photos are never sent to external servers).',
+            ar: 'مجهز بتبديل الكاميرا الأمامية والخلفية، تأثير الفلاش، والاهتزاز (لا ترسل الصور للخادم).',
+            ko: '전면/후면 카메라 전환, 플래시 연출, 진동 피드백 탑재 (*촬영 데이터는 외부 서버로 일절 전송되지 않습니다).',
+            ch: '内置前后置摄像头切换、闪光灯视觉特效及触觉振动反馈（※所有拍摄照片均完全保存在本地内存，绝不上传服务器）。'
+          }
         ]
       },
       {
         version: 'v4.8.0',
         date: '2026-09-10 18:25',
         type: 'feat',
-        title: 'リアルタイム・バッテリー監視＆ユニーク通知機能の追加',
+        title: {
+          ja: 'リアルタイム・バッテリー監視＆ユニーク通知機能の追加',
+          en: 'Real-Time Battery Monitoring and Unique Notification Feature',
+          ar: 'مراقبة البطارية في الوقت الفعلي وميزة الإشعارات الفريدة',
+          ko: '실시간 배터리 모니터링 및 유니크 알림 기능 추가',
+          ch: '新增实时电池电量监控与趣味提示弹窗功能'
+        },
         items: [
-          '端末のバッテリー残量をリアルタイムで自動監視し、残量に応じたユニークなセリフ（100%〜1%の全8段階）をトースト通知する親切機能を追加しました',
-          '作業中の突然のバッテリー切れを防ぐための安心設計です（※ブラウザ標準のnavigator.getBattery()を使用・サーバー送信ゼロ）'
+          {
+            ja: '端末のバッテリー残量をリアルタイムで自動監視し、残量に応じたユニークなセリフ（100%〜1%の全8段階）をトースト通知する親切機能を追加しました',
+            en: 'Added a helpful feature that monitors battery levels in real-time and toast-notifies unique remarks across 8 stages (100% to 1%).',
+            ar: 'إضافة ميزة مفيدة تراقب مستوى البطارية وتعرض إشعارات فريدة بناءً على النسبة المئوية.',
+            ko: '단말기의 배터리 잔량을 실시간으로 자동 모니터링하고 남은 양에 따른 유니크한 대사(100%~1% 총 8단계)를 토스트 알림으로 띄워주는 친절한 기능을 추가했습니다.',
+            ch: '新增了贴心的电池实时监控管家，能够根据设备当前的剩余电量通过浮动提示推送共计8个档位的趣味诙谐吐槽语录。'
+          },
+          {
+            ja: '作業中の突然のバッテリー切れを防ぐための安心設計です（※ブラウザ標準のnavigator.getBattery()を使用・サーバー送信ゼロ）',
+            en: 'Designed safely to prevent sudden power shutdowns while working (*uses standard navigator.getBattery(), zero server transmission).',
+            ar: 'تصميم آمن لمنع انقطاع الطاقة المفاجئ أثناء العمل (يستخدم المعيار القياسي دون إرسال خادم).',
+            ko: '작업 중 갑작스러운 방전을 방지하기 위한 안심 설계입니다 (*브라우저 표준 navigator.getBattery() 사용·서버 전송 제로).',
+            ch: '旨在防止用户在专注编辑时因突然没电而丢失进度（※基于浏览器标准的navigator.getBattery()开发，零服务器数据上传）。'
+          }
         ]
       },
       {
         version: 'v4.6.8',
         date: '2026-09-09 07:28',
         type: 'change',
-        title: '画像コピー完了通知のトースト化による操作テンポ向上',
+        title: {
+          ja: '画像コピー完了通知のトースト化による操作テンポ向上',
+          en: 'Improve Operation Tempo by Toasting Image Copy Completion',
+          ar: 'تحسين سرعة التفاعل عبر تحويل إشعار النسخ إلى إشعار منبثق سري',
+          ko: '이미지 복사 완료 알림의 토스트화를 통한 조작 템포 향상',
+          ch: '将图片复制完成提示改为浮动吐司通知，显著提升操作节奏'
+        },
         items: [
-          'クリップボードコピー時の画面一時停止アラートを廃止し、非同期トースト通知へ変更して連続作業をスムーズにしました'
+          {
+            ja: 'クリップボードコピー時の画面一時停止アラートを廃止し、非同期トースト通知へ変更して連続作業をスムーズにしました',
+            en: 'Abolished screen-pausing alerts during clipboard copies, replacing them with asynchronous toast notifications for smoother workflow.',
+            ar: 'إلغاء تنبيهات توقف الشاشة عند النسخ واستبدالها بإشعارات سريعة لتحسين سير العمل.',
+            ko: '클립보드 복사 시 화면을 멈추게 하던 알림창을 폐지하고 비동기 토스트 알림으로 변경하여 연속 작업을 부드럽게 만들었습니다.',
+            ch: '取消了剪贴板复制时的阻塞式弹窗告警，替换为非异步的轻量浮动吐司提示，让连续剪切复制更加行云流水。'
+          }
         ]
       },
       {
         version: 'v4.6.7',
         date: '2026-09-09 07:27',
         type: 'fix',
-        title: 'リンク集公式バナー画像の読み込みフォールバック対応',
+        title: {
+          ja: 'リンク集公式バナー画像の読み込みフォールバック対応',
+          en: 'Fallback Support for Loading Official Link Collection Banner Images',
+          ar: 'دعم احتياطي لتحميل صور بانر روابط النوابط الرسمية',
+          ko: '링크 모음 공식 배너 이미지 로딩 폴백 대응',
+          ch: '为链接集官方横幅图片加载失败提供优雅降级容错备用方案'
+        },
         items: [
-          'オフライン時や画像読み込み失敗時でもリンク集のデザインが崩れないよう代替テキスト枠の表示処理を追加しました'
+          {
+            ja: 'オフライン時や画像読み込み失敗時でもリンク集のデザインが崩れないよう代替テキスト枠の表示処理を追加しました',
+            en: 'Added fallback text rendering so the link collection design remains intact even when offline or image loads fail.',
+            ar: 'إضافة عرض نص بديل لضمان عدم تعطل تصميم صفحة الروابط عند انقطاع الإنترنت أو فشل تحميل الصورة.',
+            ko: '오프라인 시 또는 이미지 로딩 실패 시에도 링크 모음 디자인이 깨지지 않도록 대체 텍스트 상자 표시 처리를 추가했습니다.',
+            ch: '新增了容错备用渲染逻辑，即便处于离线状态或图片加载失败，链接集页面的排版设计也不会发生塌陷错位。'
+          }
         ]
       },
       {
         version: 'v4.6.6',
         date: '2026-09-09 07:26',
         type: 'fix',
-        title: 'スタミナ数値表示の浮動小数点オーバーフロー防止',
+        title: {
+          ja: 'スタミナ数値表示の浮動小数点オーバーフロー防止',
+          en: 'Prevent Floating-Point Overflow in Stamina Numeric Display',
+          ar: 'منع تجاوز الفاصلة العسشرية في عرض عداد القدرة',
+          ko: '스태미나 수치 표시의 부동소수점 오버플로 방지',
+          ch: '防止体力数值显示时出现浮动小数点溢出异常'
+        },
         items: [
-          'スタミナ回復計算時の丸め誤差により表示数値が一瞬だけ上限値を超過する現象を防止しました'
+          {
+            ja: 'スタミナ回復計算時の丸め誤差により表示数値が一瞬だけ上限値を超過する現象を防止しました',
+            en: 'Prevented the displayed value from momentarily exceeding the upper limit due to rounding errors during stamina recovery calculation.',
+            ar: 'منع تجاوز القيمة المعروضة للحد الأقصى مؤقتاً بسبب أخطاء التقريب في حساب استعادة القدرة.',
+            ko: '스태미나 회복 계산 시 반올림 오차로 인해 표시 수치가 잠시 상한값을 초과하는 현상을 방지했습니다.',
+            ch: '规避了在体力自然恢复数值计算过程中，由于四舍五入尾数误差导致显示数值偶发性瞬间超过上限的小瑕疵。'
+          }
         ]
       },
       {
         version: 'v4.6.5',
         date: '2026-09-09 07:25',
         type: 'fix',
-        title: '画面外マウス離脱時におけるドラッグ描画の安全停止',
+        title: {
+          ja: '画面外マウス離脱時におけるドラッグ描画の安全停止',
+          en: 'Safe Stop of Drag Drawing When Mouse Leaves the Screen',
+          ar: 'الإيقاف الآمن للرسم بالسحب عند خروج الماوس خارج الشاشة',
+          ko: '화면 외부로 마우스 이탈 시 드래그 드로잉 안전 정지',
+          ch: '当鼠标拖拽移出浏览器视口边界时的安全终止处理'
+        },
         items: [
-          'キャンバスを大きくドラッグしてカーソルがブラウザ外へ抜けた際、描画状態が安全に解除されるようイベントを追加しました'
+          {
+            ja: 'キャンバスを大きくドラッグしてカーソルがブラウザ外へ抜けた際、描画状態が安全に解除されるようイベントを追加しました',
+            en: 'Added events to safely release the drawing state when cursors drag far outside the browser window.',
+            ar: 'إضافة أحداث لضمان إلغاء حالة الرسم بأمان عند خروج المؤشر نطاق المتصفح.',
+            ko: '캔버스를 크게 드래그하여 커서가 브라우저 바깥으로 빠져나갔을 때 드로잉 상태가 안전하게 해제되도록 이벤트를 추가했습니다.',
+            ch: '增设了全局监听事件，当用户大幅度拖拽画布导致光标脱离浏览器窗口时，能够安全自动地终止当前绘制状态。'
+          }
         ]
       },
       {
         version: 'v4.6.4',
         date: '2026-09-09 07:24',
         type: 'fix',
-        title: '透かし文字ツールの空文字確定による不要コミット防止',
+        title: {
+          ja: '透かし文字ツールの空文字確定による不要コミット防止',
+          en: 'Prevent Unnecessary Commits from Blank Watermark Confirmations',
+          ar: 'منع الالتزامات الفارغة الناتجة عن تأكيد العلامة المائية الفارغة',
+          ko: '빈 워터마크 확정으로 인한 불필요한 커밋 생성 방지',
+          ch: '防止因空白水印文字确认而产生不必要的空提交历史'
+        },
         items: [
-          '透かし文字入力でスペースのみ確定された際、中身のない空のUndo履歴が生成されないようガードを追加しました'
+          {
+            ja: '透かし文字入力でスペースのみ確定された際、中身のない空のUndo履歴が生成されないようガードを追加しました',
+            en: 'Added a guard to prevent generating empty Undo histories when spaces-only watermark text is confirmed.',
+            ar: 'إضافة حماية لمنع إنشاء سجل تراجع فارغ عند تأكيد علامة مائية مساحات فارغة فقط.',
+            ko: '워터마크 입력 시 공백만 입력되어 확정될 때 내용 없는 빈 Undo 히스토리가 생성되지 않도록 가드를 추가했습니다.',
+            ch: '增设了内容校验拦截，当用户在透かし文字输入框中仅键入空格并确定时，不会产生无意义的空白撤销历史。'
+          }
         ]
       },
       {
         version: 'v4.6.3',
         date: '2026-09-09 07:23',
         type: 'feat',
-        title: '更新履歴検索バーの複数単語スペースAND検索対応',
+        title: {
+          ja: '更新履歴検索バーの複数単語スペースAND検索対応',
+          en: 'Multi-Word Space-Separated AND Search Support for Changelog',
+          ar: 'دعم البحث المتقدم بكلمات متعددة مفصولة بمسافات في سجل التحديثات',
+          ko: '변경 이력 검색창의 다중 단어 공백 AND 검색 대응',
+          ch: '更新日志搜索栏支持多关键词空格分隔的AND组合检索'
+        },
         items: [
-          '更新履歴の検索機能において、スペース区切りで複数キーワードを入力した複合AND検索に対応しました'
+          {
+            ja: '更新履歴の検索機能において、スペース区切りで複数キーワードを入力した複合AND検索に対応しました',
+            en: 'Supported compound AND searches by entering multiple keywords separated by spaces in the changelog search.',
+            ar: 'دعم البحث المركب عبر إدخال كلمات مفتاحية متعددة مفصولة بمسافات في البحث.',
+            ko: '변경 이력 검색 기능에서 공백으로 구분하여 여러 키워드를 입력하는 복합 AND 검색에 대응했습니다.',
+            ch: '升级了更新日志的关键字过滤检索功能，现支持通过空格分隔输入多个关键词来进行组合AND精准筛选。'
+          }
         ]
       },
       {
         version: 'v4.6.2',
         date: '2026-09-09 07:22',
         type: 'fix',
-        title: 'アン桃プレイ中の画面回転・リサイズ追従対応',
+        title: {
+          ja: 'アン桃プレイ中の画面回転・リサイズ追従対応',
+          en: 'Screen Rotation and Resize Tracking Support During Anmomo Play',
+          ar: 'دعم تتبع دوران الشاشة وتغيير الحجم أثناء لعب أنمومو',
+          ko: '안모모 플레이 중 화면 회전 및 리사이즈 추적 대응',
+          ch: '优化安桃小游戏游玩期间的屏幕旋转与窗口尺寸自适应缩放'
+        },
         items: [
-          'ミニゲームプレイ中にスマホの向きを変更した際でも、ゲームCanvasの解像度が自動追従して描画が崩れないよう修正しました'
+          {
+            ja: 'ミニゲームプレイ中にスマホの向きを変更した際でも、ゲームCanvasの解像度が自動追従して描画が崩れないよう修正しました',
+            en: 'Fixed game canvas resolution to automatically track and prevent distortion when mobile orientation changes during mini-games.',
+            ar: 'تم إصلاح دقة لوحة اللعبة لتتكيف تلقائياً عند تغيير اتجاه الهاتف أثناء اللعب.',
+            ko: '미니게임 플레이 중 스마트폰의 방향을 바꿀 때도 게임 Canvas 해상도가 자동으로 추적되어 렌더링이 깨지지 않도록 수정했습니다.',
+            ch: '修复了在游玩“安桃”小游戏期间横竖屏切换时，游戏Canvas画布分辨率未能同步自适应导致画面变形的瑕疵。'
+          }
         ]
       },
       {
         version: 'v4.6.1',
         date: '2026-09-09 07:21',
         type: 'change',
-        title: 'ダミー文字置換モーダルの背景・文字色リアルタイム連動',
+        title: {
+          ja: 'ダミー文字置換モーダルの背景・文字色リアルタイム連動',
+          en: 'Real-Time Background and Text Color Synchronization for Dummy Replace Modal',
+          ar: 'المزامنة الفورية لخلفية ولون النص في نافذة استبدال النصوص الوهمية',
+          ko: '더미 텍스트 교체 모달의 배경·글자 색상 실시간 연동',
+          ch: '实现虚假信息替换弹窗中背景色与文字颜色的实时动态联动'
+        },
         items: [
-          'ダミー置換設定モーダルで黒背景を選択した際、入力欄の文字色がリアルタイムで白に切り替わるよう視認性を改善しました'
+          {
+            ja: 'ダミー置換設定モーダルで黒背景を選択した際、入力欄の文字色がリアルタイムで白に切り替わるよう視認性を改善しました',
+            en: 'Improved visibility so that selecting a black background in the dummy replacement modal instantly switches input text color to white.',
+            ar: 'تحسين الرؤية بحيث يتحول لون النص تلقائياً إلى الابيض عند اختيار خلفية سوداء.',
+            ko: '더미 교체 설정 모달에서 검은색 배경을 선택했을 때 입력란의 글자 색상이 실시간으로 하얀색으로 바뀌도록 시인성을 개선했습니다.',
+            ch: '提升了交互视认性，在虚假文本替换弹窗中勾选黑色背景时，输入框内的文本颜色会瞬间联动切换为醒目的白色。'
+          }
         ]
       },
       {
         version: 'v4.6.0',
         date: '2026-09-09 07:20',
         type: 'fix',
-        title: 'リセット時Git初期化およびピンチズーム誤爆防止',
+        title: {
+          ja: 'リセット時Git初期化およびピンチズーム誤爆防止',
+          en: 'Git Initialization on Reset and Pinch Zoom Accidental Guard',
+          ar: 'تهيئة Git عند إعادة التعيين ومنع أخطاء التكبير',
+          ko: '초기화 시 Git 초기화 및 핀치 줌 오작동 방지',
+          ch: '重置时的Git分支初始化及双指缩放误触防范'
+        },
         items: [
-          'リセット時にGitブランチ名が正しくmainに初期化されるよう修正し、スマホでの2本指ピンチ操作時の1本指誤描画を防止しました'
+          {
+            ja: 'リセット時にGitブランチ名が正しくmainに初期化されるよう修正し、スマホでの2本指ピンチ操作時の1本指誤描画を防止しました',
+            en: 'Fixed Git branch names to correctly initialize to main upon reset, and prevented 1-finger misdrawings during 2-finger pinches on mobile.',
+            ar: 'إصلاح تهيئة اسم فرع Git إلى main عند إعادة التعيين، ومنع الرسم بالخطأ أثناء التكبير.',
+            ko: '초기화 시 Git 브랜치 이름이 올바르게 main으로 초기화되도록 수정하고, 스마트폰에서 두 손가락 핀치 조작 시 한 손가락 오작동을 방지했습니다.',
+            ch: '修复了执行重置时Git分支未能正确回归初始化至main的Bug，同时杜绝了手机端双指捏合缩放时的单指误绘。'
+          }
         ]
       },
       {
         version: 'v4.5.9',
         date: '2026-09-07 17:50',
         type: 'fix',
-        title: '文字挿入ツールのキャンセル時における空履歴生成を防止',
+        title: {
+          ja: '文字挿入ツールのキャンセル時における空履歴生成を防止',
+          en: 'Prevent Empty History Generation on Text Insertion Cancellation',
+          ar: 'منع إنشاء سجل فارغ عند إلغاء أداة إدراج النصوص',
+          ko: '문자 삽입 툴 취소 시 빈 히스토리 생성 방지',
+          ch: '防止文字插入工具在取消操作时生成无意义的空白历史记录'
+        },
         items: [
-          '文字挿入ダイアログで「キャンセル」または空文字で確定した際、不要な空のUndoコミットが積まれないようガードを追加しました'
+          {
+            ja: '文字挿入ダイアログで「キャンセル」または空文字で確定した際、不要な空のUndoコミットが積まれないようガードを追加しました',
+            en: 'Added a guard to prevent piling up unnecessary empty Undo commits when text insertion dialog is cancelled or blank.',
+            ar: 'إضافة حماية لتجنب تراكم سجلات تراجع فارغة عند إلغاء نافذة إدراج النص.',
+            ko: '문자 삽입 다이얼로그에서 "취소" 또는 빈 문자로 확정했을 때 불필요한 빈 Undo 커밋이 쌓이지 않도록 가드를 추가했습니다.',
+            ch: '增设拦截判断，当文字插入弹窗点击“取消”或键入空字符串确定时，不会在历史堆栈中压入无用的空撤销点。'
+          }
         ]
       },
       {
         version: 'v4.5.8',
         date: '2026-09-07 17:45',
         type: 'fix',
-        title: 'PWAマニフェストおよびService Worker登録パスを相対パスに修正',
+        title: {
+          ja: 'PWAマニフェストおよびService Worker登録パスを相対パスに修正',
+          en: 'Fix PWA Manifest and Service Worker Registration Paths to Relative',
+          ar: 'تصحيح مسارات ملف Manifest و Service Worker لكونها نسبية',
+          ko: 'PWA 매니페스트 및 Service Worker 등록 경로를 상대 경로로 수정',
+          ch: '将PWA清单及Service Worker注册路径统一修正为相对路径'
+        },
         items: [
-          'GitHub Pages等のサブディレクトリ環境でホストした場合でも、PWAのインストールとオフライン機能が正常に動作するようパス指定を修正しました'
+          {
+            ja: 'GitHub Pages等のサブディレクトリ環境でホストした場合でも、PWAのインストールとオフライン機能が正常に動作するようパス指定を修正しました',
+            en: 'Fixed path specifications so PWA installation and offline functions work smoothly even when hosted in subdirectories like GitHub Pages.',
+            ar: 'تصحيح المسارات لضمان عمل تثبيت PWA والميزات دون اتصال بنجاح حتى في الدับدير الفرعية مثل GitHub Pages.',
+            ko: 'GitHub Pages 등의 하위 디렉토리 환경에서 호스팅할 경우에도 PWA 설치 및 오프라인 기능이 정상 동작하도록 경로를 수정했습니다.',
+            ch: '调整了路径引用规范，即便项目托管于GitHub Pages等子目录路由环境下，PWA离线安装与PWA缓存服务也能正常运作。'
+          }
         ]
       },
       {
         version: 'v4.5.7',
         date: '2026-09-07 17:40',
         type: 'fix',
-        title: '複数画像一括ドロップ時におけるタブ読み込み順序の保証',
+        title: {
+          ja: '複数画像一括ドロップ時におけるタブ読み込み順序の保証',
+          en: 'Guarantee Tab Loading Order During Batch Image Drag and Drop',
+          ar: 'ضمان ترتيب تحميل علامات التبويب عند سحب وإفلات صور متعددة',
+          ko: '여러 이미지 일괄 드롭 시 탭 로딩 순서 보장',
+          ch: '确保批量拖拽多张图片时的标签页加载先后顺序'
+        },
         items: [
-          '複数の画像ファイルを一度にドラッグ＆ドロップした際、非同期読み込みによってタブの並び順が狂わないよう順序制御を追加しました'
+          {
+            ja: '複数の画像ファイルを一度にドラッグ＆ドロップした際、非同期読み込みによってタブの並び順が狂わないよう順序制御を追加しました',
+            en: 'Added sequence control so tab arrangement order remains correct despite asynchronous loading during batch image drops.',
+            ar: 'إضافة التحكم بالترتيب لضمان عدم اضطراب تسلسل علامات التبويب عند السحب والإفلات الجماعي.',
+            ko: '여러 이미지 파일을 한 번에 드래그 앤 드롭했을 때 비동기 로딩으로 인해 탭 정렬 순서가 흐트러지지 않도록 순서 제어를 추가했습니다.',
+            ch: '新增了序列化控制机制，在一次性拖拽导入多张图片文件时，不会因异步读取速度差异导致标签页错乱。'
+          }
         ]
       },
       {
         version: 'v4.5.6',
         date: '2026-09-07 17:35',
         type: 'fix',
-        title: 'オープニングアニメーション表示中のキーボード誤爆を防止',
+        title: {
+          ja: 'オープニングアニメーション表示中のキーボード誤爆を防止',
+          en: 'Prevent Keyboard Shortcut Misactivations During Opening Animation',
+          ar: 'منع اختصارات لوحة المفاتيح أثناء عرض رسوم بدء التشغيل',
+          ko: '오프닝 애니메이션 표시 중 키보드 오작동 방지',
+          ch: '防止在开场欢迎动画播放期间误触发键盘快捷键'
+        },
         items: [
-          '起動時のターミナルメッセージが表示されている間、裏でショートカットキー（Ctrl+V/Ctrl+S等）が誤作動しないようキー入力をブロックしました'
+          {
+            ja: '起動時のターミナルメッセージが表示されている間、裏でショートカットキー（Ctrl+V/Ctrl+S等）が誤作動しないようキー入力をブロックしました',
+            en: 'Blocked key inputs while startup terminal messages are displayed to prevent background shortcut misfires.',
+            ar: 'حظر إدخال المفاتيح أثناء عرض رسائل بدء التشغيل لمنع عمل الاختصارات بالخلفية.',
+            ko: '시작 시 터미널 메시지가 표시되는 동안 백그라운드에서 단축키(Ctrl+V/Ctrl+S 등)가 오작동하지 않도록 키 입력을 차단했습니다.',
+            ch: '在启动终端欢迎动画展示期间，自动拦截全局键盘输入，防止背后的快捷键（如Ctrl+V/Ctrl+S等）发生抢跑误触。'
+          }
         ]
       },
       {
         version: 'v4.5.5',
         date: '2026-09-07 17:30',
         type: 'change',
-        title: 'カラーピッカー色変更時における「カラー塗りモード」自動切替',
+        title: {
+          ja: 'カラーピッカー色変更時における「カラー塗りモード」自動切替',
+          en: 'Automatic Switch to "Color Fill Mode" on Color Picker Change',
+          ar: 'التبديل التلقائي إلى وضع التعبئة اللونية عند تغيير اللون',
+          ko: '컬러 피커 색상 변경 시 "컬러 채우기 모드" 자동 전환',
+          ch: '使用取色器更改颜色时自动切换至“颜色填充模式”'
+        },
         items: [
-          'カラーピッカーで色を選択した際、直感的に操作できるよう自動的に「🎨 カラー塗り」モードへと切り替わるように改善しました'
+          {
+            ja: 'カラーピッカーで色を選択した際、直感的に操作できるよう自動的に「🎨 カラー塗り」モードへと切り替わるように改善しました',
+            en: 'Improved so that selecting a color in the picker automatically switches to "🎨 Color Fill" mode for intuitive operations.',
+            ar: 'تم التحسين بحيث يتم التلقائياً الانتقال إلى وضع التعبئة عند اختيار اللون لتجربة أكثر سلاسة.',
+            ko: '컬러 피커로 색상을 선택했을 때 직관적으로 조작할 수 있도록 자동으로 "🎨 컬러 채우기" 모드로 전환되도록 개선했습니다.',
+            ch: '优化了交互直觉，当用户通过颜色选择器挑选新色彩时，工具会自动切换至“🎨 颜色填充”模式，免去手动点选步骤。'
+          }
         ]
       },
       {
         version: 'v4.5.4',
         date: '2026-09-07 17:25',
         type: 'fix',
-        title: 'キャンバス四隅（端座標）でのルーペ描画クランプ処理を追加',
+        title: {
+          ja: 'キャンバス四隅（端座標）でのルーペ描画クランプ処理を追加',
+          en: 'Add Loupe Drawing Clamp Processing at Canvas Corners',
+          ar: 'إضافة معالجة تحديد العدسة المكبرة عند زوايا اللوحة',
+          ko: '캔버스 모서리(단 좌표)에서의 돋보기 드로잉 클램프 처리 추가',
+          ch: '在画布四角边界坐标处增加放大镜（Loupe）渲染越界裁切保护'
+        },
         items: [
-          '画像の左上や右下など端付近をマスキングする際、ルーペ（拡大鏡）の表示がキャンバス外を参照して黒く乱れる問題を解消しました'
+          {
+            ja: '画像の左上や右下など端付近をマスキングする際、ルーペ（拡大鏡）の表示がキャンバス外を参照して黒く乱れる問題を解消しました',
+            en: 'Resolved issues where the loupe (magnifier) displayed black artifacts by referencing outside canvas bounds when masking near corners.',
+            ar: 'تم حل مشكلة ظهور تشويش أسود في العدسة المكبرة عند التمويه بالقرب من زوايا الصورة.',
+            ko: '이미지 좌상단이나 우하단 등 가장자리를 마스킹할 때 돋보기(확대경)가 캔버스 외부를 참조하여 검게 깨지던 문제를 해결했습니다.',
+            ch: '解决了在靠近画布边缘（如左上角或右下角）进行涂抹时，放大镜（Loupe）超限引用外部空白导致画面变黑紊乱的瑕疵。'
+          }
         ]
       },
       {
         version: 'v4.5.3',
         date: '2026-09-07 16:38',
         type: 'fix',
-        title: 'センシティブシールドのキャンセル時スタミナ消費を防止',
+        title: {
+          ja: 'センシティブシールドのキャンセル時スタミナ消費を防止',
+          en: 'Prevent Stamina Consumption on Sensitive Shield Cancellation',
+          ar: 'منع استهلاك القدرة عند إلغاء درع المحتوى الحساس',
+          ko: '센시티브 쉴드 취소 시 스태미나 소모 방지',
+          ch: '取消敏感内容护盾操作时避免扣除体力值'
+        },
         items: [
-          'センシティブ警告ガードの確認ダイアログで「キャンセル」を選択した際、スタミナが誤って消費されないよう処理順を修正しました'
+          {
+            ja: 'センシティブ警告ガードの確認ダイアログで「キャンセル」を選択した際、スタミナが誤って消費されないよう処理順を修正しました',
+            en: 'Fixed execution order so stamina is not mistakenly consumed when "Cancel" is chosen in the sensitive warning dialog.',
+            ar: 'تصحيح ترتيب العمليات لضمان عدم استهلاك القدرة عند النقر على إلغاء في نافذة التحذير.',
+            ko: '센시티브 경고 가드 확인 다이얼로그에서 "취소"를 선택했을 때 스태미나가 잘못 소모되지 않도록 처리 순서를 수정했습니다.',
+            ch: '修正了执行逻辑顺序，在敏感内容警告弹窗中点击“取消”退出时，不会再发生错误扣除体力值的现象。'
+          }
         ]
       },
       {
         version: 'v4.5.2',
         date: '2026-09-07 16:35',
         type: 'fix',
-        title: 'ズーム表示時における「選択移動」の配置精度向上',
+        title: {
+          ja: 'ズーム表示時における「選択移動」の配置精度向上',
+          en: 'Improve Placement Precision for "Move/Copy" Tool During Zoom',
+          ar: 'تحسين دقة وضع أداة "نقل/نسخ" أثناء التكبير',
+          ko: '줌 표시 시 "선택 이동" 배치 정밀도 향상',
+          ch: '提升缩放显示状态下“选区移动”功能的贴图定位精度'
+        },
         items: [
-          '画像を拡大・縮小ズームした状態で選択範囲をドラッグ移動した際、プレビュー枠のサイズおよび配置位置がズレる問題を解消しました'
+          {
+            ja: '画像を拡大・縮小ズームした状態で選択範囲をドラッグ移動した際、プレビュー枠のサイズおよび配置位置がズレる問題を解消しました',
+            en: 'Resolved misalignment issues with preview box size and placement when dragging selection areas while zoomed in/out.',
+            ar: 'تم حل مشكلة عدم تطابق حجم وموضع إطار المعاينة عند سحب التحديد أثناء التكبير.',
+            ko: '이미지를 확대·축소 줌한 상태에서 선택 영역을 드래그 이동할 때 프리뷰 테두리 크기 및 배치 위치가 어긋나던 문제를 해소했습니다.',
+            ch: '解决了在画布缩放状态下拖拽移动选区时，预览边框的尺寸大小与最终落子放置坐标发生偏移的Bug。'
+          }
         ]
       },
       {
         version: 'v4.5.1',
         date: '2026-09-06 16:31',
         type: 'fix',
-        title: 'Gitタイムトラベル後のUndo履歴自動同期に対応',
+        title: {
+          ja: 'Gitタイムトラベル後のUndo履歴自動同期に対応',
+          en: 'Support Automatic Undo History Sync After Git Time Travel',
+          ar: 'دعم المزامنة التلقائية لسجل التراجع بعد السفر عبر الزمن في Git',
+          ko: 'Git 타임 트래블 후 Undo 히스토리 자동 동기화 대응',
+          ch: '支持Git时间穿梭历史回溯后的Undo撤销栈自动同步'
+        },
         items: [
-          'Git履歴ツリーから過去のコミットにチェックアウトした直後でも、元に戻す(Undo)操作が破綻せず正確に同期するよう改善しました'
+          {
+            ja: 'Git履歴ツリーから過去のコミットにチェックアウトした直後でも、元に戻す(Undo)操作が破綻せず正確に同期するよう改善しました',
+            en: 'Improved so that Undo operations sync accurately without breaking right after checking out past commits from the Git history tree.',
+            ar: 'تحسين مزامنة عمليات التراجع (Undo) بدقة مباشرة بعد الانتقال لالتزام سابق في شجرة Git.',
+            ko: 'Git 히스토리 트리에서 과거 커밋으로 체크아웃한 직후에도 Undo(실행 취소) 작업이 깨지지 않고 정확히 동기화되도록 개선했습니다.',
+            ch: '改善了从Git历史树中切换检出至过去某历史提交节点后，Undo撤销栈能够完美无缝衔接且准确同步。'
+          }
         ]
       },
       {
         version: 'v4.5.0',
         date: '2026-09-06 16:30',
         type: 'fix',
-        title: '複数画像タブごとのGit履歴ツリー完全分離',
+        title: {
+          ja: '複数画像タブごとのGit履歴ツリー完全分離',
+          en: 'Complete Separation of Git History Trees per Multi-Image Tab',
+          ar: 'فصل تام لشجيرات تاريخ Git لكل علامة تبويب صور متعددة',
+          ko: '복수 이미지 탭별 Git 히스토리 트리 완전 분리',
+          ch: '实现多图标签页之间的Git提交历史树完全独立隔离'
+        },
         items: [
-          '複数の画像を開いている際、Gitコミット履歴がタブごとに独立して保持されるよう修正し、他画像への意図しないデータ上書きを防止しました'
+          {
+            ja: '複数の画像を開いている際、Gitコミット履歴がタブごとに独立して保持されるよう修正し、他画像への意図しないデータ上書きを防止しました',
+            en: 'Fixed Git commit histories to be maintained independently per tab when multiple images are open, preventing unintended overwrites.',
+            ar: 'إصلاح الحفاظ على سجلات Git بشكل مستقل لكل علامة تبويب لمنع الكتابة فوق الصور الأخرى.',
+            ko: '여러 이미지를 열어두었을 때 Git 커밋 히스토리가 탭별로 독립적으로 유지되도록 수정하여 다른 이미지에 대한 의도치 않은 데이터 덮어쓰기를 방지했습니다.',
+            ch: '修复了开启多张图片时各标签页共用提交历史的问题，实现每个图像标签页拥有独立的Git分支历史，防止交叉污染。'
+          }
         ]
       },
       {
         version: 'v4.4.0',
         date: '2026-09-06 10:30',
         type: 'fix',
-        title: 'Undo/Redo実装・ズーム時ダミー配置・圧縮拡張子バグの重要修正',
+        title: {
+          ja: 'Undo/Redo実装・ズーム時ダミー配置・圧縮拡張子バグの重要修正',
+          en: 'Important Fixes for Undo/Redo, Zoom Dummy Placement, and Compression Extension Bugs',
+          ar: 'إصلاحات هامة لتراجع/إعادة، موضع النصوص عند التكبير، وأخطاء الامتداد',
+          ko: 'Undo/Redo 구현, 줌 시 더미 배치, 압축 확장자 버그 중요 수정',
+          ch: '重大修复：实现撤销重做、缩放下的虚假文本定位及压缩文件扩展名Bug'
+        },
         items: [
-          '元に戻す(Undo)・やり直す(Redo)・リセット機能およびショートカットキーを完全実装しました',
-          '拡大縮小ズーム時におけるダミー置換文字のプレビューおよび焼き付けサイズのズレを解消しました',
-          'WebP/AVIF一括圧縮機において、ブラウザ非対応時のフォールバックで拡張子が正常に保存されるよう修正しました'
+          {
+            ja: '元に戻す(Undo)・やり直す(Redo)・リセット機能およびショートカットキーを完全実装しました',
+            en: 'Fully implemented Undo, Redo, Reset functions, and keyboard shortcuts.',
+            ar: 'التنفيذ الكامل لوظائف التراجع، الإعادة، إعادة التعيين واختصارات لوحة المفاتيح.',
+            ko: '실행 취소(Undo)·다시 실행(Redo)·초기화 기능 및 단축키를 완벽 구현했습니다.',
+            ch: '完整实现了撤销（Undo）、重做（Redo）、重置（Reset）功能及对应的常用键盘快捷键支持。'
+          },
+          {
+            ja: '拡大縮小ズーム時におけるダミー置換文字のプレビューおよび焼き付けサイズのズレを解消しました',
+            en: 'Resolved preview and burn-in size misalignments of dummy replacement text during zoom operations.',
+            ar: 'حل مشكلة إزاحة معاينة وحجم النصوص الوهمية أثناء التكبير والتصغير.',
+            ko: '확대/축소 줌 시 더미 대체 텍스트의 프리뷰 및 렌더링 크기 오차를 해소했습니다.',
+            ch: '解决了在画布缩放状态下进行虚假文本替换预览及其最终烙印大小时的尺寸偏差。'
+          },
+          {
+            ja: 'WebP/AVIF一括圧縮機において、ブラウザ非対応時のフォールバックで拡張子が正常に保存されるよう修正しました',
+            en: 'Fixed WebP/AVIF batch compressor fallbacks so file extensions save correctly when browser support is missing.',
+            ar: 'إصلاح امتدادات الملفات في ضغط الـ WebP/AVIF عند عدم دعم المتصفح.',
+            ko: 'WebP/AVIF 일괄 압축기에서 브라우저 미지원 시 폴백 시 확장자가 정상적으로 저장되도록 수정했습니다.',
+            ch: '修复了WebP/AVIF批量压缩器在浏览器不兼容降级时，保存文件的扩展名可能出现异常的缺陷。'
+          }
         ]
       },
       {
         version: 'v4.3.0',
         date: '2026-09-05 16:40',
         type: 'fix',
-        title: 'アン桃モーダルの二重生成バグを修正',
+        title: {
+          ja: 'アン桃モーダルの二重生成バグを修正',
+          en: 'Fix Duplicate Generation Bug in Anmomo Modal',
+          ar: 'إصلاح خطأ التكرار المزدوج لنافذة أنمومو المنبثقة',
+          ko: '안모모 모달 중복 생성 버그 수정',
+          ch: '修复安桃小游戏弹窗DOM重复创建的Bug'
+        },
         items: [
-          'アン桃のモーダルおよびゲーム画面がDOM内で重複生成される問題を解消し、プレイ履歴タイムラインの表示を完全安定化しました'
+          {
+            ja: 'アン桃のモーダルおよびゲーム画面がDOM内で重複生成される問題を解消し、プレイ履歴タイムラインの表示を完全安定化しました',
+            en: 'Resolved issues where Anmomo modals and game screens were duplicated in DOM, fully stabilizing play history timelines.',
+            ar: 'حل مشكلة إنشاء نافذة أنمومو وشاشة اللعبة مرتين في DOM لضمان الاستقرار.',
+            ko: '안모모의 모달 및 게임 화면이 DOM 내에서 중복 생성되는 문제를 해소하고 플레이 히스토리 타임라인 표시를 완벽 안정화했습니다.',
+            ch: '消除了安桃小游戏弹窗与游戏画布在DOM中被重复创建的隐患，彻底稳定了战绩历史时间轴的渲染。'
+          }
         ]
       },
       {
         version: 'v4.2.5',
         date: '2026-09-05 15:42',
         type: 'fix',
-        title: '更新履歴のカテゴリー別ボタンに変更がないのを直しました',
+        title: {
+          ja: '更新履歴のカテゴリー別ボタンに変更がないのを直しました',
+          en: 'Fix Ineffective Category Filter Buttons in Changelog',
+          ar: 'إصلاح أزرار تصنيف سجل التحديثات غير ال فعالة',
+          ko: '변경 이력 카테고리별 버튼이 작동하지 않던 현상 수정',
+          ch: '修复更新日志分类筛选按钮点击无效的问题'
+        },
         items: [
-          '更新履歴のカテゴリー別ボタンに変更がないのを直しました'
+          {
+            ja: '更新履歴のカテゴリー別ボタンに変更がないのを直しました',
+            en: 'Fixed category filter buttons in changelog that were not reflecting changes properly.',
+            ar: 'إصلاح أزرار فلترة التصنيفات في سجل التحديثات.',
+            ko: '변경 이력 카테고리별 버튼에 변경 사항이 적용되지 않던 현상을 수정했습니다.',
+            ch: '修复了更新日志面板中各分类筛选标签点击后无响应或无法正确过滤条目的问题。'
+          }
         ]
       },
       {
         version: 'v4.2.0',
         date: '2026-09-05 15:40',
         type: 'fix',
-        title: '回転・切り抜き・リサイズ後の消しゴム復元バグを修正',
+        title: {
+          ja: '回転・切り抜き・リサイズ後の消しゴム復元バグを修正',
+          en: 'Fix Eraser Restoration Bug After Rotation, Crop, and Resize',
+          ar: 'إصلاح خطأ ممحاة الاستعادة بعد التدوير والقص وتغيير الحجم',
+          ko: '회전·자르기·리사이즈 후 지우개 복원 버그 수정',
+          ch: '修复图像旋转、裁剪及缩放变形后橡皮擦复原失效的Bug'
+        },
         items: [
-          '画像の回転・反転・切り抜き・リサイズを行った後でも、消しゴム（選択範囲の復元）が正常に機能するよう修正しました'
+          {
+            ja: '画像の回転・反転・切り抜き・リサイズを行った後でも、消しゴム（選択範囲の元画像復元）が正常に機能するよう修正しました',
+            en: 'Fixed eraser (original pixel restoration) to function correctly even after image rotation, flip, crop, or resize.',
+            ar: 'إصلاح عمل الممحاة (استعادة بكسلات الأصل) بشكل صحيح حتى بعد تدوير الصورة أو قصها.',
+            ko: '이미지 회전, 반전, 자르기, 리사이즈를 거친 후에도 지우개(선택 영역 원본 복원)가 정상 작동하도록 수정했습니다.',
+            ch: '修复了在对图像进行旋转、水平翻转、裁切或分辨率调整后，橡皮擦（区域原图复原）功能错位失效的问题。'
+          }
         ]
       },
       {
         version: 'v4.1.0',
         date: '2026-09-05 14:50',
         type: 'change',
-        title: 'アン桃のダッシュボードについて変更を行いました',
+        title: {
+          ja: 'アン桃のダッシュボードについて変更を行いました',
+          en: 'Updates to Anmomo Dashboard Display',
+          ar: 'تحديثات على لوحة معلومات لعبة أنمومو',
+          ko: '안모모 대시보드 표시 방식 변경',
+          ch: '对安桃小游戏的数据看板展示方式进行了优化调整'
+        },
         items: [
-          '消した個数を全部刻んで表示される形式に変更しました'
+          {
+            ja: '消した個数を全部刻んで表示される形式に変更しました',
+            en: 'Changed to a format that logs and displays every single cleared score in detail.',
+            ar: 'تم التغيير إلى تنسيق يعرض ويحفظ كافة النتائج والقطع التي تم مسحها بالتفصيل.',
+            ko: '지운 개수를 빠짐없이 기록하여 상세히 표시되는 형식으로 변경했습니다.',
+            ch: '更新了战绩统计面板，改为能够详细记录并逐条刻印展示每次消除数量的详尽列表形式。'
+          }
         ]
       },
       {
         version: 'v4.0.0',
         date: '2026-09-05 13:00',
         type: 'feat',
-        title: 'ミニゲームアン桃を追加しました',
+        title: {
+          ja: 'ミニゲームアン桃を追加しました',
+          en: 'Added Mini-Game "Anmomo"',
+          ar: 'إضافة لعبة "أنمومو" المصغرة',
+          ko: '미니게임 "안모모" 추가',
+          ch: '全新上线趣味小游戏「安桃」'
+        },
         items: [
-          '桃野天然水/アンギラのギラちゃんが出てくるミニゲーム アン桃を追加しました',
-          'タップ/クリックで60秒の間にランダムに90個降ってくる桃野天然水とギラちゃんを消すゲームです。1回ごとに8万スタミナ消費'
+          {
+            ja: '桃野天然水/アンギラのギラちゃんが出てくるミニゲーム アン桃を追加しました',
+            en: 'Added mini-game "Anmomo" featuring Momono Tennen-sui and Gira-chan from Anguilla.',
+            ar: 'إضافة لعبة "أنمومو" المصغرة التي تظهر فيها شخصيات مومونو وجيرا-تشان.',
+            ko: '모모노 텐넨스이와 앵귈라의 기라짱이 등장하는 미니게임 "안모모"를 추가했습니다.',
+            ch: '重磅推出包含桃野天然水及安圭拉吉拉酱角色的趣味反应小游戏「安桃」。'
+          },
+          {
+            ja: 'タップ/クリックで60秒の間にランダムに90個降ってくる桃野天然水とギラちゃんを消すゲームです。1回ごとに8万スタミナ消費',
+            en: 'Tap/click to clear 90 falling Momono/Gira items within 60 seconds. Costs 80,000 stamina per run.',
+            ar: 'اضغط لمسح 90 عنصراً متساقطاً خلال 60 ثانية. تستهلك اللعبة 80,000 من القدرة لكل محاولة.',
+            ko: '터치/클릭으로 60초 동안 무작위로 떨어지는 90개의 복숭아와 기라짱을 지우는 게임입니다. 1회 플레이당 8만 스태미나 소모.',
+            ch: '在60秒内通过点击或触摸消灭随机掉落的90个桃子与旗帜。每次挑战消耗8万体力值。'
+          }
         ]
       },
       {
         version: 'v3.9.0',
         date: '2026-09-05 09:20',
         type: 'change',
-        title: '訪問数・現地時計のレスポンシブ最適化（PC常時表示・スマホモーダル化）',
+        title: {
+          ja: '訪問数・現地時計のレスポンシブ最適化（PC常時表示・スマホモーダル化）',
+          en: 'Responsive Optimization for Visits and Clock (PC Always On, Mobile Modal)',
+          ar: 'تحسين تجاوب عداد الزوار والساعة (دائم الظهور للحاسوب، منبثق للهاتف)',
+          ko: '방문자수·현지 시계 반응형 최적화 (PC 상시 표시, 모바일 모달화)',
+          ch: '访客数与当地时钟的响应式优化（PC端常驻显示、手机端弹窗折叠）'
+        },
         items: [
-          'PC画面では今まで通りヘッダーに訪問者数と現地時計を常時表示するようにしました',
-          'スマホ画面ではヘッダーのはみ出しを防ぐため、ボタンをタップしてモーダルで確認・消去できる省スペース設計にしました'
+          {
+            ja: 'PC画面では今まで通りヘッダーに訪問者数と現地時計を常時表示するようにしました',
+            en: 'Visitor counts and local clocks remain constantly visible in the header on PC screens.',
+            ar: 'عرض عداد الزوار والساعة المحلية بشكل دائم في رأس الصفحة لأجهزة الكمبيوتر.',
+            ko: 'PC 화면에서는 기존처럼 헤더에 방문자수와 현지 시계를 상시 표시하도록 했습니다.',
+            ch: '在PC端大屏上保持老习惯，于顶部导航栏常驻展示累计访客数与实时当地时钟。'
+          },
+          {
+            ja: 'スマホ画面ではヘッダーのはみ出しを防ぐため、ボタンをタップしてモーダルで確認・消去できる省スペース設計にしました',
+            en: 'Adopted a space-saving design on mobile where users tap a button to check stats in a modal, preventing header overflows.',
+            ar: 'تصميم موفر للمساحة على الهواتف عبر زر منبثق لعرض الإحصائيات لتفادي ازدحام الرأس.',
+            ko: '스마트폰 화면에서는 헤더 잘림 현상을 방지하기 위해 버튼을 탭하여 모달로 확인하고 닫을 수 있는 공간 절약형 설계로 바꿨습니다.',
+            ch: '在移动端小屏上采用空间优化的折叠设计，通过轻触专用按钮以弹出模态框形式查看，防止导航栏撑破变形。'
+          }
         ]
       },
       {
         version: 'v3.8.0',
         date: '2026-09-05 08:35',
         type: 'change',
-        title: '超軽量 WebP / AVIF 一括コンバーターへの変更&更新履歴のカテゴリに変更を追加しました',
+        title: {
+          ja: '超軽量 WebP / AVIF 一括コンバーターへの変更&更新履歴のカテゴリに変更を追加しました',
+          en: 'Super-Lightweight WebP/AVIF Batch Converter & Changelog Category Updates',
+          ar: 'ممحاة WebP/AVIF فائق الخفة وتحديثات تصنيفات سجل التحديثات',
+          ko: '초경량 WebP/AVIF 일괄 변환기 변경 및 변경 이력 카테고리 추가',
+          ch: '超轻量WebP/AVIF批量转换器升级及更新日志新增“变更”分类'
+        },
         items: [
-          '超軽量 WebP / AVIF 一括コンバーターで画像を圧縮した際、1623.png→1623.(選択した拡張子) 296.1 KB ➔ (圧縮後のサイズ)と表示するようにしました',
-          '更新履歴のカテゴリに変更を追加しました'
+          {
+            ja: '超軽量 WebP / AVIF 一括コンバーターで画像を圧縮した際、1623.png→1623.(選択した拡張子) 296.1 KB ➔ (圧縮後のサイズ)と表示するようにしました',
+            en: 'When compressing images with the batch converter, it now displays filenames and file size comparisons clearly.',
+            ar: 'عند ضغط الصور بالمحول الدفعي، يتم عرض اسم الملف ومقارنة الحجم بوضوح.',
+            ko: '초경량 WebP/AVIF 일괄 변환기로 이미지를 압축할 때 파일명과 전후 용량을 직관적으로 비교 표시하도록 했습니다.',
+            ch: '在使用超轻量WebP/AVIF批量转换器压缩图片时，直观展示转换前后的文件名及文件体积缩减对比。'
+          },
+          {
+            ja: '更新履歴のカテゴリに変更を追加しました',
+            en: 'Added a "Change" category to the changelog.',
+            ar: 'إضافة تصنيف "تغيير" إلى سجل التحديثات.',
+            ko: '변경 이력에 "변경" 카테고리를 추가했습니다.',
+            ch: '在更新日志筛选器中正式增添了“变更”分类标签。'
+          }
         ]
       },
       {
         version: 'v3.7.0',
         date: '2026-09-04 16:40',
         type: 'feat',
-        title: 'スマホ表示の文字・ボタン自動縮小＆横スクロール最適化',
+        title: {
+          ja: 'スマホ表示の文字・ボタン自動縮小＆横スクロール最適化',
+          en: 'Auto-Shrink Text/Buttons and Horizontal Scroll Optimization for Mobile',
+          ar: 'تصغير تلقائي للنصوص والأزرار وتحسين التمرير الأفقي للهواتف',
+          ko: '모바일 화면 글자·버튼 자동 축소 및 가로 스크롤 최적화',
+          ch: '移动端文字与按钮自适应等比缩小及横向滚动条平滑优化'
+        },
         items: [
-          '画面サイズに応じてボタンや文字の大きさが自動縮小（clamp対応）し、はみ出しを防止しました',
-          'ヘッダー、ナビタブ、ツールバー、各種設定モーダルの横スクロール操作を滑らかに最適化しました',
-          '小型スマホ（iPhone SEなど）でも操作ボタンが画面外へ押し出されないよう余白と高さを調整しました'
+          {
+            ja: '画面サイズに応じてボタンや文字の大きさが自動縮小（clamp対応）し、はみ出しを防止しました',
+            en: 'Button and text sizes automatically shrink (via clamp) according to screen size to prevent overflows.',
+            ar: 'تصغير أحجام الأزرار والنصوص تلقائياً حسب حجم الشاشة لمنع التداخل.',
+            ko: '화면 크기에 따라 버튼과 글자 크기가 자동 축소(clamp 대응)되어 잘림 현상을 방지했습니다.',
+            ch: '根据视口尺寸自动等比缩放按钮与文字字号（支持CSS clamp），有效杜绝溢出屏幕。'
+          },
+          {
+            ja: 'ヘッダー、ナビタブ、ツールバー、各種設定モーダルの横スクロール操作を滑らかに最適化しました',
+            en: 'Smoothly optimized horizontal scrolling for headers, nav tabs, toolbars, and setting modals.',
+            ar: 'تحسين سلاسة التمرير الأفقي للرأس وعلامات التبويب وشريط الأدوات والنوافذ.',
+            ko: '헤더, 내비 탭, 툴바, 각종 설정 모달의 가로 스크롤 조작을 부드럽게 최적화했습니다.',
+            ch: '对顶部导航、标签页、工具栏及各类设置弹窗的横向滚动交互进行了流畅度打磨。'
+          },
+          {
+            ja: '小型スマホ（iPhone SEなど）でも操作ボタンが画面外へ押し出されないよう余白と高さを調整しました',
+            en: 'Adjusted margins and heights so operation buttons are not pushed off-screen even on small phones (e.g., iPhone SE).',
+            ar: 'ضبط الهوامش والارتفاعات لضمان عدم خروج الأزرار عن الشاشة في الهواتف الصغيرة.',
+            ko: '소형 스마트폰(iPhone SE 등)에서도 조작 버튼이 화면 밖으로 밀려나지 않도록 여백과 높이를 조정했습니다.',
+            ch: '针对小屏手机（如iPhone SE等）专门微调了间距与高度，确保操作按钮不会被挤出视口。'
+          }
         ]
       },
       {
         version: 'v3.6.0',
         date: '2026-09-03 18:55',
         type: 'feat',
-        title: 'リンク集を追加しました',
+        title: {
+          ja: 'リンク集を追加しました',
+          en: 'Added Link Collection',
+          ar: 'إضافة صفحة تجميع الروابط',
+          ko: '링크 모음 추가',
+          ch: '新增友情链接与精选网址集锦页'
+        },
         items: [
-          '管理人が厳選したおすすめサイトをカテゴリ別に分けて掲載しました'
+          {
+            ja: '管理人が厳選したおすすめサイトをカテゴリ別に分けて掲載しました',
+            en: 'Published admin-curated recommended websites sorted by categories.',
+            ar: 'نشر مواقع موصى بها ومختارة بعناية من قبل المطور مقسمة حسب التصنيفات.',
+            ko: '관리자가 엄선한 추천 사이트를 카테고리별로 나누어 게재했습니다.',
+            ch: '分类整理并收录了由站长精心挑选的优质实用网站与推荐链接。'
+          }
         ]
       },
       {
         version: 'v3.5.0',
         date: '2026-09-03 17:35',
         type: 'feat',
-        title: '更新履歴のカテゴリ分別・絞り込みフィルターを追加しました',
+        title: {
+          ja: '更新履歴のカテゴリ分別・絞り込みフィルターを追加しました',
+          en: 'Added Category Breakdown and Filtering for Changelog',
+          ar: 'إضافة تصنيفات وفلترة تفصيلية لسجل التحديثات',
+          ko: '변경 이력 카테고리 분류 및 필터 기능 추가',
+          ch: '新增更新日志分类标签与多条件筛选过滤功能'
+        },
         items: [
-          '「追加 / バグ修正 / 削除 / その他」のボタンで更新履歴を瞬時に絞り込み表示可能にしました'
+          {
+            ja: '「追加 / バグ修正 / 削除 / その他」のボタンで更新履歴を瞬時に絞り込み表示可能にしました',
+            en: 'Enabled instant filtering of changelogs using "New / Bug Fix / Removed / Other" buttons.',
+            ar: 'إمكانية تصفية سجل التحديثات فوراً عبر أزرار "إضافة / إصلاح / حذف / أخرى".',
+            ko: '"추가 / 버그 수정 / 삭제 / 기타" 버튼으로 변경 이력을 즉시 필터링하여 볼 수 있게 했습니다.',
+            ch: '支持通过“新增 / 修复 / 移除 / 其他”快捷标签按钮对更新日志进行即时筛选查看。'
+          }
         ]
       },
       {
         version: 'v3.4.0',
         date: '2026-09-02 18:31',
         type: 'feat',
-        title: 'マス王アンケートを公開しました',
+        title: {
+          ja: 'マス王アンケートを公開しました',
+          en: 'Published King of Hiding Survey',
+          ar: 'إطلاق استطلاع رأي ملك الإخفاء',
+          ko: '숨기기 왕 설문조사 공개',
+          ch: '公开上线“隐藏之王”用户体验反馈问卷调查'
+        },
         items: [
-          '要望、バグ、クレームなどを管理人に送れます'
+          {
+            ja: '要望、バグ、クレームなどを管理人に送れます',
+            en: 'Allows users to send feature requests, bug reports, and feedback to the admin.',
+            ar: 'يتيح للمستخدمين إرسال المقترحات والشكاوى وبلاغات الأخطاء للمطور.',
+            ko: '요청 사항, 버그, 불만 등을 관리자에게 보낼 수 있습니다.',
+            ch: '方便用户向站长直接提交功能需求、Bug反馈或建议意见。'
+          }
         ]
       },
       {
         version: 'v3.3.0',
         date: '2026-09-02 18:18',
         type: 'feat',
-        title: '保存先をlocalstorageから IndexedDBへ変えました',
+        title: {
+          ja: '保存先をlocalstorageから IndexedDBへ変えました',
+          en: 'Changed Storage from localStorage to IndexedDB',
+          ar: 'تغيير التخزين المحلي من localStorage إلى IndexedDB',
+          ko: '저장소를 localStorage에서 IndexedDB로 변경',
+          ch: '将本地存储底层由localStorage全面升级为IndexedDB'
+        },
         items: [
-          '保存容量が5MBから数ギガに増加するので、重い画像やコミットを100件作っても再リロードする際落ちません'
+          {
+            ja: '保存容量が5MBから数ギガに増加するので、重い画像やコミットを100件作っても再リロードする際落ちません',
+            en: 'Storage capacity increased from 5MB to several gigabytes, preventing crashes when reloading heavy images or 100+ commits.',
+            ar: 'زيادة سعة التخزين من 5 ميجابايت إلى عدة جيجابايت لمنع الانهيار عند تحميل صور ضخمة.',
+            ko: '저장 용량이 5MB에서 수 GB로 증가하여, 무거운 이미지나 100개의 커밋을 만들어도 재로딩 시 다운되지 않습니다.',
+            ch: '存储上限由5MB大幅扩容至数GB，即便导入超大图片或积累上百条Git提交记录，重新加载时也不会发生崩溃。'
+          }
         ]
       },
       {
         version: 'v3.20',
         date: '2026-09-02 17:45',
         type: 'feat',
-        title: 'Git履歴ツリーを追加しました',
+        title: {
+          ja: 'Git履歴ツリーを追加しました',
+          en: 'Added Git History Tree',
+          ar: 'إضافة شجرة تاريخ Git',
+          ko: 'Git 히스토리 트리 추가',
+          ch: '重磅新增Git可视化提交历史树功能'
+        },
         items: [
-          '操作が自動的にすべて履歴ツリーにコミットされます',
-          'コミットを押すと、そのコミットの操作に復元できます',
-          '.maskにもしっかり履歴ツリーが保存できます。ブランチも作れます'
+          {
+            ja: '操作が自動的にすべて履歴ツリーにコミットされます',
+            en: 'All actions are automatically committed to the history tree.',
+            ar: 'يتم تسجيل كافة العمليات تلقائياً في شجرة التاريخ.',
+            ko: '모든 조작이 자동으로 히스토리 트리에 커밋됩니다.',
+            ch: '所有编辑操作均会自动作为节点提交至历史版本树中。'
+          },
+          {
+            ja: 'コミットを押すと、そのコミットの操作に復元できます',
+            en: 'Clicking a commit restores the editor to that exact operation state.',
+            ar: 'النقر على أي ال تزام يعيد الحالة لتلك اللحظة بدقة.',
+            ko: '커밋을 누르면 해당 커밋의 조작 상태로 복원할 수 있습니다.',
+            ch: '点击任意提交节点，画布将瞬间时光倒流并复原至该历史操作状态。'
+          },
+          {
+            ja: '.maskにもしっかり履歴ツリーが保存できます。ブランチも作れます',
+            en: 'History trees are safely saved in .mask files, and branches can also be created.',
+            ar: 'يتم حفظ شجرة التاريخ بداخل ملفات .mask مع إمكانية إنشاء فروع.',
+            ko: '.mask에도 히스토리 트리가 안전하게 저장되며 브랜치도 생성할 수 있습니다.',
+            ch: '历史提交树可完整打包进.mask工程文件中，并支持自由创建分支。'
+          }
         ]
       },
       {
         version: 'v3.1.0',
         date: '2026-09-02 09:25',
         type: 'feat',
-        title: 'センシティブシールド/オープニングアニメーションを追加しました',
+        title: {
+          ja: 'センシティブシールド/オープニングアニメーションを追加しました',
+          en: 'Added Sensitive Shield and Opening Animation',
+          ar: 'إضافة درع المحتوى الحساس ورسوم بدء التشغيل',
+          ko: '센시티브 쉴드 및 오프닝 애니메이션 추가',
+          ch: '新增敏感内容护盾与开场欢迎动画'
+        },
         items: [
-          'グロ画像を自動検知し、厚めのモザイクをかけます',
-          'apiなどを一切使わずローカル処理しています',
-          'スキップ/2回目以降流さない機能つきの5秒間のオープニングアニメーションを追加しました'
+          {
+            ja: 'グロ画像を自動検知し、厚めのモザイクをかけます',
+            en: 'Automatically detects shocking images and applies heavy mosaics.',
+            ar: 'الكشف التلقائي عن الصور الصادمة وتطبيق تمويه سميك.',
+            ko: '혐오·충격적인 이미지를 자동 감지하여 두터운 모자이크를 적용합니다.',
+            ch: '智能本地识别高危惊悚图像并自动施加厚重马赛克。'
+          },
+          {
+            ja: 'apiなどを一切使わずローカル処理しています',
+            en: 'Processed entirely locally without using any external APIs.',
+            ar: 'تتم المعالجة محلياً بالكامل دون استخدام أي واجهات خارجية.',
+            ko: '외부 API를 일절 사용하지 않고 완전 로컬로 처리됩니다.',
+            ch: '全程纯本地客户端计算处理，不调用任何外部云端API。'
+          },
+          {
+            ja: 'スキップ/2回目以降流さない機能つきの5秒間のオープニングアニメーションを追加しました',
+            en: 'Added a 5-second opening animation with skip and "don\'t show again" features.',
+            ar: 'إضافة رسوم بدء التشغيل لمدة 5 ثوانٍ مع خيار التخطي وعدم الإظهار مجدداً.',
+            ko: '스킵 및 2회 차 이후 미표시 기능이 포함된 5초간의 오프닝 애니메이션을 추가했습니다.',
+            ch: '新增5秒钟开场欢迎动画，支持跳过及“以后不再播放”记忆选项。'
+          }
         ]
       },
       {
         version: 'v3.0.0',
         date: '2026-09-01 15:25',
         type: 'feat',
-        title: '自己紹介タブを追加しました',
+        title: {
+          ja: '自己紹介タブを追加しました',
+          en: 'Added Profile Tab',
+          ar: 'إضافة تبويب الملف الشخصي',
+          ko: '자기소개 탭 추가',
+          ch: '新增开发者个人介绍标签页'
+        },
         items: [
-          '管理人の自己紹介タブを追加しました'
+          {
+            ja: '管理人の自己紹介タブを追加しました',
+            en: 'Added a profile tab for the site administrator.',
+            ar: 'إضافة تبويب خاص للتعريف بمطور الموقع.',
+            ko: '관리자 소개를 위한 프로필 탭을 추가했습니다.',
+            ch: '增设了展示网站站长背景与心路历程的自我介绍页。'
+          }
         ]
       },
       {
         version: 'v2.9.2',
         date: '2026-09-01 12:00',
         type: 'feat',
-        title: 'カラー塗り・選択移動・カラーピッカー連動＆スマホ完全最適化',
+        title: {
+          ja: 'カラー塗り・選択移動・カラーピッカー連動＆スマホ完全最適化',
+          en: 'Color Fill, Move/Copy, Eyedropper Linkage & Mobile Optimization',
+          ar: 'التعبئة اللونية، النقل، ربط القطارة، والتحسين الشامل للهواتف',
+          ko: '컬러 채우기, 선택 이동, 컬러 피커 연동 및 모바일 완전 최적화',
+          ch: '颜色填充、选区移动、取色器联动及移动端深度优化'
+        },
         items: [
-          '好きな色やスポイト抽出色で四角く塗りつぶせる「🎨 カラー塗り」機能を追加',
-          '選択した範囲をドラッグで別の場所に移動・複製できる「🔀 選択移動」を新設',
-          '円形マスク・枠・矢印・連番スタンプでカラーピッカーおよびスポイト抽出色を選択可能に',
-          '消しゴム（選択範囲の元画像復元）機能の安定化',
-          'スマホ・タブレットでの2本指ピンチズーム・パン移動の追従性とページネーション表示を改善',
-          '右クリックによる画像保存・コピー操作を完全許可'
+          {
+            ja: '好きな色やスポイト抽出色で四角く塗りつぶせる「🎨 カラー塗り」機能を追加',
+            en: 'Added "🎨 Color Fill" to paint rectangles with custom or eyedropper-picked colors.',
+            ar: 'إضافة ميزة "🎨 تعبئة لون" لتلوين المستطيلات بألوان مخصصة.',
+            ko: '원하는 색상이나 스포이트 추출 색상으로 사각형을 채우는 "🎨 컬러 채우기" 기능 추가',
+            ch: '新增“🎨 颜色填充”功能，支持使用自定义色彩或吸管提取色进行矩形涂抹。'
+          },
+          {
+            ja: '選択した範囲をドラッグで別の場所に移動・複製できる「🔀 選択移動」を新設',
+            en: 'Added "🔀 Move/Copy" to drag-move or duplicate selected regions.',
+            ar: 'إضافة ميزة "🔀 نقل/نسخ" لسحب ونقل الأجزاء المحددة.',
+            ko: '선택한 영역을 드래그하여 다른 위치로 이동·복제할 수 있는 "🔀 선택 이동" 신설',
+            ch: '新设“🔀 选区移动”功能，支持框选目标区域并拖拽平移至任意位置进行拼贴。'
+          },
+          {
+            ja: '円形マスク・枠・矢印・連番スタンプでカラーピッカーおよびスポイト抽出色を選択可能に',
+            en: 'Enabled color picker and eyedropper support for circle masks, frames, arrows, and number stamps.',
+            ar: 'إمكانية استخدام القطارة والألوان مع الأقنعة الدائرية، الإطارات، الأسهم، والأختام.',
+            ko: '원형 마스크, 테두리, 화살표, 번호 스탬프에서 컬러 피커 및 스포이트 색상 선택 가능',
+            ch: '圆形遮罩、边框、箭头及序号图章现已全面支持联动取色器与吸管配色。'
+          },
+          {
+            ja: '消しゴム（選択範囲の元画像復元）機能の安定化',
+            en: 'Stabilized the eraser (original pixel restoration) feature.',
+            ar: 'استقرار ميزة الممحاة (استعادة الصورة الأصلية للمنطقة المحددة).',
+            ko: '지우개(선택 영역 원본 이미지 복원) 기능 안정화',
+            ch: '大幅强化并稳定了橡皮擦（局部屋原图复原）核心功能的运算表现。'
+          },
+          {
+            ja: 'スマホ・タブレットでの2本指ピンチズーム・パン移動の追従性とページネーション表示を改善',
+            en: 'Improved tracking and pagination for 2-finger pinch zoom and panning on mobile/tablets.',
+            ar: 'تحسين التكبير بإصبعين والتحريك وترقيم الصفحات على الهواتف والأجهزة اللوحية.',
+            ko: '스마트폰·태블릿에서의 두 손가락 핀치 줌·팬 이동 추종성 및 페이지네이션 표시 개선',
+            ch: '优化了移动设备及平板上的双指捏合缩放、画布平移跟手度及分页显示。'
+          },
+          {
+            ja: '右クリックによる画像保存・コピー操作を完全許可',
+            en: 'Fully enabled right-click image saving and copying operations.',
+            ar: 'السماح الكامل بحفظ ونسخ الصور عبر النقر بزر الماوس الأيمن.',
+            ko: '우클릭을 통한 이미지 저장 및 복사 조작 전면 허용',
+            ch: '全面解禁并允许用户通过右键菜单直接进行图片另存为与复制操作。'
+          }
         ]
       },
       {
         version: 'v2.9.0',
         date: '2026-09-01 10:39',
         type: 'feat',
-        title: 'PWA化しました',
+        title: {
+          ja: 'PWA化しました',
+          en: 'Converted to PWA (Progressive Web App)',
+          ar: 'التحويل إلى تطبيق ويب تقدمي (PWA)',
+          ko: 'PWA(프로그레시브 웹 앱) 적용 완료',
+          ch: '全面升级为PWA（渐进式Web应用）架构'
+        },
         items: [
-          'これで実際にアプリのように使えます'
+          {
+            ja: 'これで実際にアプリのように使えます',
+            en: 'Now you can use it like a real native app.',
+            ar: 'الآن يمكنك استخدامه تماماً مثل التطبيقات الأصلية.',
+            ko: '이제 실제 앱처럼 설치하여 사용할 수 있습니다.',
+            ch: '支持添加至桌面，获得如同原生客户端一般的卓越离线使用体验。'
+          }
         ]
       },
       {
         version: 'v2.8.0',
         date: '2026-09-01 10:15',
         type: 'other',
-        title: 'ロゴのルビをマーキーに変えました',
+        title: {
+          ja: 'ロゴのルビをマーキーに変えました',
+          en: 'Changed Logo Ruby to Marquee Animation',
+          ar: 'تغيير نص شعار Ruby إلى حركة التمرير Marquee',
+          ko: '로고 루비를 마퀴(Marquee) 애니메이션으로 변경',
+          ch: '将Logo副标题注音改为流动跑马灯动画效果'
+        },
         items: [
-          'ロゴのルビのところをmarquee(文字がスクロールするアニメーション)にしました'
+          {
+            ja: 'ロゴのルビのところをmarquee(文字がスクロールするアニメーション)にしました',
+            en: 'Changed the ruby text of the logo into a scrolling marquee animation.',
+            ar: 'تحويل نص شعار Ruby إلى حركة تمرير نصية متحركة.',
+            ko: '로고 루비 부분을 글자가 스크롤되는 마퀴(marquee) 애니메이션으로 만들었습니다.',
+            ch: '将网站Logo下方的注音说明换成了平滑滚动的跑马灯动画样式。'
+          }
         ]
       },
       {
         version: 'v2.7.1',
         date: '2026-08-31 12:15',
         type: 'fix',
-        title: '描画・マスキング完了時の超軽量化＆ラグ完全解消',
+        title: {
+          ja: '描画・マスキング完了時の超軽量化＆ラグ完全解消',
+          en: 'Super-Lightweight Rendering and Complete Lag Elimination on Mask Completion',
+          ar: 'خفة فائقة وإلغاء كامل للتأخير عند اكتمال الرسم والتمويه',
+          ko: '드로잉·마스킹 완료 시 초경량화 및 렉 완벽 해소',
+          ch: '大幅轻量化涂抹与打码完成时的计算开销，彻底消除卡顿滞后'
+        },
         items: [
-          'ドラッグ終了時の同期Base64書き込みを遅延デバウンス化し、体感遅延をゼロに改善',
-          'モザイク・ぼかし・消しゴム処理のピクセル走査を整数最適化して高速化'
+          {
+            ja: 'ドラッグ終了時の同期Base64書き込みを遅延デバウンス化し、体感遅延をゼロに改善',
+            en: 'Deferred synchronous Base64 writes at drag end using debounce, reducing perceived latency to zero.',
+            ar: 'تأخير كتابة Base64 المتزامنة عند نهاية السحب لتخفيض التأخير إلى الصفر.',
+            ko: '드래그 종료 시 동기 Base64 쓰기를 지연 디바운스 처리하여 체감 지연을 제로로 개선',
+            ch: '将拖拽结束时的同步Base64写入改为防抖延迟提交，将主观操作延迟降为零。'
+          },
+          {
+            ja: 'モザイク・ぼかし・消しゴム処理のピクセル走査を整数最適化して高速化',
+            en: 'Optimized pixel scanning loops with integers for faster mosaic, blur, and eraser processing.',
+            ar: 'تحسين مسح البكسلات لمعالجة الفسيفساء والتمويه والممحاة بسرعة أكبر.',
+            ko: '모자이크·블러·지우개 처리의 픽셀 스캔을 정수 최적화하여 고속화',
+            ch: '对马赛克、模糊及橡皮擦处理的像素扫描矩阵进行了整型优化，大幅提升执行效率。'
+          }
         ]
       },
       {
         version: 'v2.7.0',
         date: '2026-08-31 11:45',
         type: 'feat',
-        title: '高精度ローカル自動認識マスク＆円形カラーピッカー連動・スマホ操作性超強化',
+        title: {
+          ja: '高精度ローカル自動認識マスク＆円形カラーピッカー連動・スマホ操作性超強化',
+          en: 'High-Precision Local Auto-Recognition Mask, Eyedropper Linkage & Enhanced Mobile UX',
+          ar: 'قناع التعرف التلقائي المحلي عالي الدقة، ربط القطارة، وتحسين تجربة الهاتف',
+          ko: '고정밀 로컬 자동 인식 마스크 및 원형 컬러 피커 연동, 모바일 조작성 대폭 강화',
+          ch: '高精度本地自动识别遮罩、圆形取色器联动及移动端交互全方位强化'
+        },
         items: [
-          '完全ローカルで動く高精度エッジ・スキントーン自動解析による文字・顔一発マスキングを搭載',
-          '円形マスク・枠・矢印・連番スタンプでカラーピッカー及びスポイト抽出色を選択可能に',
-          '消しゴム（選択範囲の元画像復元）機能を追加',
-          'スマホ・タブレットでの2本指ピンチズーム・パン移動およびタッチ操作性を格段に向上'
+          {
+            ja: '完全ローカルで動く高精度エッジ・スキントーン自動解析による文字・顔一発マスキングを搭載',
+            en: 'Equipped with one-touch text/face masking powered by local high-precision edge and skin tone auto-analysis.',
+            ar: 'مزود بالتعرف التلقائي على النصوص والوجوه عبر التحليل المحلي للحواف والبشرة.',
+            ko: '완전 로컬로 작동하는 고정밀 에지·스킨톤 자동 분석을 통한 글자·얼굴 원터치 마스킹 탑재',
+            ch: '内置完全在本地运行的高精度边缘与肤色智能分析，支持文字及人脸一键快速打码。'
+          },
+          {
+            ja: '円形マスク・枠・矢印・連番スタンプでカラーピッカー及びスポイト抽出色を選択可能に',
+            en: 'Enabled color picker and eyedropper color selection for circle masks, frames, arrows, and number stamps.',
+            ar: 'إمكانية اختيار الألوان والقطارة مع الأقنعة الدائرية، الإطارات، الأسهم، والأختام.',
+            ko: '원형 마스크, 테두리, 화살표, 번호 스탬프에서 컬러 피커 및 스포이트 추출 색상 선택 가능',
+            ch: '圆形遮罩、边框、箭头及序号图章现已支持自由指定取色器及吸管提取的颜色。'
+          },
+          {
+            ja: '消しゴム（選択範囲の元画像復元）機能を追加',
+            en: 'Added an eraser feature to restore original images in selected areas.',
+            ar: 'إضافة ميزة الممحاة لاستعادة الصورة الأصلية في المناطق المحددة.',
+            ko: '지우개(선택 영역 원본 이미지 복원) 기능 추가',
+            ch: '新增橡皮擦工具（精准擦除加工并复原底层原始图像）。'
+          },
+          {
+            ja: 'スマホ・タブレットでの2本指ピンチズーム・パン移動およびタッチ操作性を格段に向上',
+            en: 'Significantly improved 2-finger pinch zoom, pan movement, and touch usability on mobile/tablets.',
+            ar: 'تحسين ملحوظ للتكبير بإصبعين والتحريك وتجربة اللمس على الهواتف والأجهزة اللوحية.',
+            ko: '스마트폰·태블릿에서의 두 손가락 핀치 줌·팬 이동 및 터치 조작성을 대폭 향상',
+            ch: '大幅提升了智能手机及平板设备上的双指捏合缩放、画布平移及触控跟手流畅度。'
+          }
         ]
       },
       {
         version: 'v2.6.0',
         date: '2026-08-31 09:47',
         type: 'feat',
-        title: 'on/offボタンを動かせる機能を追加しました',
+        title: {
+          ja: 'on/offボタンを動かせる機能を追加しました',
+          en: 'Added Movable On/Off Button Feature',
+          ar: 'إضافة ميزة تحريك زر التشغيل والإيقاف',
+          ko: 'On/Off 버튼 이동 기능 추가',
+          ch: '新增开关按钮支持自由拖拽移动功能'
+        },
         items: [
-          ' 位置を自由自在に変えれます'
+          {
+            ja: '位置を自由自在に変えれます',
+            en: 'You can now freely reposition it anywhere on the screen.',
+            ar: 'يمكنك تغيير موضعه بحرية تامة على الشاشة.',
+            ko: '위치를 자유자재로 변경할 수 있습니다.',
+            ch: '支持在屏幕上自由拖拽改变其摆放位置，避免遮挡重要界面。'
+          }
         ]
       },
       {
         version: 'v2.5.0',
         date: '2026-08-31 09:38',
         type: 'feat',
-        title: '星のマウスストーカを追加しました',
+        title: {
+          ja: '星のマウスストーカを追加しました',
+          en: 'Added Star Mouse Stalker Effect',
+          ar: 'إضافة تأثير متتبع الماوس النجمي',
+          ko: '별 모양 마우스 스토커 추가',
+          ch: '新增星光鼠标轨迹跟随特效'
+        },
         items: [
-          ' スマホでもついてきます。ライトモードだと少しはっきりした黄色、ダークモードだと薄い黄色にしてあります。on/off機能付きです'
+          {
+            ja: 'スマホでもついてきます。ライトモードだと少しはっきりした黄色、ダークモードだと薄い黄色にしてあります。on/off機能付きです',
+            en: 'Follows you even on mobile. Brighter yellow in light mode, softer yellow in dark mode. Includes on/off toggle.',
+            ar: 'يتبعك حتى على الهاتف. أصفر أصح في الوضع الفاتح وأفتح في الداكن، مع زر تشغيل وإيقاف.',
+            ko: '모바일에서도 따라옵니다. 라이트 모드에서는 선명한 노란색, 다크 모드에서는 연한 노란색으로 표시되며 On/Off 기능이 포함되어 있습니다.',
+            ch: '移动端同样完美支持跟随。浅色模式下呈现醒目黄色，深色模式下呈现柔和淡黄，并附带便捷的开启/关闭开关。'
+          }
         ]
       },
       {
         version: 'v2.4.0',
         date: '2026-08-31 08:56',
         type: 'feat',
-        title: '超軽量 WebP / AVIF 一括コンバーター＆圧縮機を追加しました',
+        title: {
+          ja: '超軽量 WebP / AVIF 一括コンバーター＆圧縮機を追加しました',
+          en: 'Added Super-Lightweight WebP / AVIF Batch Converter & Compressor',
+          ar: 'إضافة محول وضاغط WebP / AVIF فائق الخفة',
+          ko: '초경량 WebP / AVIF 일괄 변환기 및 압축기 추가',
+          ch: '新增超轻量WebP / AVIF批量转换与图像压缩工具'
+        },
         items: [
-          ' 重たいPNGやJPEGをドラッグするだけで、画質を保ったままファイルサイズを1/10に一括圧縮（ギガ削減）できます'
+          {
+            ja: '重たいPNGやJPEGをドラッグするだけで、画質を保ったままファイルサイズを1/10に一括圧縮（ギガ削減）できます',
+            en: 'Simply drag heavy PNGs or JPEGs to batch compress file sizes down to 1/10 while preserving quality (saves mobile data).',
+            ar: 'فقط اسحب صور PNG أو JPEG الثقيلة لضغطها دفعة واحدة إلى 1/10 من الحجم مع الحفاظ على الجودة.',
+            ko: '무거운 PNG나 JPEG를 드래그하는 것만으로 화질을 유지한 채 파일 용량을 1/10로 일괄 압축(데이터 절약)할 수 있습니다.',
+            ch: '只需轻松拖入笨重的PNG或JPEG图片，即可在保留画质的同时将其批量压缩至原体积的1分之10（大幅节省流量）。'
+          }
         ]
       },
       {
         version: 'v2.4.0',
         date: '2026-08-30 19:40',
         type: 'fix',
-        title: '調べて分かったバグをすべて直しました',
+        title: {
+          ja: '調べて分かったバグをすべて直しました',
+          en: 'Fixed All Identified Bugs',
+          ar: 'إصلاح كافة الأخطاء التي تم اكتشافها',
+          ko: '조사된 모든 버그 수정 완료',
+          ch: '排查并修复了已知的全部Bug与语法瑕疵'
+        },
         items: [
-          'パソコンで機能が使用できないバグなどを直しました。文法なども直しました'
+          {
+            ja: 'パソコンで機能が使用できないバグなどを直しました。文法なども直しました',
+            en: 'Fixed bugs where certain features were unusable on PCs, and corrected grammatical issues.',
+            ar: 'إصلاح الأخطاء التي كانت تقيد استخدام بعض الميزات على أجهزة الكمبيوتر وتصحيح القواعد.',
+            ko: 'PC에서 기능을 사용할 수 없던 버그 등을 수정했으며 문법적 오류도 바로잡았습니다.',
+            ch: '修复了部分功能在桌面PC端无法正常调用的Bug，同时修正了多处文法表述。'
+          }
         ]
       },
       {
         version: 'v2.3.0',
         date: '2026-08-30 09:10',
         type: 'feat',
-        title: '独自形式 data.mask 対応＆超インフレスタミナ可視化バー搭載',
+        title: {
+          ja: '独自形式 data.mask 対応＆超インフレスタミナ可視化バー搭載',
+          en: 'Proprietary data.mask Support & Ultra-Inflation Stamina Visualization Bar',
+          ar: 'دعم تنسيق data.mask الخاص وشريط مرئي للقدرة الفائقة',
+          ko: '독자 형식 data.mask 지원 및 초인플레이션 스태미나 시각화 바 탑재',
+          ch: '支持独家data.mask工程格式与超高上限体力值可视化进度条'
+        },
         items: [
-          '全画像・スタミナ状態を完全保存＆復元できる data.mask (JSON形式) の入出力に対応',
-          '毎分52万回復のリアルタイム・スタミナバーを下部に搭載（動作超軽量設計）',
-          'リロード時の自動復元を完全強化（作業状態・タブ・スタミナが確実に保持されます）'
+          {
+            ja: '全画像・スタミナ状態を完全保存＆復元できる data.mask (JSON形式) の入出力に対応',
+            en: 'Supported import/export of data.mask (JSON format) for complete save & restore of all images and stamina states.',
+            ar: 'دعم استيراد وتصدير ملفات data.mask (بتنسيق JSON) لحفظ واستعادة الصور والقدرة بالكامل.',
+            ko: '모든 이미지와 스태미나 상태를 완벽히 저장 및 복원할 수 있는 data.mask(JSON 형식) 입출력 지원',
+            ch: '支持导入导出独家data.mask（JSON格式）工程文件，可完整保存与恢复所有编辑图像及体力状态。'
+          },
+          {
+            ja: '毎分52万回復のリアルタイム・スタミナバーを下部に搭載（動作超軽量設計）',
+            en: 'Equipped with a bottom real-time stamina bar recovering 520,000 per minute (ultra-lightweight design).',
+            ar: 'شريط قدرة سفلي في الوقت الفعلي يستعيد 520,000 في الدقيقة (بتصميم فائق الخفة).',
+            ko: '분당 52만 회복되는 실시간 스태미나 바를 하단에 탑재 (초경량 동작 설계)',
+            ch: '底部集成每分钟恢复52万点体力的实时可视化进度条（超轻量级运行架构）。'
+          },
+          {
+            ja: 'リロード時の自動復元を完全強化（作業状態・タブ・スタミナが確実に保持されます）',
+            en: 'Fully enhanced automatic restoration on reload (work states, tabs, and stamina are reliably preserved).',
+            ar: 'تعزيز الاستعادة التلقائية عند إعادة التحميل (يتم الاحتفاظ بحالة العمل وعلامات التبويب والقدرة).',
+            ko: '새로고침 시 자동 복원 기능 완벽 강화 (작업 상태, 탭, 스태미나가 확실하게 유지됩니다)',
+            ch: '全面强化页面刷新时的自动记忆与恢复能力（工作现场、标签页及体力数值均可稳固保留）。'
+          }
         ]
       },
       {
         version: 'v2.2.0',
         date: '2026-08-29 20:30',
         type: 'feat',
-        title: 'SQL Serverアクセスカウンター＆現地時刻時計の搭載',
+        title: {
+          ja: 'SQL Serverアクセスカウンター＆現地時刻時計の搭載',
+          en: 'SQL Server Access Counter & Local Time Clock Integration',
+          ar: 'إضافة عداد الزيارات عبر SQL Server وساعة الوقت المحلي',
+          ko: 'SQL Server 방문자 카운터 및 현지 시각 시계 탑재',
+          ch: '集成SQL Server访问计数器与实时本地时钟显示'
+        },
         items: [
-          'Somee.com MSSQL連動のリアルタイムアクセスカウンターをヘッダーに統合',
-          'アクセスした国・タイムゾーンを自動判別する高精度現地時計を搭載'
+          {
+            ja: 'Somee.com MSSQL連動のリアルタイムアクセスカウンターをヘッダーに統合',
+            en: 'Integrated real-time access counter linked with Somee.com MSSQL into the header.',
+            ar: 'دمج عداد الزيارات الفعلي المرتبط بـ Somee.com MSSQL في رأس الصفحة.',
+            ko: 'Somee.com MSSQL 연동 실시간 방문자 카운터를 헤더에 통합',
+            ch: '在顶部导航栏中无缝集成了联动Somee.com MSSQL数据库的实时访客统计计数器。'
+          },
+          {
+            ja: 'アクセスした国・タイムゾーンを自動判別する高精度現地時計を搭載',
+            en: 'Equipped with a high-precision local clock that automatically detects accessed country and timezone.',
+            ar: 'تجهيزه بساعة محلية عالية الدقة تحدد تلقائياً الدولة والمنطقة الزمنية.',
+            ko: '접속한 국가와 타임존을 자동 판별하는 고정밀 현지 시계 탑재',
+            ch: '内置高精度本地时钟，可自动识别并显示访问者当前所在国家及对应时区时间。'
+          }
         ]
       },
       {
         version: 'v2.1.0',
         date: '2026-08-29 14:50',
         type: 'feat',
-        title: 'ダミー文字置換ツール＆直感ドラッグ移動の実装',
+        title: {
+          ja: 'ダミー文字置換ツール＆直感ドラッグ移動の実装',
+          en: 'Dummy Text Replacement Tool & Intuitive Drag Movement Implementation',
+          ar: 'أداة استبدال النصوص الوهمية وتطبيق السحب البديهي',
+          ko: '더미 텍스트 교체 툴 및 직관적인 드래그 이동 구현',
+          ch: '实现虚假文本替换工具及直观的拖拽定位移动'
+        },
         items: [
-          '氏名・電話番号・メール・住所・会社名などのダミー上書き置換に対応',
-          '配置枠を画面上で直感的にドラッグ＆ドロップ移動して位置調整可能'
+          {
+            ja: '氏名・電話番号・メール・住所・会社名などのダミー上書き置換に対応',
+            en: 'Supported dummy overwrite replacement for names, phone numbers, emails, addresses, and company names.',
+            ar: 'دعم استبدال البيانات الوهمية مثل الأسماء، أرقام الهواتف، البريد والعناوين.',
+            ko: '성명, 전화번호, 이메일, 주소, 회사명 등의 더미 덮어쓰기 교체 지원',
+            ch: '支持对真实姓名、电话号码、电子邮件、家庭住址及公司名称等敏感字段进行虚假信息覆盖替换。'
+          },
+          {
+            ja: '配置枠を画面上で直感的にドラッグ＆ドロップ移動して位置調整可能',
+            en: 'Position adjustment is available by intuitively dragging and dropping the placement box on screen.',
+            ar: 'إمكانية ضبط الموضع عبر سحب وإفلات إطار التوضيح بديهياً على الشاشة.',
+            ko: '배치 상자를 화면에서 직관적으로 드래그 앤 드롭하여 위치 조정 가능',
+            ch: '支持在画面上直接通过直观的拖拽与放置来微调覆盖文本框的确切摆放位置。'
+          }
         ]
       },
       {
         version: 'v2.0.0',
         date: '2026-08-28 19:15',
         type: 'feat',
-        title: '超大型アップデート：全29大機能＆スマホ完全対応',
+        title: {
+          ja: '超大型アップデート：全29大機能＆スマホ完全対応',
+          en: 'Major Update: All 29 Major Features & Full Mobile Support',
+          ar: 'تحديث ضخم: كافة الميزات الـ 29 والتوافق التام مع الهواتف',
+          ko: '초대형 업데이트: 총 29대 기능 및 모바일 완전 대응',
+          ch: '超大型版本更新：集成全套29大核心功能并实现移动端全面适配'
+        },
         items: [
-          'スマホ・タブレットのタッチ・スワイプ・ピンチ操作に完全最適化',
-          '注釈機能・定型カードマスク・透かし・リサイズ・保存形式選択を実装'
+          {
+            ja: 'スマホ・タブレットのタッチ・スワイプ・ピンチ操作に完全最適化',
+            en: 'Fully optimized for touch, swipe, and pinch operations on smartphones and tablets.',
+            ar: 'تحسين تام لعمليات اللمس والتمرير والتكبير على الهواتف والأجهزة اللوحية.',
+            ko: '스마트폰·태블릿의 터치·스와이프·핀치 조작에 완전 최적화',
+            ch: '针对智能手机及平板电脑的触摸、滑动、捏合手势进行了全方位深度优化。'
+          },
+          {
+            ja: '注釈機能・定型カードマスク・透かし・リサイズ・保存形式選択を実装',
+            en: 'Implemented annotation features, standard ID card masks, watermarks, resizing, and save format selection.',
+            ar: 'تنفيذ ميزات التعليقات، أقنعة البطاقات، العلامات المائية، تغيير الحجم، واختيار صيغة الحفظ.',
+            ko: '주석 기능, 정형 카드 마스크, 워터마크, 리사이즈, 저장 포맷 선택 구현',
+            ch: '内置批注功能、证件卡片定型模板遮罩、水印添加、尺寸重置及多种导出格式自由选择。'
+          }
         ]
       },
       {
         version: 'v1.0.0',
         date: '2026-08-28 19:00',
         type: 'other',
-        title: '初期リリース',
+        title: {
+          ja: '初期リリース',
+          en: 'Initial Release',
+          ar: 'الإصدار الأول',
+          ko: '초기 릴리스',
+          ch: '首次公开初始版本发布'
+        },
         items: [
-          '完全ローカル完結マスキングツールの初期公開'
+          {
+            ja: '完全ローカル完結マスキングツールの初期公開',
+            en: 'Initial public release of the completely local offline masking tool.',
+            ar: 'الإصدار العام الأول لأداة الإخفاء والتمويه المحلية بالكامل.',
+            ko: '완전 로컬 완결형 마스킹 툴 초기 공개',
+            ch: '纯本地离线运行的网页端图像隐私打码工具正式上线公开。'
+          }
         ]
       }
     ];
-
-    let clCurrentPage = 1;
+  let clCurrentPage = 1;
     const clItemsPerPage = 10;
     let clSortDesc = true;
     let clActiveFilter = 'all';
 
-    const typeConfig = {
-      'feat':   { label: '✨ 追加',   className: 'cl-type-feat' },
-      'fix':    { label: '🐛 バグ修正', className: 'cl-type-fix' },
-      'remove': { label: '🗑️ 削除',   className: 'cl-type-remove' },
-      'change': { label: '変更',   className: 'cl-type-change' },
-      'other':  { label: '⚙️ その他', className: 'cl-type-other' }
-    };
+   const typeConfig = {
+  feat: {
+    label: {
+      ja: '✨ 追加',
+      en: '✨ Added',
+      ar: '✨ إضافة',
+      ko: '✨ 추가',
+      ch: '✨ 新增'
+    },
+    className: 'cl-type-feat'
+  },
 
-    function renderChangelog() {
-      const query = document.getElementById('cl-search-input').value.toLowerCase();
-      const listEl = document.getElementById('changelog-list');
-      const selectEl = document.getElementById('cl-page-select');
+  fix: {
+    label: {
+      ja: '🐛 バグ修正',
+      en: '🐛 Bug Fix',
+      ar: '🐛 إصلاح خطأ',
+      ko: '🐛 버그 수정',
+      ch: '🐛 修复'
+    },
+    className: 'cl-type-fix'
+  },
 
-      const queries = query.split(/\s+/).filter(q => q.length > 0);
-      let filtered = changelogData.filter(item => {
-        const matchesCategory = (clActiveFilter === 'all') || (item.type === clActiveFilter);
-        const full = `${item.version} ${item.date} ${item.title} ${item.items.join(' ')}`.toLowerCase();
-        const matchesQuery = queries.length === 0 || queries.every(q => full.includes(q));
-        return matchesCategory && matchesQuery;
-      });
+  remove: {
+    label: {
+      ja: '🗑️ 削除',
+      en: '🗑️ Removed',
+      ar: '🗑️ حذف',
+      ko: '🗑️ 삭제',
+      ch: '🗑️ 删除'
+    },
+    className: 'cl-type-remove'
+  },
 
-      filtered.sort((a, b) => {
-        const diff = new Date(a.date) - new Date(b.date);
-        return clSortDesc ? -diff : diff;
-      });
+  change: {
+    label: {
+      ja: '変更',
+      en: 'Changed',
+      ar: 'تغيير',
+      ko: '변경',
+      ch: '变更'
+    },
+    className: 'cl-type-change'
+  },
 
-      const totalItems = filtered.length;
-      const totalPages = Math.max(1, Math.ceil(totalItems / clItemsPerPage));
-      if (clCurrentPage > totalPages) clCurrentPage = totalPages;
-      if (clCurrentPage < 1) clCurrentPage = 1;
+  other: {
+    label: {
+      ja: '⚙️ その他',
+      en: '⚙️ Other',
+      ar: '⚙️ أخرى',
+      ko: '⚙️ 기타',
+      ch: '⚙️ 其他'
+    },
+    className: 'cl-type-other'
+  }
+};
 
-      selectEl.innerHTML = '';
-      for (let i = 1; i <= totalPages; i++) {
-        const opt = document.createElement('option');
-        opt.value = i; opt.textContent = i;
-        if (i === clCurrentPage) opt.selected = true;
-        selectEl.appendChild(opt);
-      }
-      document.getElementById('cl-total-pages').textContent = totalPages;
-      document.getElementById('cl-total-count').textContent = totalItems;
+function renderChangelog() {
+  const query =
+    document.getElementById('cl-search-input')
+      .value
+      .toLowerCase();
 
-      document.getElementById('cl-prev-btn').disabled = (clCurrentPage === 1);
-      document.getElementById('cl-next-btn').disabled = (clCurrentPage === totalPages);
+  const listEl =
+    document.getElementById('changelog-list');
 
-      if (totalItems === 0) {
-        listEl.innerHTML = '<p style="color:#64748b; text-align:center; padding: 2rem;">該当する更新履歴が見つかりませんでした。</p>';
-        return;
-      }
+  const selectEl =
+    document.getElementById('cl-page-select');
 
-      const startIdx = (clCurrentPage - 1) * clItemsPerPage;
-      const pageItems = filtered.slice(startIdx, startIdx + clItemsPerPage);
+  const lang =
+    window.currentSelectedLang || 'ja';
 
-      listEl.innerHTML = pageItems.map(item => {
-        const conf = typeConfig[item.type] || typeConfig['other'];
-        return `
-          <div class="changelog-item">
-            <div class="changelog-header">
-              <div style="display:flex; align-items:center; gap:0.4rem; flex-wrap:wrap;">
-                <span class="changelog-badge">${item.version}</span>
-                <span class="cl-type-badge ${conf.className}">${conf.label}</span>
-                <strong>${item.title}</strong>
-              </div>
-              <span style="font-size:0.8rem; color:#64748b;">📅 ${item.date}</span>
-            </div>
-            <ul style="padding-left:1.2rem; font-size:0.85rem; line-height:1.6;">
-              ${item.items.map(li => `<li>${li}</li>`).join('')}
-            </ul>
-          </div>
-        `;
-      }).join('');
+  const queries =
+    query
+      .split(/\s+/)
+      .filter(q => q.length > 0);
+
+  let filtered = changelogData.filter(item => {
+
+    const matchesCategory =
+      (clActiveFilter === 'all') ||
+      (item.type === clActiveFilter);
+
+    /*
+     * 検索は全言語を対象にする
+     */
+    const searchableText = [
+      item.version,
+      item.date,
+      getAllChangelogText(item.title),
+      ...(item.items || []).map(
+        x => getAllChangelogText(x)
+      )
+    ]
+      .join(' ')
+      .toLowerCase();
+
+    const matchesQuery =
+      queries.length === 0 ||
+      queries.every(q =>
+        searchableText.includes(q)
+      );
+
+    return matchesCategory && matchesQuery;
+  });
+
+  filtered.sort((a, b) => {
+    const diff =
+      new Date(a.date) -
+      new Date(b.date);
+
+    return clSortDesc ? -diff : diff;
+  });
+
+  const totalItems =
+    filtered.length;
+
+  const totalPages =
+    Math.max(
+      1,
+      Math.ceil(
+        totalItems / clItemsPerPage
+      )
+    );
+
+  if (clCurrentPage > totalPages) {
+    clCurrentPage = totalPages;
+  }
+
+  if (clCurrentPage < 1) {
+    clCurrentPage = 1;
+  }
+
+  selectEl.innerHTML = '';
+
+  for (
+    let i = 1;
+    i <= totalPages;
+    i++
+  ) {
+    const opt =
+      document.createElement('option');
+
+    opt.value = i;
+    opt.textContent = i;
+
+    if (i === clCurrentPage) {
+      opt.selected = true;
     }
 
+    selectEl.appendChild(opt);
+  }
+
+  document.getElementById(
+    'cl-total-pages'
+  ).textContent = totalPages;
+
+  document.getElementById(
+    'cl-total-count'
+  ).textContent = totalItems;
+
+  document.getElementById(
+    'cl-prev-btn'
+  ).disabled =
+    (clCurrentPage === 1);
+
+  document.getElementById(
+    'cl-next-btn'
+  ).disabled =
+    (clCurrentPage === totalPages);
+
+  if (totalItems === 0) {
+
+    const noResultText = {
+      ja: '該当する更新履歴が見つかりませんでした。',
+      en: 'No changelog entries found.',
+      ar: 'لم يتم العثور على إدخالات في سجل التحديثات.',
+      ko: '해당하는 업데이트 기록을 찾을 수 없습니다.',
+      ch: '未找到符合条件的更新日志。'
+    };
+
+    listEl.innerHTML = `
+      <p style="
+        color:#64748b;
+        text-align:center;
+        padding:2rem;
+      ">
+        ${escapeHtml(
+          noResultText[lang] ||
+          noResultText.ja
+        )}
+      </p>
+    `;
+
+    return;
+  }
+
+  const startIdx =
+    (clCurrentPage - 1) *
+    clItemsPerPage;
+
+  const pageItems =
+    filtered.slice(
+      startIdx,
+      startIdx + clItemsPerPage
+    );
+
+  listEl.innerHTML =
+    pageItems.map(item => {
+
+      const conf =
+        typeConfig[item.type] ||
+        typeConfig['other'];
+
+      const title =
+        getChangelogText(
+          item.title,
+          lang
+        );
+
+      return `
+        <div class="changelog-item">
+
+          <div class="changelog-header">
+
+            <div style="
+              display:flex;
+              align-items:center;
+              gap:0.4rem;
+              flex-wrap:wrap;
+            ">
+
+              <span class="changelog-badge">
+                ${escapeHtml(item.version)}
+              </span>
+
+              <span class="cl-type-badge ${conf.className}">
+                ${escapeHtml(
+                  getChangelogText(
+                    conf.label,
+                    lang
+                  )
+                )}
+              </span>
+
+              <strong>
+                ${escapeHtml(title)}
+              </strong>
+
+            </div>
+
+            <span style="
+              font-size:0.8rem;
+              color:#64748b;
+            ">
+              📅 ${escapeHtml(item.date)}
+            </span>
+
+          </div>
+
+          <ul style="
+            padding-left:1.2rem;
+            font-size:0.85rem;
+            line-height:1.6;
+          ">
+            ${(item.items || []).map(li => `
+              <li>
+                ${escapeHtml(
+                  getChangelogText(li, lang)
+                )}
+              </li>
+            `).join('')}
+          </ul>
+
+        </div>
+      `;
+    }).join('');
+}
     document.querySelectorAll('.cl-filter-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         document.querySelectorAll('.cl-filter-btn').forEach(b => b.classList.remove('active'));
@@ -8825,48 +10291,156 @@ updateBuildingByAge(89);
       if (typeof debouncedSaveStateToLocal === 'function') debouncedSaveStateToLocal();
     };
 
-    function applyLanguageToDOM(lang) {
-      const isAr = (lang === 'ar');
-      document.body.dir = isAr ? 'rtl' : 'ltr';
+function applyLanguageToDOM(lang) {
+  const isAr = (lang === 'ar');
 
-      if (isAr) {
-        document.body.style.fontFamily = (window.currentArabicFont === 'Noto') ? "'Noto Sans Arabic', sans-serif" : "'Amiri', serif";
-      } else {
-        document.body.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-      }
+  document.body.dir = isAr ? 'rtl' : 'ltr';
 
-      const titleTag = document.querySelector('title');
-      if (titleTag && titleTag.hasAttribute(lang)) {
-        document.title = titleTag.getAttribute(lang);
-      }
+  if (isAr) {
+    document.body.style.fontFamily =
+      (window.currentArabicFont === 'Noto')
+        ? "'Noto Sans Arabic', sans-serif"
+        : "'Amiri', serif";
+  } else {
+    document.body.style.fontFamily =
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+  }
 
-      document.querySelectorAll(`[${lang}]`).forEach(el => {
-        const trans = el.getAttribute(lang);
-        if (trans !== null && trans !== '') {
-          if (el.tagName === 'OPTION') {
-            el.textContent = trans;
-          } else if (el.children.length === 0) {
-            el.textContent = trans;
-          } else {
-            el.childNodes.forEach(node => {
-              if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim() !== '') {
-                node.nodeValue = trans;
-              }
-            });
-          }
-        }
-      });
+  /* =========================================================
+     ページタイトル
+     ========================================================= */
+  const titleTag = document.querySelector('title');
 
-      document.querySelectorAll(`[data-placeholder-${lang}]`).forEach(el => {
-        el.placeholder = el.getAttribute(`data-placeholder-${lang}`);
-      });
+  if (titleTag && titleTag.hasAttribute(lang)) {
+    document.title = titleTag.getAttribute(lang);
+  }
 
-      document.querySelectorAll('.lang-btn').forEach(btn => {
-        const active = (btn.dataset.lang === lang);
-        btn.style.background = active ? '#2563eb' : '#fff';
-        btn.style.color = active ? '#fff' : '#0f172a';
-      });
+  /* =========================================================
+     完全多言語対応
+     
+     data-i18n を持つ要素は innerHTML ごと交換する。
+     
+     ただし #lang-switcher 内は絶対に触らない。
+     ========================================================= */
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+
+    /* 言語切替UIを保護 */
+    if (el.closest('#lang-switcher')) {
+      return;
     }
+
+    const trans = el.getAttribute(lang);
+
+    if (trans !== null) {
+      el.innerHTML = trans;
+    }
+  });
+
+  /* =========================================================
+     既存の ja / en / ar / ko / ch 属性方式
+     
+     #lang-switcher の内部は処理対象外。
+     ========================================================= */
+  document.querySelectorAll(`[${lang}]`).forEach(el => {
+
+    /* 言語切替UIを絶対に変更しない */
+    if (el.closest('#lang-switcher')) {
+      return;
+    }
+
+    /* data-i18n は上で処理済み */
+    if (el.hasAttribute('data-i18n')) {
+      return;
+    }
+
+    const trans = el.getAttribute(lang);
+
+    if (trans === null || trans === '') {
+      return;
+    }
+
+    /* OPTION */
+    if (el.tagName === 'OPTION') {
+      el.textContent = trans;
+      return;
+    }
+
+    /*
+     * 子要素がない通常要素
+     */
+    if (el.children.length === 0) {
+      el.textContent = trans;
+      return;
+    }
+
+    /*
+     * 子要素がある既存要素
+     * 直下のテキストノードだけ置換
+     */
+    el.childNodes.forEach(node => {
+      if (
+        node.nodeType === Node.TEXT_NODE &&
+        node.nodeValue.trim() !== ''
+      ) {
+        node.nodeValue = trans;
+      }
+    });
+  });
+
+  /* =========================================================
+     placeholder 多言語切替
+     ========================================================= */
+  document
+    .querySelectorAll(`[data-placeholder-${lang}]`)
+    .forEach(el => {
+
+      /* 言語切替UIを保護 */
+      if (el.closest('#lang-switcher')) {
+        return;
+      }
+
+      const placeholder =
+        el.getAttribute(`data-placeholder-${lang}`);
+
+      if (placeholder !== null) {
+        el.placeholder = placeholder;
+      }
+    });
+
+  /* =========================================================
+     言語切替ボタン
+     ※ここは翻訳処理の対象外
+     ========================================================= */
+  const langSwitcher = document.getElementById('lang-switcher');
+
+  if (langSwitcher) {
+
+    langSwitcher.querySelectorAll('.lang-btn').forEach(btn => {
+
+      const active = (btn.dataset.lang === lang);
+
+      btn.style.background =
+        active ? '#2563eb' : '#fff';
+
+      btn.style.color =
+        active ? '#fff' : '#0f172a';
+
+      /*
+       * ボタンの JP / EN / AR / KO / CH は
+       * 翻訳対象にしない。
+       */
+      btn.textContent = btn.dataset.lang === 'ja'
+        ? 'JP'
+        : btn.dataset.lang === 'en'
+          ? 'EN'
+          : btn.dataset.lang === 'ar'
+            ? 'AR'
+            : btn.dataset.lang === 'ko'
+              ? 'KO'
+              : 'CH';
+    });
+  }
+}
 
     function initLanguageSwitcher() {
       if (document.getElementById('lang-switcher')) return;
