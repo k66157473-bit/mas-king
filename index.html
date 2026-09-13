@@ -2555,6 +2555,9 @@
     // ==========================================
     // 🗄️ IndexedDB 大容量ローカルストレージエンジン
     // ==========================================
+// 言語・フォントの初期フォールバック宣言（欠落補完）
+    window.currentSelectedLang = window.currentSelectedLang || localStorage.getItem('maskou_lang') || 'ja';
+    window.currentArabicFont = window.currentArabicFont || localStorage.getItem('maskou_arabic_font') || 'Amiri';
     const DB_NAME = 'MasKingDB';
     const DB_VERSION = 1;
     const STORE_NAME = 'projectStore';
@@ -5108,7 +5111,19 @@
         console.warn('起動時のIndexedDB復元に失敗しました:', e);
       }
     });
-
+// --- 🌐 HTML inline onclick から確実に呼べるようにグローバル登録 ---
+    window.applyTemplate = applyTemplate;
+    window.applyResize = applyResize;
+    window.applyResizeWidth = applyResizeWidth;
+    window.clearCompressorList = clearCompressorList;
+    window.closeCompressorModal = closeCompressorModal;
+    window.closeCameraModal = closeCameraModal;
+    window.openAnmomoDashboard = openAnmomoDashboard;
+    window.closeAnmomoDashboard = closeAnmomoDashboard;
+    window.saveAnmomoName = saveAnmomoName;
+    window.startAnmomoGame = startAnmomoGame;
+    window.stopAnmomoGame = stopAnmomoGame;
+    window.switchTab = switchTab;
     // --- 超軽量 WebP / AVIF 一括コンバーター＆圧縮機ロジック ---
     const compressorModal = document.getElementById('compressor-modal');
     const compDropzone = document.getElementById('comp-dropzone');
@@ -5613,65 +5628,335 @@
       alert(`⏰ タイムアップ！\n消去数: ${anmomoScore} / 90 個\n段位: 【${result.rank}】\n評価: ${result.msg}`);
       openAnmomoDashboard();
     }
-
-    // --- 🔋 バッテリー監視 ---
-    (function checkBatteryStatus() {
-      if (!('getBattery' in navigator)) return;
-      let toastTimeout = null;
-
-      navigator.getBattery().then((battery) => {
-        function getBatteryMessage(percent, isCharging) {
-          let quote = '';
-          if (percent === 100) quote = '元気満タンだな';
-          else if (percent >= 50) quote = 'まあいいじゃん';
-          else if (percent >= 40) quote = 'おっと 危険ゾーン';
-          else if (percent >= 30) quote = '充電器指したらどう?';
-          else if (percent >= 20) quote = '充電器貸すから早く刺しな刺しな';
-          else if (percent >= 10) quote = '充電切れるで。急ぎな';
-          else if (percent >= 5) quote = 'ヤバいって早くしろ';
-          else quote = 'もう終わるよ';
-
-          const icon = isCharging ? '⚡ 充電中' : '🔋 バッテリー';
-          return `${icon}: ${percent}%\n💬「${quote}」\n(※navigator.getBattery() で見てるだけですよ)`;
-        }
-
-        function onBatteryUpdate() {
-          const percent = Math.round(battery.level * 100);
-          showBatteryToast(getBatteryMessage(percent, battery.charging));
-        }
-
-        onBatteryUpdate();
-        battery.addEventListener('levelchange', onBatteryUpdate);
-        battery.addEventListener('chargingchange', onBatteryUpdate);
-      }).catch(() => {});
-
-      function showBatteryToast(msg) {
-        let toast = document.getElementById('battery-toast');
-        if (!toast) {
-          toast = document.createElement('div');
-          toast.id = 'battery-toast';
-          toast.style.cssText = `
-            position: fixed; bottom: 70px; right: 20px;
-            background: rgba(15, 23, 42, 0.94); color: #facc15; border: 2px solid #eab308;
-            padding: 10px 16px; border-radius: 8px; font-size: 0.8rem; font-family: monospace;
-            white-space: pre-line; z-index: 999999; box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            transition: opacity 0.4s ease, transform 0.4s ease; transform: translateY(20px);
-            opacity: 0; pointer-events: none;
-          `;
-          document.body.appendChild(toast);
-        }
-
-        toast.textContent = msg;
-        if (toastTimeout) clearTimeout(toastTimeout);
-        requestAnimationFrame(() => {
-          toast.style.opacity = '1'; toast.style.transform = 'translateY(0)';
-        });
-        toastTimeout = setTimeout(() => {
-          toast.style.opacity = '0'; toast.style.transform = 'translateY(20px)';
-        }, 2000);
+<!-- ============================================================
+       🌐 完全静的属性ベース多言語切り替え＆アラビア語フォント切替エンジン
+       （全メッセージ・ダイアログ・動的ステータス完全多言語化対応）
+  ============================================================ -->
+  <script>
+    // 🌐 アプリケーション全体統合翻訳辞書
+    window.I18N_DICT = {
+      ja: {
+        invalidMask: '有効なマス王 (.mask) ファイルではありません。',
+        maskRestored: '📦 .mask プロジェクト（画像＋地震設定等）を完全復元しました！',
+        cameraError: 'カメラへのアクセスが拒否されたか、カメラが見つかりません。',
+        photoCaptured: '📸 写真を撮影して読み込みました！',
+        watermarkPrompt: '透かし文字を入力:',
+        watermarkDefault: '社外秘 / CONFIDENTIAL',
+        textPrompt: '挿入する文字を入力してください:',
+        textDefault: '注記テキスト',
+        openImageFirst: '先に画像を開いてください',
+        branchPrompt: '新しいブランチ名を入力してください (例: sns-ver, blur-test):',
+        branchSwitched: '🌿 ブランチ [{name}] に切り替えました！',
+        confirmReset: '加工をすべて破棄して、読み込み時の初期状態に戻しますか？',
+        copiedImage: '📋 クリップボードに画像をコピーしました！',
+        copyError: 'ブラウザ非対応のため保存メニューをご利用ください。',
+        colorPicked: '色を抽出してセットしました: {color}',
+        sensitiveAllConfirm: '明確な流血・危険領域は検知されませんでした。画像全体にセンシティブ警告ガードを適用しますか？',
+        sensitiveApplied: '🚨 センシティブシールド適用完了: {target}を極厚モザイク＋警告帯で保護しました。',
+        dangerZones: '{count} 箇所の危険領域',
+        wholeImage: '全体',
+        changelogCopied: '更新履歴テキストをコピーしました！',
+        noChangelogFound: '該当する更新履歴が見つかりませんでした。',
+        noCommitHistory: 'まだコミット履歴がありません',
+        nameSaved: 'プレイヤー名を「{name}」に保存しました！',
+        gameAborted: 'ゲームを中断しました。(消した数: {score} 個)',
+        timeUp: '⏰ タイムアップ！\n消去数: {score} / 90 個\n段位: 【{rank}】\n評価: {msg}',
+        staminaShortage: '⚡ スタミナが足りません！\n必要: 80,000 ST / 現在: {stamina} ST',
+        shareUrlCopied: '🔗 地震実験設定を埋め込んだURLをクリップボードにコピーしました！',
+        recNotSupported: 'お使いのブラウザでは動画キャプチャがサポートされていません: ',
+        recInitFailed: '画面録画の初期化に失敗しました: ',
+        waveLoaded: '✅ 実観測地震波形データ ({count} 点) を読み込みました！',
+        maxAftershocks: '余震は最大300個まで追加できます。',
+        genOmoriConfirm: '本震データに基づき、大森公式に沿った余震群（20個）を自動生成しますか？',
+        aftershocksLoaded: '✅ 余震CSVから {count} 件の余震を読み込みました！',
+        slotPrompt: '実験スロット [枠{slot}] を操作します。\n[OK]: 保存 / [キャンセル]: 復元',
+        slotSaved: '✅ スロット [枠{slot}] に現在の地震設定を保存しました。',
+        slotRestored: '📂 スロット [枠{slot}] から地震設定を復元しました。',
+        slotEmpty: '⚠️ スロット [枠{slot}] にはデータが保存されていません。',
+        quakeTrigger: '地震発生',
+        quakeStop: '地震停止',
+        quakeResume: '再開',
+        dayMode: '☀️ 昼モード',
+        sunsetMode: '🌇 夕方モード',
+        nightMode: '🌙 夜モード',
+        audioIndoor: '🏡 家屋内音響',
+        audioOutdoor: '🏞️ 屋外音響',
+        recStart: '🔴 画面録画開始',
+        recStop: '⏹ 画面録画停止(保存)',
+        welcomeMsg: 'はじめまして。私は福島桃好です。以後お見知りおきを。'
+      },
+      en: {
+        invalidMask: 'Not a valid King of Hiding (.mask) file.',
+        maskRestored: '📦 Fully restored .mask project (images + earthquake sim)!',
+        cameraError: 'Camera access was denied or no camera found.',
+        photoCaptured: '📸 Photo snapped and imported successfully!',
+        watermarkPrompt: 'Enter watermark text:',
+        watermarkDefault: 'CONFIDENTIAL',
+        textPrompt: 'Enter text to insert:',
+        textDefault: 'Annotation',
+        openImageFirst: 'Please open an image first.',
+        branchPrompt: 'Enter new branch name (e.g., sns-ver, blur-test):',
+        branchSwitched: '🌿 Switched to branch [{name}]!',
+        confirmReset: 'Discard all edits and revert to initial image?',
+        copiedImage: '📋 Image copied to clipboard!',
+        copyError: 'Not supported on this browser. Please use Save menu.',
+        colorPicked: 'Color picked and set: {color}',
+        sensitiveAllConfirm: 'No clear danger zones found. Apply sensitive shield to the entire image?',
+        sensitiveApplied: '🚨 Sensitive Shield applied: Protected {target} with thick mosaic & warning banner.',
+        dangerZones: '{count} danger areas',
+        wholeImage: 'entire image',
+        changelogCopied: 'Changelog copied to clipboard!',
+        noChangelogFound: 'No changelog entries found.',
+        noCommitHistory: 'No commit history yet.',
+        nameSaved: 'Player name saved as "{name}"!',
+        gameAborted: 'Game interrupted. (Cleared: {score})',
+        timeUp: '⏰ Time Up!\nCleared: {score} / 90\nRank: 【{rank}】\nRating: {msg}',
+        staminaShortage: '⚡ Not enough stamina!\nRequired: 80,000 ST / Current: {stamina} ST',
+        shareUrlCopied: '🔗 Simulation config URL copied to clipboard!',
+        recNotSupported: 'Video recording is not supported in this browser: ',
+        recInitFailed: 'Failed to initialize screen recording: ',
+        waveLoaded: '✅ Loaded real seismic waveform data ({count} steps)!',
+        maxAftershocks: 'You can add up to 300 aftershocks.',
+        genOmoriConfirm: 'Auto-generate 20 aftershocks based on Omori Law?',
+        aftershocksLoaded: '✅ Loaded {count} aftershocks from CSV!',
+        slotPrompt: 'Slot [{slot}] operation:\n[OK]: Save current / [Cancel]: Restore',
+        slotSaved: '✅ Current simulation saved to Slot [{slot}].',
+        slotRestored: '📂 Restored simulation from Slot [{slot}].',
+        slotEmpty: '⚠️ Slot [{slot}] is empty.',
+        quakeTrigger: 'Trigger Quake',
+        quakeStop: 'Stop Quake',
+        quakeResume: 'Resume',
+        dayMode: '☀️ Daytime',
+        sunsetMode: '🌇 Sunset',
+        nightMode: '🌙 Night',
+        audioIndoor: '🏡 Indoor Acoustics',
+        audioOutdoor: '🏞️ Outdoor Acoustics',
+        recStart: '🔴 Record Video',
+        recStop: '⏹ Stop Recording',
+        welcomeMsg: 'Nice to meet you. I am Tao-Hao Fukushima. Welcome!'
+      },
+      ar: {
+        invalidMask: 'ملف غير صالح لملك الإخفاء (.mask).',
+        maskRestored: '📦 تمت استعادة مشروع .mask بالكامل (الصور والمحاكي)!',
+        cameraError: 'تم رفض الوصول إلى الكاميرا أو لم يتم العثور عليها.',
+        photoCaptured: '📸 تم التقاط الصورة وإدراجها بنجاح!',
+        watermarkPrompt: 'أدخل نص العلامة المائية:',
+        watermarkDefault: 'سري للغاية / CONFIDENTIAL',
+        textPrompt: 'أدخل النص للإدراج:',
+        textDefault: 'ملاحظة',
+        openImageFirst: 'يرجى فتح صورة أولاً.',
+        branchPrompt: 'أدخل اسم الفرع الجديد:',
+        branchSwitched: '🌿 تم الانتقال إلى الفرع [{name}]!',
+        confirmReset: 'هل تريد التراجع عن جميع التعديلات والعودة للأصل؟',
+        copiedImage: '📋 تم نسخ الصورة إلى الحافظة!',
+        copyError: 'غير مدعوم في متصفحك، يرجى الحفظ يدوياً.',
+        colorPicked: 'تم التقاط اللون: {color}',
+        sensitiveAllConfirm: 'لم يتم كشف محتوى خطر صريح. هل ترغب بحجب الصورة كاملة؟',
+        sensitiveApplied: '🚨 تم تفعيل درع الحماية وتغطية {target} بفسيفساء وشريط تحذير.',
+        dangerZones: '{count} مناطق حساسة',
+        wholeImage: 'الصورة بالكامل',
+        changelogCopied: 'تم نسخ سجل التحديثات!',
+        noChangelogFound: 'لم يتم العثور على تحديثات مطابقة.',
+        noCommitHistory: 'لا توجد سجلات بعد.',
+        nameSaved: 'تم حفظ اسم اللاعب: "{name}"!',
+        gameAborted: 'تم إيقاف اللعبة. (العدد: {score})',
+        timeUp: '⏰ انتهى الوقت!\nالعدد: {score} / 90\nالرتبة: 【{rank}】\nالتقييم: {msg}',
+        staminaShortage: '⚡ لا توجد قدرة كافية!\nالمطلوب: 80,000 ST / الحالية: {stamina} ST',
+        shareUrlCopied: '🔗 تم نسخ رابط التجربة إلى الحافظة!',
+        recNotSupported: 'تسجيل الفيديو غير مدعوم في هذا المتصفح: ',
+        recInitFailed: 'فشل بدء تسجيل الشاشة: ',
+        waveLoaded: '✅ تم تحميل بيانات الزلزال ({count} نقطة)!',
+        maxAftershocks: 'الحد الأقصى للهزات الارتدادية 300.',
+        genOmoriConfirm: 'توليد 20 هزة ارتدادية بقانون أوموري تلقائياً؟',
+        aftershocksLoaded: '✅ تم استيراد {count} هزة من CSV!',
+        slotPrompt: 'فتحة الحفظ [{slot}]:\n[موافق]: حفظ / [إلغاء]: استرجاع',
+        slotSaved: '✅ تم الحفظ في الفتحة [{slot}].',
+        slotRestored: '📂 تمت الاستعادة من الفتحة [{slot}].',
+        slotEmpty: '⚠️ الفتحة [{slot}] فارغة.',
+        quakeTrigger: 'بدء الزلزال',
+        quakeStop: 'إيقاف الزلزال',
+        quakeResume: 'استئناف',
+        dayMode: '☀️ نهار',
+        sunsetMode: '🌇 غروب',
+        nightMode: '🌙 ليل',
+        audioIndoor: '🏡 صدى منزلي',
+        audioOutdoor: '🏞️ صدى خارجي',
+        recStart: '🔴 بدء تسجيل الشاشة',
+        recStop: '⏹ إيقاف التسجيل',
+        welcomeMsg: 'مرحباً بكم. أنا تاو هاو فوكوشيما، تشرفت بلقائكم.'
+      },
+      ko: {
+        invalidMask: '유효한 숨기기 왕 (.mask) 프로젝트 파일이 아닙니다.',
+        maskRestored: '📦 .mask 프로젝트(이미지+지진 시뮬레이터)를 완벽 복원했습니다!',
+        cameraError: '카메라 권한이 거부되었거나 카메라를 찾을 수 없습니다.',
+        photoCaptured: '📸 사진을 촬영하여 불러왔습니다!',
+        watermarkPrompt: '워터마크 텍스트를 입력하세요:',
+        watermarkDefault: '대외비 / CONFIDENTIAL',
+        textPrompt: '삽입할 텍스트를 입력하세요:',
+        textDefault: '주기 텍스트',
+        openImageFirst: '먼저 이미지를 열어주세요.',
+        branchPrompt: '새 브랜치 이름을 입력하세요:',
+        branchSwitched: '🌿 브랜치 [{name}] 로 전환되었습니다!',
+        confirmReset: '모든 편집 내용을 취소하고 원본 이미지로 되돌릴까요?',
+        copiedImage: '📋 클립보드에 이미지가 복사되었습니다!',
+        copyError: '브라우저 미지원이므로 저장 메뉴를 이용해 주세요.',
+        colorPicked: '색상을 추출하여 설정했습니다: {color}',
+        sensitiveAllConfirm: '명확한 위험 영역이 감지되지 않았습니다. 이미지 전체에 쉴드를 적용할까요?',
+        sensitiveApplied: '🚨 민감 콘텐츠 쉴드 적용 완료: {target}을(를) 모자이크 및 경고띠로 보호했습니다.',
+        dangerZones: '{count}개 위험 영역',
+        wholeImage: '전체',
+        changelogCopied: '변경 이력 텍스트가 복사되었습니다!',
+        noChangelogFound: '해당하는 변경 이력이 없습니다.',
+        noCommitHistory: '아직 커밋 이력이 없습니다.',
+        nameSaved: '플레이어 이름을 「{name}」(으)로 저장했습니다!',
+        gameAborted: '게임을 중단했습니다. (지운 개수: {score}개)',
+        timeUp: '⏰ 타임 업!\n지운 개수: {score} / 90개\n단위: 【{rank}】\n평가: {msg}',
+        staminaShortage: '⚡ 스태미나가 부족합니다!\n필요: 80,000 ST / 현재: {stamina} ST',
+        shareUrlCopied: '🔗 지진 시뮬레이션 설정 URL이 복사되었습니다!',
+        recNotSupported: '현재 브라우저에서 화면 녹화를 지원하지 않습니다: ',
+        recInitFailed: '화면 녹화 초기화에 실패했습니다: ',
+        waveLoaded: '✅ 실측 지진 파형 데이터 ({count}개) 로딩 완료!',
+        maxAftershocks: '여진은 최대 300개까지 추가할 수 있습니다.',
+        genOmoriConfirm: '본진 데이터를 바탕으로 오모리 공식 여진 20개를 자동 생성할까요?',
+        aftershocksLoaded: '✅ 여진 CSV에서 {count}건을 불러왔습니다!',
+        slotPrompt: '실험 슬롯 [슬롯 {slot}] 작업:\n[확인]: 저장 / [취소]: 복원',
+        slotSaved: '✅ 슬롯 [{slot}]에 현재 설정을 저장했습니다.',
+        slotRestored: '📂 슬롯 [{slot}]에서 설정을 복원했습니다.',
+        slotEmpty: '⚠️ 슬롯 [{slot}]에 데이터가 없습니다.',
+        quakeTrigger: '지진 발생',
+        quakeStop: '지진 중지',
+        quakeResume: '재개',
+        dayMode: '☀️ 낮 모드',
+        sunsetMode: '🌇 저녁 모드',
+        nightMode: '🌙 밤 모드',
+        audioIndoor: '🏡 실내 음향',
+        audioOutdoor: '🏞️ 야외 음향',
+        recStart: '🔴 화면 녹화 시작',
+        recStop: '⏹ 화면 녹화 중지',
+        welcomeMsg: '반갑습니다. 저는 후쿠시마 타오하오입니다. 잘 부탁드립니다.'
+      },
+      ch: {
+        invalidMask: '无效的隐藏之王 (.mask) 工程文件。',
+        maskRestored: '📦 .mask 工程（图像与地震仿真数据）已全量完美复原！',
+        cameraError: '相机访问被拒绝或未找到可用摄像头。',
+        photoCaptured: '📸 拍照成功，已载入画布！',
+        watermarkPrompt: '请输入水印文字:',
+        watermarkDefault: '内部资料 / CONFIDENTIAL',
+        textPrompt: '请输入需要插入的文本内容:',
+        textDefault: '注释文本',
+        openImageFirst: '请先打开一张图片。',
+        branchPrompt: '请输入新分支名称:',
+        branchSwitched: '🌿 已成功切换至分支 [{name}]！',
+        confirmReset: '确定要放弃所有编辑并还原至初始状态吗？',
+        copiedImage: '📋 已复制图像至剪贴板！',
+        copyError: '当前浏览器不支持直接复制，请使用保存菜单。',
+        colorPicked: '已吸取并应用颜色: {color}',
+        sensitiveAllConfirm: '未检测到明显危险区域。是否对整张图像应用敏感警告护盾？',
+        sensitiveApplied: '🚨 敏感内容护盾已就绪: 已对{target}打上深度马赛克与封条。',
+        dangerZones: '{count}处高危区域',
+        wholeImage: '整张图像',
+        changelogCopied: '更新日志已复制至剪贴板！',
+        noChangelogFound: '未找到相关更新记录。',
+        noCommitHistory: '暂无提交历史记录。',
+        nameSaved: '玩家昵称已保存为「{name}」！',
+        gameAborted: '游戏已终止。(已消除: {score} 个)',
+        timeUp: '⏰ 时间到！\n消除数量: {score} / 90 个\n段位: 【{rank}】\n评价: {msg}',
+        staminaShortage: '⚡ 体力不足！\n需要: 80,000 ST / 当前: {stamina} ST',
+        shareUrlCopied: '🔗 地震仿真参数链接已成功复制！',
+        recNotSupported: '当前浏览器不支持画面录制: ',
+        recInitFailed: '画面录制初始化失败: ',
+        waveLoaded: '✅ 已成功载入实测强震波形数据 ({count} 采样点)！',
+        maxAftershocks: '最多可添加 300 次余震。',
+        genOmoriConfirm: '确定根据大森定律自动生成 20 次余震序列吗？',
+        aftershocksLoaded: '✅ 已从 CSV 导入 {count} 条余震数据！',
+        slotPrompt: '实验插槽 [槽位 {slot}] 操作:\n[确定]: 保存当前配置 / [取消]: 恢复存档',
+        slotSaved: '✅ 已将当前仿真配置保存至槽位 [{slot}]。',
+        slotRestored: '📂 已从槽位 [{slot}] 恢复仿真配置。',
+        slotEmpty: '⚠️ 槽位 [{slot}] 暂无存档。',
+        quakeTrigger: '触发地震',
+        quakeStop: '停止地震',
+        quakeResume: '继续仿真',
+        dayMode: '☀️ 白昼模式',
+        sunsetMode: '🌇 傍晚模式',
+        nightMode: '🌙 暗夜模式',
+        audioIndoor: '🏡 室内声场',
+        audioOutdoor: '🏞️ 室外声场',
+        recStart: '🔴 开始画面录制',
+        recStop: '⏹ 停止录制并保存',
+        welcomeMsg: '初次见面。我是福岛桃好，请多多关照。'
       }
-    })();
+    };
 
+    // 🌐 多言語テキスト取得ヘルパー関数
+    window.t = function(key, params = {}) {
+      const lang = window.currentSelectedLang || localStorage.getItem('maskou_lang') || 'ja';
+      const dict = window.I18N_DICT[lang] || window.I18N_DICT.ja;
+      let text = dict[key] || window.I18N_DICT.ja[key] || key;
+      for (const [pKey, pVal] of Object.entries(params)) {
+        text = text.replace(new RegExp(`\\{${pKey}\\}`, 'g'), pVal);
+      }
+      return text;
+    };
+
+    window.currentSelectedLang = localStorage.getItem('maskou_lang') || 'ja';
+    window.currentArabicFont = localStorage.getItem('maskou_arabic_font') || 'Amiri';
+
+    window.setArabicFont = function(fontName) {
+      window.currentArabicFont = fontName;
+      localStorage.setItem('maskou_arabic_font', fontName);
+      const fontSelect = document.getElementById('arabic-font-select');
+      if (fontSelect) fontSelect.value = fontName;
+
+      if (window.currentSelectedLang === 'ar') {
+        applyLanguageToDOM('ar');
+      }
+      if (typeof debouncedSaveStateToLocal === 'function') debouncedSaveStateToLocal();
+    };
+
+    window.switchLang = function(lang) {
+      if (!lang) return;
+      window.currentSelectedLang = lang;
+      localStorage.setItem('maskou_lang', lang);
+
+      const fontSelectWrap = document.getElementById('arabic-font-select-wrap');
+      if (fontSelectWrap) {
+        fontSelectWrap.style.display = (lang === 'ar') ? 'inline-flex' : 'none';
+      }
+
+      applyLanguageToDOM(lang);
+      if (typeof renderDummyPresets === 'function') renderDummyPresets();
+      if (typeof renderChangelog === 'function') renderChangelog();
+      if (typeof updateBuildingByAge === 'function' && jishinState) updateBuildingByAge(jishinState.buildingAge);
+      if (typeof debouncedSaveStateToLocal === 'function') debouncedSaveStateToLocal();
+    };
+
+    function applyLanguageToDOM(lang) {
+      const isAr = (lang === 'ar');
+      document.body.dir = isAr ? 'rtl' : 'ltr';
+
+      if (isAr) {
+        document.body.style.fontFamily = (window.currentArabicFont === 'Noto') ? "'Noto Sans Arabic', sans-serif" : "'Amiri', serif";
+      } else {
+        document.body.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+      }
+
+      const titleTag = document.querySelector('title');
+      if (titleTag && titleTag.hasAttribute(lang)) {
+        document.title = titleTag.getAttribute(lang);
+      }
+
+      // [ja], [en], [ar], [ko], [ch] 属性を持つ全要素
+      document.querySelectorAll(`[${lang}]`).forEach(el => {
+        const trans = el.getAttribute(lang);
+        if (trans !== null && trans !== '') {
+          if (el.tagName === 'OPTION') {
+            el.textContent = trans;
+          } else if (el.children.length === 0) {
+            el.textContent = trans;
+          } else {
+            el.childNodes.forEach(node => {
+              if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim() !== '') {
+                node.nodeValue = trans;
     // --- 開設からの日数カウント ---
     (function() {
       const startDate = new Date('2026-08-28T19:00:00');
@@ -5729,8 +6014,8 @@
       const neverBtn = document.getElementById('typing-never-btn');
 
       if (!overlay || !textarea) return;
-
-      const text = "はじめまして。私は福島桃好です。以後お見知りおきを。";
+// 多言語辞書からメッセージを取得
+      const text = window.t ? window.t('welcomeMsg') : "はじめまして。私は福島桃好です。以後お見知りおきを。";
       let charIndex = 0;
       let typingInterval = null, autoCloseTimeout = null, countdownInterval = null;
       let remainingSeconds = 5;
@@ -5777,6 +6062,25 @@
        🌍 3D地震倒壊シミュレーター 完全統合実行エンジン
   ============================================================ -->
   <script>
+// --- 🎛️ スライダーと数値入力欄の双方向同期ロジック（欠落補完） ---
+    function syncInputs(rangeEl, textEl, onChangeCallback) {
+      if (!rangeEl || !textEl) return;
+
+      rangeEl.addEventListener('input', (e) => {
+        textEl.value = e.target.value;
+        if (typeof onChangeCallback === 'function') {
+          onChangeCallback(parseFloat(e.target.value) || 0);
+        }
+      });
+
+      textEl.addEventListener('input', (e) => {
+        rangeEl.value = e.target.value;
+        if (typeof onChangeCallback === 'function') {
+          onChangeCallback(parseFloat(e.target.value) || 0);
+        }
+      });
+    }
+
     const VP = 6.0;
     const VS = 3.5;
 
@@ -5938,18 +6242,45 @@
         jRumbleNode.start(0);
       } catch(e) {}
     }
-
+// 3D地震速報音声の多言語化
     function speakEEWAnnouncement() {
       if (!jishinState.jalertVoice || !jishinState.audioEnabled || jishinState.masterVolume <= 0 || !('speechSynthesis' in window)) return;
       window.speechSynthesis.cancel();
-      const text = (currentSelectedLang === 'en') ? "Earthquake Early Warning. Strong shaking expected." : "緊急地震速報。大地震です。強い揺れに警戒してください。";
-      const uttr = new SpeechSynthesisUtterance(text);
-      uttr.lang = (currentSelectedLang === 'en') ? 'en-US' : 'ja-JP';
+      const lang = window.currentSelectedLang || 'ja';
+      const speechMap = {
+        ja: { text: "緊急地震速報。大地震です。強い揺れに警戒してください。", code: "ja-JP" },
+        en: { text: "Earthquake Early Warning. Strong shaking expected. Take cover immediately.", code: "en-US" },
+        ar: { text: "إنذار مبكر بالزلزال. متوقع اهتزاز قوي. احتمِ فوراً.", code: "ar-SA" },
+        ko: { text: "긴급지진속보. 대지진입니다. 강한 흔들림에 주의하세요.", code: "ko-KR" },
+        ch: { text: "紧急地震速报。发生大地震，请警惕剧烈震动并立即避险。", code: "zh-CN" }
+      };
+      const conf = speechMap[lang] || speechMap.ja;
+      const uttr = new SpeechSynthesisUtterance(conf.text);
+      uttr.lang = conf.code;
       uttr.volume = Math.min(1.0, jishinState.masterVolume);
       uttr.rate = 1.15;
       window.speechSynthesis.speak(uttr);
     }
 
+    // 地震・避難・建物ステータス判定の多言語化
+    function getJMAScaleText(rawI) {
+      const lang = window.currentSelectedLang || 'ja';
+      const scaleDict = {
+        ja: ["3以下 (軽微)", "4 (中震)", "5弱 (強震)", "5強 (強震)", "6弱 (烈震)", "6強 (烈震)", "7 (激震・壊滅的)"],
+        en: ["<= 3 (Minor)", "4 (Moderate)", "5- (Strong)", "5+ (Strong)", "6- (Severe)", "6+ (Violent)", "7 (Catastrophic)"],
+        ar: ["3 فما دون (طفيف)", "4 (متوسط)", "5 ضعيف (قوي)", "5 قوي (قوي جداً)", "6 ضعيف (شديد)", "6 قوي (عنيف)", "7 (كارثي مدمر)"],
+        ko: ["3 이하 (경미)", "4 (중진)", "5약 (강진)", "5강 (강진)", "6약 (열진)", "6강 (열진)", "7 (격진·괴멸적)"],
+        ch: ["3度以下 (轻微)", "4度 (中震)", "5弱 (强震)", "5强 (强震)", "6弱 (烈震)", "6强 (极震)", "7度 (毁灭性大地震)"]
+      };
+      const list = scaleDict[lang] || scaleDict.ja;
+      if (rawI < 3.5) return list[0];
+      if (rawI < 4.5) return list[1];
+      if (rawI < 5.0) return list[2];
+      if (rawI < 5.5) return list[3];
+      if (rawI < 6.0) return list[4];
+      if (rawI < 6.5) return list[5];
+      return list[6];
+    }
     function playEEWChime() {
       if (!jishinState.jalertVoice || !jishinState.audioEnabled || !jAudioCtx || jishinState.masterVolume <= 0) return;
       const now = jAudioCtx.currentTime;
@@ -6518,19 +6849,20 @@
       updateAudioMode(jishinState.audioMode === 'indoor' ? 'outdoor' : 'indoor');
     });
 
-    function updateBuildingByAge(age) {
+function updateBuildingByAge(age) {
       jishinState.buildingAge = age;
       if (age <= 20) {
-        jWallMat.color.setHex(0xe8edf2); jRoofMat.color.setHex(0x2b333e); jBaseMat.color.setHex(0x88929e); jFloorMat.color.setHex(0xd0b894);
+        jWallMat.color.setHex(0xf1f5f9); jRoofMat.color.setHex(0x334155); jBaseMat.color.setHex(0x94a3b8); jFloorMat.color.setHex(0xe2e8f0);
         jishinState.seismicFactor = 0.22; jishinState.standardDescription = "2000年改正基準 (最高耐震構造)";
       } else if (age <= 45) {
-        jWallMat.color.setHex(0xc29b68); jRoofMat.color.setHex(0x8a3324); jBaseMat.color.setHex(0x666b73); jFloorMat.color.setHex(0x99aa77);
+        jWallMat.color.setHex(0xd97706); jRoofMat.color.setHex(0x991b1b); jBaseMat.color.setHex(0x64748b); jFloorMat.color.setHex(0xbbf7d0);
         jishinState.seismicFactor = 0.65; jishinState.standardDescription = "新耐震基準 (1981年〜現行水準)";
       } else if (age <= 80) {
-        jWallMat.color.setHex(0x5a3d24); jRoofMat.color.setHex(0x8b1a0d); jBaseMat.color.setHex(0x4a4d52); jFloorMat.color.setHex(0x7a8a60);
+        jWallMat.color.setHex(0xb45309); jRoofMat.color.setHex(0xb91c1c); jBaseMat.color.setHex(0x475569); jFloorMat.color.setHex(0x86efac);
         jishinState.seismicFactor = 1.25; jishinState.standardDescription = "旧耐震基準 (1981年以前・脆弱)";
       } else {
-        jWallMat.color.setHex(0x382212); jRoofMat.color.setHex(0x6b1408); jBaseMat.color.setHex(0x3b3a39); jFloorMat.color.setHex(0x665533);
+        // 築89年（デフォルト）でも黒潰れせずしっかり見える木造ブラウンに修正
+        jWallMat.color.setHex(0xa16207); jRoofMat.color.setHex(0xdc2626); jBaseMat.color.setHex(0x475569); jFloorMat.color.setHex(0x65a30d);
         jishinState.seismicFactor = 1.85; jishinState.standardDescription = "伝統構法・老朽木造 (旧耐震以前)";
       }
       const lblAge = document.getElementById('lbl-building-age');
@@ -6545,11 +6877,11 @@
       if (lblTypeDesc) lblTypeDesc.innerText = jishinState.standardDescription;
       if (valStandard) valStandard.innerText = jishinState.standardDescription;
     }
-
-    function updateStructureType(type) {
+function updateStructureType(type) {
       jishinState.structureType = type;
       const isHighrise = (type === 'highrise');
 
+      jHouseGroup.visible = true;
       jIsolatorGroup.visible = (type === 'isolation');
       jBraceGroup.visible = (type === 'brace');
       jSecondFloorGroup.visible = (type === 'piloti');
@@ -6566,14 +6898,13 @@
       if (isHighrise) {
         rebuildHighrise(jishinState.buildingFloors || 30);
       } else {
-        jControls.target.set(0, 2, 0);
+        jControls.target.set(0, 1.5, 0);
         jControls.update();
       }
 
       jRoofMesh.position.y = (type === 'piloti' ? 0.4 + jWallHeight + 1.8 + 0.7 : 0.4 + jWallHeight + 0.7);
       debouncedSaveStateToLocal();
     }
-
     function updateEvacuationAction(action) {
       jishinState.evacuationAction = action;
       if (action === 'table') {
@@ -8196,19 +8527,20 @@
         jRenderer.setSize(w, h);
       }
     });
-
-    function onJishinTabActivated() {
+function onJishinTabActivated() {
       setTimeout(() => {
         if (jContainer && jRenderer && jCamera) {
-          const w = jContainer.clientWidth || window.innerWidth;
-          const h = jContainer.clientHeight || window.innerHeight;
+          const w = jContainer.clientWidth || jContainer.parentElement.clientWidth || window.innerWidth;
+          const h = jContainer.clientHeight || jContainer.parentElement.clientHeight || window.innerHeight;
           jCamera.aspect = w / h;
           jCamera.updateProjectionMatrix();
           jRenderer.setSize(w, h);
+          jControls.target.set(0, 1.5, 0);
+          jControls.update();
+          jRenderer.render(jScene, jCamera);
         }
-      }, 50);
+      }, 60);
     }
-
     const jClock = new THREE.Clock();
     function animateJishin() {
       requestAnimationFrame(animateJishin);
@@ -8254,30 +8586,43 @@
     onCoordinateInputChanged(false);
     resetSimulation();
     animateJishin();
+
+// スマホ画面回転・リサイズ完全同期リスナー（欠落補完）
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        if (typeof onJishinTabActivated === 'function') onJishinTabActivated();
+        if (typeof updateZoom === 'function' && currentZoom) updateZoom(getFitZoomScale());
+      }, 150);
+    });
   </script>
 
-  <!-- ============================================================
+  
+<!-- ============================================================
        🌐 完全静的属性ベース多言語切り替え＆アラビア語フォント切替エンジン
        （API不要・完全ローカル・リロード記憶・.mask完全保存）
   ============================================================ -->
   <script>
-    let currentSelectedLang = localStorage.getItem('maskou_lang') || 'ja';
-    let currentArabicFont = localStorage.getItem('maskou_arabic_font') || 'Amiri';
+    // グローバル変数として即時初期化（localStorageから復元）
+    window.currentSelectedLang = localStorage.getItem('maskou_lang') || 'ja';
+    window.currentArabicFont = localStorage.getItem('maskou_arabic_font') || 'Amiri';
 
+    // アラビア語フォント切替
     window.setArabicFont = function(fontName) {
-      currentArabicFont = fontName;
+      window.currentArabicFont = fontName;
       localStorage.setItem('maskou_arabic_font', fontName);
       const fontSelect = document.getElementById('arabic-font-select');
       if (fontSelect) fontSelect.value = fontName;
 
-      if (currentSelectedLang === 'ar') {
+      if (window.currentSelectedLang === 'ar') {
         applyLanguageToDOM('ar');
       }
-      debouncedSaveStateToLocal();
+      if (typeof debouncedSaveStateToLocal === 'function') debouncedSaveStateToLocal();
     };
 
+    // 言語切替関数
     window.switchLang = function(lang) {
-      currentSelectedLang = lang;
+      if (!lang) return;
+      window.currentSelectedLang = lang;
       localStorage.setItem('maskou_lang', lang);
 
       const fontSelectWrap = document.getElementById('arabic-font-select-wrap');
@@ -8286,40 +8631,50 @@
       }
 
       applyLanguageToDOM(lang);
-      renderDummyPresets();
-      debouncedSaveStateToLocal();
+      if (typeof renderDummyPresets === 'function') renderDummyPresets();
+      if (typeof debouncedSaveStateToLocal === 'function') debouncedSaveStateToLocal();
     };
 
+    // DOMへのテキスト・言語属性反映
     function applyLanguageToDOM(lang) {
       const isAr = (lang === 'ar');
       document.body.dir = isAr ? 'rtl' : 'ltr';
 
       if (isAr) {
-        document.body.style.fontFamily = (currentArabicFont === 'Noto') ? "'Noto Sans Arabic', sans-serif" : "'Amiri', serif";
+        document.body.style.fontFamily = (window.currentArabicFont === 'Noto') ? "'Noto Sans Arabic', sans-serif" : "'Amiri', serif";
       } else {
         document.body.style.fontFamily = '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
       }
 
-      // 1. タイトルの切り替え
+      // 1. ページタイトルの切り替え
       const titleTag = document.querySelector('title');
       if (titleTag && titleTag.hasAttribute(lang)) {
         document.title = titleTag.getAttribute(lang);
       }
 
-      // 2. 属性（ja, en, ar, ko, ch）を持つ全要素のテキスト切り替え
+      // 2. [ja], [en], [ar], [ko], [ch] 属性を持つ全要素のテキスト切り替え
       document.querySelectorAll(`[${lang}]`).forEach(el => {
         const trans = el.getAttribute(lang);
         if (trans !== null && trans !== '') {
-          el.innerText = trans;
+          // 子要素を持つ要素の構造破壊を防ぎつつテキストを置換
+          if (el.children.length === 0) {
+            el.textContent = trans;
+          } else {
+            el.childNodes.forEach(node => {
+              if (node.nodeType === Node.TEXT_NODE && node.nodeValue.trim() !== '') {
+                node.nodeValue = trans;
+              }
+            });
+          }
         }
       });
 
-      // 3. プレースホルダー属性の切り替え
+      // 3. プレースホルダーの切り替え
       document.querySelectorAll(`[data-placeholder-${lang}]`).forEach(el => {
         el.placeholder = el.getAttribute(`data-placeholder-${lang}`);
       });
 
-      // 4. ボタンのハイライト
+      // 4. 言語バーボタンのハイライト更新
       document.querySelectorAll('.lang-btn').forEach(btn => {
         const active = (btn.dataset.lang === lang);
         btn.style.background = active ? '#2563eb' : '#fff';
@@ -8327,8 +8682,8 @@
       });
     }
 
-    // 言語切り替えバー＆アラビア語フォント選択UIの生成
-    document.addEventListener('DOMContentLoaded', () => {
+    // 言語切り替えバーのUI構築と初期言語の適用
+    function initLanguageSwitcher() {
       if (document.getElementById('lang-switcher')) return;
 
       const style = document.createElement('style');
@@ -8385,10 +8740,10 @@
         bar.appendChild(btn);
       });
 
-      // アラビア語フォント選択セレクト
+      // アラビア語フォント選択セレクトボックス
       const fontWrap = document.createElement('div');
       fontWrap.id = 'arabic-font-select-wrap';
-      fontWrap.style.cssText = `display: ${currentSelectedLang === 'ar' ? 'inline-flex' : 'none'}; align-items:center; margin-left:4px;`;
+      fontWrap.style.cssText = `display: ${window.currentSelectedLang === 'ar' ? 'inline-flex' : 'none'}; align-items:center; margin-left:4px;`;
       fontWrap.innerHTML = `
         <select id="arabic-font-select" style="font-size:10px; padding:2px 4px; border-radius:4px; background:#1e293b; color:#fff; border:1px solid #475569; cursor:pointer;" onchange="window.setArabicFont(this.value)">
           <option value="Amiri">Amiri</option>
@@ -8399,11 +8754,19 @@
       document.body.appendChild(bar);
 
       const fontSelect = document.getElementById('arabic-font-select');
-      if (fontSelect) fontSelect.value = currentArabicFont;
+      if (fontSelect) fontSelect.value = window.currentArabicFont;
 
-      window.switchLang(currentSelectedLang);
-    });
+      // 起動時に保存済み言語を適用
+      window.switchLang(window.currentSelectedLang);
+    }
 
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initLanguageSwitcher);
+    } else {
+      initLanguageSwitcher();
+    }
+  </script>
+<script>
 // --- マウスストーカー (キラキラ) 完全動作版スクリプト ---
     (function initMouseSparkle() {
       const toggle = document.getElementById('sparkleToggle');
