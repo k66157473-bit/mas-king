@@ -2886,17 +2886,18 @@
       }
     }
 
-    async function autoSaveMaskData() {
+ async function autoSaveMaskData() {
+      // キャンバスに画像が開かれていない時は無駄な保存処理をスキップ
+      if (!canvas.width || imageList.length === 0) return;
+      
       try {
         const projectData = generateFullProjectJSON();
         projectData.autoSavedAt = new Date().toLocaleTimeString('ja-JP');
 
         await idbSet('maskou_project_autosave', projectData);
-        await idbSet('maskou_last_mask_backup', projectData);
-
-        showAutoSaveToast(`⏱️ ${projectData.autoSavedAt} .mask自動保存完了`);
+        showAutoSaveToast(`⏱️ ${projectData.autoSavedAt} .mask自動保存`);
       } catch (e) {
-        console.warn('.mask の毎分自動保存に失敗しました:', e);
+        console.warn('.mask の自動保存に失敗しました:', e);
       }
     }
     function showAutoSaveToast(msg) {
@@ -5757,6 +5758,154 @@
       }
     }
     window.addEventListener('DOMContentLoaded', checkSharedImage);
+// ============================================================
+    // ⭐ マウスストーカー（キラキラ星）完全動作エンジン
+    // ============================================================
+    (function initSparkleEngine() {
+      const toggle = document.getElementById('sparkleToggle');
+      const container = document.getElementById('draggableToggle');
+      if (!toggle || !container) return;
+
+      // 保存されたON/OFF状態の取得（初期値: ON）
+      const savedState = localStorage.getItem('sparkleEnabled');
+      window.isSparkleEnabled = (savedState === null) ? true : (savedState === 'true');
+      toggle.checked = window.isSparkleEnabled;
+
+      toggle.addEventListener('change', (e) => {
+        window.isSparkleEnabled = e.target.checked;
+        localStorage.setItem('sparkleEnabled', window.isSparkleEnabled);
+        if (typeof debouncedSaveStateToLocal === 'function') debouncedSaveStateToLocal();
+      });
+
+      // トグルスイッチ自体のドラッグ移動
+      let isDraggingToggle = false;
+      let startX = 0, startY = 0, initLeft = 0, initTop = 0;
+
+      const savedTop = localStorage.getItem('sparkleToggleTop');
+      const savedLeft = localStorage.getItem('sparkleToggleLeft');
+      if (savedTop && savedLeft) {
+        container.style.top = savedTop;
+        container.style.left = savedLeft;
+        container.style.right = 'auto';
+      }
+
+      function onToggleStart(e) {
+        if (e.target === toggle) return;
+        isDraggingToggle = true;
+        const cx = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+        const cy = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+        startX = cx;
+        startY = cy;
+        const rect = container.getBoundingClientRect();
+        initLeft = rect.left;
+        initTop = rect.top;
+      }
+
+      function onToggleMove(e) {
+        if (!isDraggingToggle) return;
+        if (e.cancelable) e.preventDefault();
+        const cx = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
+        const cy = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
+        const dx = cx - startX;
+        const dy = cy - startY;
+
+        const maxL = window.innerWidth - container.offsetWidth - 5;
+        const maxT = window.innerHeight - container.offsetHeight - 5;
+        const newL = Math.max(5, Math.min(initLeft + dx, maxL));
+        const newT = Math.max(5, Math.min(initTop + dy, maxT));
+
+        container.style.left = `${newL}px`;
+        container.style.top = `${newT}px`;
+        container.style.right = 'auto';
+      }
+
+      function onToggleEnd() {
+        if (!isDraggingToggle) return;
+        isDraggingToggle = false;
+        localStorage.setItem('sparkleToggleTop', container.style.top);
+        localStorage.setItem('sparkleToggleLeft', container.style.left);
+        if (typeof debouncedSaveStateToLocal === 'function') debouncedSaveStateToLocal();
+      }
+
+      container.addEventListener('mousedown', onToggleStart);
+      window.addEventListener('mousemove', onToggleMove);
+      window.addEventListener('mouseup', onToggleEnd);
+
+      container.addEventListener('touchstart', onToggleStart, { passive: false });
+      window.addEventListener('touchmove', onToggleMove, { passive: false });
+      window.addEventListener('touchend', onToggleEnd);
+
+   // キラキラ星を画面に生成する関数（作業中の負荷カット版）
+      function createSparkle(x, y) {
+        // マスキング中(isInteracting)や文字ドラッグ中は星を出さずに操作を最優先
+        if (!window.isSparkleEnabled || isDraggingToggle || isInteracting || isDraggingDummy || isDraggingMove || isDraggingText) return;
+
+        const sparkle = document.createElement('div');
+        sparkle.className = 'internet-sparkle';
+        sparkle.textContent = '★';
+
+        const baseSize = Math.floor(Math.random() * 6) + 7;
+        sparkle.style.fontSize = `${baseSize}px`;
+        sparkle.style.setProperty('--ms-start', '0.6');
+        sparkle.style.setProperty('--ms-end', '1.0');
+        sparkle.style.setProperty('--mx', `${(Math.random() - 0.5) * 40}px`);
+        sparkle.style.setProperty('--my', `${(Math.random() - 0.5) * 40 - 15}px`);
+        sparkle.style.setProperty('--mr', `${Math.random() * 360}deg`);
+        sparkle.style.left = `${x}px`;
+        sparkle.style.top = `${y}px`;
+
+        document.body.appendChild(sparkle);
+
+        const removeTimer = setTimeout(() => sparkle.remove(), 800);
+        sparkle.addEventListener('animationend', () => {
+          clearTimeout(removeTimer);
+          sparkle.remove();
+        });
+      }
+      // マウス移動・タッチ追従（適度な頻度で生成）
+      let lastMoveTime = 0;
+      window.addEventListener('mousemove', (e) => {
+        const now = performance.now();
+        if (now - lastMoveTime > 35) {
+          createSparkle(e.clientX, e.clientY);
+          lastMoveTime = now;
+        }
+      });
+
+      window.addEventListener('touchmove', (e) => {
+        if (e.touches && e.touches[0]) {
+          const now = performance.now();
+          if (now - lastMoveTime > 45) {
+            createSparkle(e.touches[0].clientX, e.touches[0].clientY);
+            lastMoveTime = now;
+          }
+        }
+      }, { passive: true });
+    })();
+
+    // ============================================================
+    // ⌨️ Escキーで開いている全モーダルを一発で閉じるロジック（追加補完）
+    // ============================================================
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay').forEach(m => {
+          m.style.display = 'none';
+        });
+        if (typeof closeCameraModal === 'function') closeCameraModal();
+      }
+    });
+
+    // ============================================================
+    // 📱 スマホ画面回転（縦・横）時の自動リサイズ追従（追加補完）
+    // ============================================================
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        if (typeof onJishinTabActivated === 'function') onJishinTabActivated();
+        if (typeof updateZoom === 'function' && typeof getFitZoomScale === 'function') {
+          updateZoom(getFitZoomScale());
+        }
+      }, 200);
+    });
   </script>
   <!-- オープニング タイピング スクリプト -->
   <script>
@@ -8298,12 +8447,25 @@ function onJishinTabActivated() {
         }
       }, 60);
     }
+// --- 3D地震シミュレーターの超軽量化レンダリングループ ---
     const jClock = new THREE.Clock();
     function animateJishin() {
       requestAnimationFrame(animateJishin);
+
+      // 🌍 3D地震タブが表示されていない時は計算・描画を完全にスキップ（超軽量化）
+      const jishinView = document.getElementById('jishin-view');
+      if (!jishinView || !jishinView.classList.contains('active')) {
+        return;
+      }
+
       const rawDelta = Math.min(jClock.getDelta(), 0.1);
       const delta = rawDelta * jishinState.playbackSpeed;
-      updateJishinPhysics(delta);
+      
+      // 地震シミュレーション実行中のみ物理演算を回す
+      if (jishinState.isRunning) {
+        updateJishinPhysics(delta);
+      }
+      
       jControls.update();
 
       if (jishinState.splitView) {
@@ -8330,7 +8492,6 @@ function onJishinTabActivated() {
         jRenderer.render(jScene, jCamera);
       }
     }
-
     updateBuildingByAge(89);
     updateHouseRotation(0);
     updateStructureType('standard');
