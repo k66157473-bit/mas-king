@@ -2968,7 +2968,11 @@
       if (tabId === 'jishin' && typeof onJishinTabActivated === 'function') {
         onJishinTabActivated();
       }
+            if (tabId === 'changelog' && typeof renderChangelog === 'function') {
+        renderChangelog();
+      }
     }
+    
 
     // ダークモード切替
     document.getElementById('dark-mode-btn').addEventListener('click', () => {
