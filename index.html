@@ -889,20 +889,37 @@
     #jishin-view select { cursor: pointer; font-size: 11.5px; }
     #jishin-view input[type="range"] {
       -webkit-appearance: none;
-      height: 5px;
-      background: rgba(255, 255, 255, 0.15);
-      border: none;
+      appearance: none;
+      height: 8px;
+      min-height: 24px;
+      background: linear-gradient(90deg, rgba(51, 153, 255, 0.35), rgba(255, 255, 255, 0.12));
+      border-radius: 999px;
+      border: 1px solid rgba(51, 153, 255, 0.35);
       padding: 0;
       cursor: pointer;
+      pointer-events: auto;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,0.06);
+    }
+    #jishin-view input[type="range"]::-webkit-slider-runnable-track {
+      height: 8px;
+      border-radius: 999px;
+      background: transparent;
     }
     #jishin-view input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 15px;
-      height: 15px;
+      appearance: none;
+      width: 18px;
+      height: 18px;
       border-radius: 50%;
-      background: #3399ff;
-      box-shadow: 0 0 8px #3399ff;
+      border: 3px solid #dbeafe;
+      background: linear-gradient(135deg, #60a5fa, #2563eb);
+      box-shadow: 0 0 10px rgba(37, 99, 235, 0.8);
       cursor: pointer;
+      margin-top: -5px;
+    }
+    #jishin-view input[type="range"]:active::-webkit-slider-thumb,
+    #jishin-view input[type="range"]:focus-visible::-webkit-slider-thumb {
+      box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.2), 0 0 12px rgba(37, 99, 235, 0.9);
     }
 
     .jishin-checkbox-label {
@@ -1934,11 +1951,11 @@
     <!-- ブックマークスロット (1〜5) -->
     <div class="jishin-section-divider" ja="⭐ 実験スロット (ワンクリック一時保存/呼出)" en="⭐ Experiment Slots (Quick Save/Load)" ar="⭐ فتحات التجارب (حفظ سريع)" ko="⭐ 실험 슬롯 (원클릭 저장/복원)" ch="⭐ 实验插槽 (快速存档与读档)">⭐ 実験スロット (ワンクリック一時保存/呼出)</div>
     <div class="jishin-slot-btn-bar">
-      <button class="jishin-btn-slot" data-slot="1">枠1</button>
-      <button class="jishin-btn-slot" data-slot="2">枠2</button>
-      <button class="jishin-btn-slot" data-slot="3">枠3</button>
-      <button class="jishin-btn-slot" data-slot="4">枠4</button>
-      <button class="jishin-btn-slot" data-slot="5">枠5</button>
+      <button class="jishin-btn-slot" data-slot="1" ja="枠1" en="Slot 1" ar="الفتحة 1" ko="슬롯 1" ch="槽位1">枠1</button>
+      <button class="jishin-btn-slot" data-slot="2" ja="枠2" en="Slot 2" ar="الفتحة 2" ko="슬롯 2" ch="槽位2">枠2</button>
+      <button class="jishin-btn-slot" data-slot="3" ja="枠3" en="Slot 3" ar="الفتحة 3" ko="슬롯 3" ch="槽位3">枠3</button>
+      <button class="jishin-btn-slot" data-slot="4" ja="枠4" en="Slot 4" ar="الفتحة 4" ko="슬롯 4" ch="槽位4">枠4</button>
+      <button class="jishin-btn-slot" data-slot="5" ja="枠5" en="Slot 5" ar="الفتحة 5" ko="슬롯 5" ch="槽位5">枠5</button>
     </div>
     
     <!-- 地震タイプ選択 -->
@@ -2034,7 +2051,7 @@
         <input type="file" id="inp-csv-wave" accept=".csv,.txt" style="font-size: 10.5px; flex: 1;">
         <button id="btn-dl-standard-wave" class="jishin-btn-file-io" style="flex: 1; padding: 4px; border-color: #00ff88; color: #00ff88; background: rgba(0, 255, 136, 0.1);" ja="📥 標準波形.csv 出力" en="📥 Export Wave.csv" ar="📥 تصدير موجة CSV" ko="📥 표준파형.csv 출력" ch="📥 导出标准波形.csv">📥 標準波形.csv 出力</button>
       </div>
-      <div id="lbl-csv-status" style="font-size: 10px; color: #00ffcc; margin-top: 2px;">標準物理波形を使用中</div>
+      <div id="lbl-csv-status" style="font-size: 10px; color: #00ffcc; margin-top: 2px;" ja="標準物理波形を使用中" en="Using standard physical waveform" ar="يستخدم الشكل الموجي الفيزيائي القياسي" ko="표준 물리파형 사용 중" ch="当前使用标准物理波形">標準物理波形を使用中</div>
     </div>
 
     <div class="jishin-control-group">
@@ -3702,67 +3719,64 @@ function selectImage(idx, loadedImg = null) {
     });
 
     function applyFullProjectState(data) {
-      if (!data || (data.app !== "Mas-King R̄" && data.app !== "Mas-King")) {
-        alert('有効なマス王 (.mask) ファイルではありません。');
+      if (!data) return false;
+
+      let normalized = data;
+      try {
+        normalized = migrateMask(data);
+        validateMask(normalized);
+      } catch (err) {
+        alert(err.message || '有効なマス王 (.mask) ファイルではありません。');
         return false;
       }
 
-      // 言語設定の完全復元
-      if (data.language && typeof window.switchLang === 'function') {
-        window.switchLang(data.language);
-      }
+      const project = normalized.project || {};
 
-      // アラビア語フォント設定の完全復元
-      if (data.arabicFont && typeof window.setArabicFont === 'function') {
-        window.setArabicFont(data.arabicFont);
-      }
+      // 言語設定の完全復元
+      const lang = normalized.language?.selected || normalized.language || 'ja';
+      const arFont = normalized.language?.arabicFont || normalized.arabicFont || 'Amiri';
+      if (typeof window.switchLang === 'function') window.switchLang(lang);
+      if (typeof window.setArabicFont === 'function') window.setArabicFont(arFont);
 
       // 3D地震シミュレーターの設定完全復元（.jishin統合）
-      if (data.earthquake && typeof applyImportConfig === 'function') {
-        applyImportConfig(data.earthquake);
+      if (normalized.earthquake && typeof applyImportConfig === 'function') {
+        applyImportConfig(normalized.earthquake);
       }
 
       // テーマ＆ダークモード復元
-      if (data.theme) {
-        if (data.theme.darkMode !== undefined) {
-          if (data.theme.darkMode) {
-            document.body.classList.add('dark-mode');
-            const darkBtn = document.getElementById('dark-mode-btn');
-            if (darkBtn) darkBtn.textContent = '☀️';
-            localStorage.setItem('maskou_dark', '1');
-          } else {
-            document.body.classList.remove('dark-mode');
-            const darkBtn = document.getElementById('dark-mode-btn');
-            if (darkBtn) darkBtn.textContent = '🌙';
-            localStorage.setItem('maskou_dark', '0');
-          }
-        }
+      if (project.theme?.darkMode !== undefined) {
+        const isDark = project.theme.darkMode;
+        document.body.classList.toggle('dark-mode', isDark);
+        const darkBtn = document.getElementById('dark-mode-btn');
+        if (darkBtn) darkBtn.textContent = isDark ? '☀️' : '🌙';
+        localStorage.setItem('maskou_dark', isDark ? '1' : '0');
       }
 
       // スタミナ復元
-      if (data.stamina) {
-        currentStamina = Math.min(MAX_STAMINA, data.stamina.current || MAX_STAMINA);
-        totalUsedStamina = data.stamina.totalUsed || 0;
+      if (project.stamina) {
+        currentStamina = Math.min(MAX_STAMINA, project.stamina.current || MAX_STAMINA);
+        totalUsedStamina = project.stamina.totalUsed || 0;
         updateStaminaUI();
       }
 
       // マウスストーカー復元
-      if (data.sparkle) applySparkleState(data.sparkle);
+      if (project.sparkle) applySparkleState(project.sparkle);
 
       // 設定値復元
-      if (data.settings) {
-        if (data.settings.strength) {
+      if (project.settings) {
+        const s = project.settings;
+        if (s.strength !== undefined) {
           const slider = document.getElementById('strength-slider');
-          if (slider) slider.value = data.settings.strength;
+          if (slider) slider.value = s.strength;
         }
-        if (data.settings.feather !== undefined) {
+        if (s.feather !== undefined) {
           const chk = document.getElementById('feather-chk');
-          if (chk) chk.checked = data.settings.feather;
+          if (chk) chk.checked = s.feather;
         }
-        if (data.settings.maskColor && maskColorPicker) maskColorPicker.value = data.settings.maskColor;
-        if (data.settings.stampCounter) stampCounter = data.settings.stampCounter;
-        if (data.settings.currentMode) {
-          currentMode = data.settings.currentMode;
+        if (s.maskColor && maskColorPicker) maskColorPicker.value = s.maskColor;
+        if (s.stampCounter) stampCounter = s.stampCounter;
+        if (s.currentMode) {
+          currentMode = s.currentMode;
           document.querySelectorAll('.mode-btn').forEach(b => {
             b.classList.toggle('active', b.dataset.mode === currentMode);
           });
@@ -3770,41 +3784,46 @@ function selectImage(idx, loadedImg = null) {
       }
 
       // アン桃データ復元
-      if (data.anmomo && typeof anmomoData !== 'undefined') {
-        Object.assign(anmomoData, data.anmomo);
+      if (project.anmomo && typeof anmomoData !== 'undefined') {
+        Object.assign(anmomoData, project.anmomo);
         saveAnmomoDashboard();
       }
 
       // Git履歴ツリー復元
-      if (data.gitHistory) {
-        gitCommits = data.gitHistory.commits || [];
-        currentCommitId = data.gitHistory.currentCommitId || null;
-        currentBranch = data.gitHistory.currentBranch || 'main';
-        branches = data.gitHistory.branches || { 'main': null };
+      if (normalized.git) {
+        gitCommits = normalized.git.commits || [];
+        currentCommitId = normalized.git.currentCommitId || null;
+        currentBranch = normalized.git.currentBranch || 'main';
+        branches = normalized.git.branches || { 'main': null };
         renderGitTree();
       }
 
       // 画像リスト復元
-      if (data.images && Array.isArray(data.images)) {
-        imageList = [];
-        data.images.forEach(imgData => {
-          imageList.push({
-            name: imgData.name,
-            width: imgData.width,
-            height: imgData.height,
-            src: imgData.src,
-            originalSrc: imgData.originalSrc || imgData.src,
-            undo: [],
-            redo: [],
-            gitCommits: imgData.gitCommits || [],
-            currentCommitId: imgData.currentCommitId || null,
-            currentBranch: imgData.currentBranch || 'main',
-            branches: imgData.branches || { 'main': null }
-          });
-        });
+      if (Array.isArray(normalized.images)) {
+        imageList = normalized.images.map((imgData, idx) => ({
+          name: imgData.name || `画像 ${idx + 1}`,
+          width: imgData.width || 0,
+          height: imgData.height || 0,
+          src: imgData.src || '',
+          originalSrc: imgData.originalSrc || imgData.src || '',
+          undo: [],
+          redo: [],
+          gitCommits: imgData.gitCommits || [],
+          currentCommitId: imgData.currentCommitId || null,
+          currentBranch: imgData.currentBranch || 'main',
+          branches: imgData.branches || { 'main': null }
+        }));
 
         renderImageTabs();
-        selectImage(data.activeImageIndex >= 0 ? data.activeImageIndex : 0);
+        const targetIdx = (typeof project.activeImageIndex === 'number' && imageList[project.activeImageIndex])
+          ? project.activeImageIndex
+          : 0;
+        selectImage(targetIdx);
+      }
+
+      // 開いていたタブの自動復元
+      if (project.activeTab && typeof switchTab === 'function') {
+        switchTab(project.activeTab, true);
       }
 
       return true;
@@ -3814,13 +3833,15 @@ function selectImage(idx, loadedImg = null) {
       const reader = new FileReader();
       reader.onload = (ev) => {
         try {
-          const data = JSON.parse(ev.target.result);
-          if (applyFullProjectState(data)) {
+          const rawData = JSON.parse(ev.target.result);
+          const normalized = migrateMask(rawData);
+          validateMask(normalized);
+          if (applyFullProjectState(normalized)) {
             saveStateToLocal();
             showAutoSaveToast('📦 .mask プロジェクト（画像＋地震設定等）を完全復元しました！');
           }
-        } catch(err) {
-          alert('.mask ファイルの読み込みに失敗しました。');
+        } catch (err) {
+          alert(err.message || '.mask ファイルの読み込みに失敗しました。');
         }
       };
       reader.readAsText(file);
@@ -9103,6 +9124,71 @@ function applyLanguageToDOM(lang) {
   }
 }
 
+    function repositionLanguageSwitcher() {
+      const bar = document.getElementById('lang-switcher');
+      if (!bar) return;
+
+      const margin = 8;
+      const barRect = bar.getBoundingClientRect();
+      const width = barRect.width || bar.offsetWidth;
+      const height = barRect.height || bar.offsetHeight;
+      const candidates = [
+        document.getElementById('sticky-controls'),
+        document.getElementById('btn-show-header'),
+        document.getElementById('jishin-view-toggle-bar'),
+        document.querySelector('.jishin-panel-toggle-btn')
+      ].filter(Boolean);
+
+      const overlaps = (target) => {
+        if (!target) return false;
+        const r = target.getBoundingClientRect();
+        return !(barRect.right < r.left || barRect.left > r.right || barRect.bottom < r.top || barRect.top > r.bottom);
+      };
+
+      const defaultPositions = [
+        { right: '15px', bottom: '45px', left: 'auto', top: 'auto' },
+        { left: `${margin}px`, bottom: '45px', right: 'auto', top: 'auto' },
+        { left: `${margin}px`, top: `${margin}px`, right: 'auto', bottom: 'auto' },
+        { right: `${margin}px`, top: `${margin}px`, left: 'auto', bottom: 'auto' }
+      ];
+
+      let placed = false;
+      for (const pos of defaultPositions) {
+        const testBar = document.createElement('div');
+        testBar.style.visibility = 'hidden';
+        testBar.style.position = 'fixed';
+        testBar.style.display = 'flex';
+        testBar.style.zIndex = '99998';
+        testBar.style.width = `${width}px`;
+        testBar.style.height = `${height}px`;
+        Object.entries(pos).forEach(([key, value]) => testBar.style[key] = value);
+        document.body.appendChild(testBar);
+
+        const tRect = testBar.getBoundingClientRect();
+        const isClear = !candidates.some(overlapsWithRect => {
+          const rr = overlapsWithRect.getBoundingClientRect();
+          return !(tRect.right < rr.left || tRect.left > rr.right || tRect.bottom < rr.top || tRect.top > rr.bottom);
+        });
+        document.body.removeChild(testBar);
+
+        if (isClear) {
+          bar.style.right = pos.right;
+          bar.style.bottom = pos.bottom;
+          bar.style.left = pos.left;
+          bar.style.top = pos.top;
+          placed = true;
+          break;
+        }
+      }
+
+      if (!placed) {
+        bar.style.right = '15px';
+        bar.style.bottom = '45px';
+        bar.style.left = 'auto';
+        bar.style.top = 'auto';
+      }
+    }
+
     function initLanguageSwitcher() {
       if (document.getElementById('lang-switcher')) return;
 
@@ -9176,6 +9262,8 @@ function applyLanguageToDOM(lang) {
       if (fontSelect) fontSelect.value = window.currentArabicFont;
 
       window.switchLang(window.currentSelectedLang);
+      requestAnimationFrame(repositionLanguageSwitcher);
+      window.addEventListener('resize', repositionLanguageSwitcher, { passive: true });
     }
 
     if (document.readyState === 'loading') {
