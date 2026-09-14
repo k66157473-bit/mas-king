@@ -1,0 +1,142 @@
+[
+  {
+    "version": "v6.2.0",
+    "date": "2026-09-14 10:00",
+    "type": "feat",
+    "title": {
+      "ja": "V6.2マイグレーション機構の搭載および更新履歴ログの外部JSON読み込み化",
+      "en": "V6.2 Migration Engine Integration & External JSON Changelog Loader",
+      "ar": "تضمين محرك الترحيل V6.2 وتحميل سجل التحديثات من ملف JSON خارجي",
+      "ko": "V6.2 마이그레이션 엔진 탑재 및 변경 이력 로그 외부 JSON 로딩화",
+      "ch": "搭载V6.2版本平滑迁移引擎并将更新日志解耦为外部JSON动态载入"
+    },
+    "items": [
+      {
+        "ja": "過去バージョンで作成された旧.maskファイルを自動検知し、現行V6.2形式（名前空間構造）へ安全に段階的変換するマイグレーション＆バリデーション機構を搭載しました",
+        "en": "Equipped with a migration and validation engine that automatically detects legacy .mask files and safely converts them step-by-step into the current V6.2 namespace format.",
+        "ar": "تم تضمين آلية ترحيل وتحقق تكتشف تلقائياً ملفات .mask القديمة وتعمل على ترقيتها بأمان خطوة بخطوة إلى تنسيق V6.2 الحالي.",
+        "ko": "이전 버전에서 작성된 구 .mask 파일을 자동 감지하여 현행 V6.2 형식(네임스페이스 구조)으로 안전하게 단계별 변환하는 마이그레이션 및 검증 메커니즘을 탑재했습니다.",
+        "ch": "内置了自动识别旧版.mask工程文件的版本迁移与数据校验机制，支持在内存中将其无损、平滑且按步晋级转换为现行V6.2命名空间标准格式。"
+      },
+      {
+        "ja": "HTML内に直接記述されていた膨大な更新履歴ログを「koushin.json」へと完全に外部ファイル化し、非同期fetch読み込み＆オフラインフォールバック対応により保守性と読み込み速度を向上させました",
+        "en": "Completely extracted the massive changelog into 'koushin.json' with asynchronous fetch loading and offline fallbacks, improving maintainability and load performance.",
+        "ar": "تم فصل سجل التحديثات الضخم بالكامل إلى ملف 'koushin.json' خارجي مع دعم التحميل غير المتزامن fetch والعمل دون اتصال لتحسين الأداء وسهولة الصيانة.",
+        "ko": "HTML 내에 직접 기술되어 있던 방대한 변경 이력 로그를 'koushin.json'으로 완전히 외부 파일화하고, 비동기 fetch 로딩 및 오프라인 폴백 대응을 통해 유지보수성과 로딩 속도를 향상시켰습니다.",
+        "ch": "将原先内嵌于HTML源码中的海量更新日志彻底解耦抽离至独立的「koushin.json」文件，采用异步fetch动态加载并兼顾离线容错，大幅提升了代码可维护性与页面首屏性能。"
+      }
+    ]
+  },
+  {
+    "version": "v6.1.0",
+    "date": "2026-09-13 11:30",
+    "type": "feat",
+    "title": {
+      "ja": "更新履歴データの完全多言語オブジェクト化対応",
+      "en": "Full Multilingual Object Support for Changelog Data",
+      "ar": "دعم كائنات متعددة اللغات بالكامل لسجل التحديثات",
+      "ko": "변경 이력 데이터의 완전한 다언어 객체화 지원",
+      "ch": "更新日志数据的全多语言对象化支持"
+    },
+    "items": [
+      {
+        "ja": "更新履歴の全タイトルおよび詳細項目を、日本語・英語・アラビア語・韓国語・中国語の各言語オブジェクト形式に完全移行しました",
+        "en": "Migrated all changelog titles and detail items to fully structured multilingual object formats for JA, EN, AR, KO, and CH.",
+        "ar": "تم نقل كافة عناوين وتفاصيل سجل التحديثات إلى تنسيق كائنات متعددة اللغات يدعم جميع اللغات.",
+        "ko": "변경 이력의 모든 제목 및 상세 항목을 일본어, 영어, 아랍어, 한국어, 중국어 다언어 객체 형식으로 완전 이관했습니다.",
+        "ch": "已将更新日志的所有标题和详细条目完全迁移为支持多语言（日、英、阿、韩、中）的对象结构格式。"
+      },
+      {
+        "ja": "言語を切り替えた際、更新履歴の表示内容が選択した言語へリアルタイムかつ正確に反映されるよう改善しました",
+        "en": "Improved the changelog display to update in real-time and accurately reflect the selected language upon switching.",
+        "ar": "تم تحسين عرض سجل التحديثات ليتم تحديثه في الوقت الفعلي بدقة بناءً على اللغة المختارة.",
+        "ko": "언어 전환 시 변경 이력 표시 내용이 선택한 언어로 실시간 정확하게 반영되도록 개선했습니다.",
+        "ch": "优化了更新日志的显示机制，在切换语言时可实时且准确地反映所选语言的文本内容。"
+      }
+    ]
+  },
+  {
+    "version": "v6.0.0",
+    "date": "2026-09-13 10:00",
+    "type": "feat",
+    "title": {
+      "ja": "3D地震倒壊シミュレーターの完全統合・.mask統合・多言語オフライン完全化・文字入れドラッグ微調整対応",
+      "en": "Full Integration of 3D Earthquake Sim, .mask Merge, Complete Offline Multilingual Support, and Text Drag Fine-Tuning",
+      "ar": "التكامل الكامل لمحاكي الزلازل 3D، ودمج .mask، والدعم الكامل للغات بدون إنترنت، وتعديل سحب النصوص",
+      "ko": "3D 지진 붕괴 시뮬레이터 완전 통합, .mask 통합, 다국어 오프라인 완전 지원, 텍스트 드래그 미세 조정 대응",
+      "ch": "3D地震模拟器完全内置·.mask工程合一·多语言离线全功能化·文字拖拽微调支持"
+    },
+    "items": [
+      {
+        "ja": "別ページだった「3D地震倒壊シミュレーター」をアプリ内タブへ完全統合し、.jishinファイルを廃止して.maskファイル1本で全画像・全設定・地震データを完全保存・復元できるよう統合しました",
+        "en": "Fully integrated the '3D Earthquake Simulator' into an in-app tab, abolished .jishin files, and merged everything into a single .mask file for complete save/restore of images, settings, and earthquake data.",
+        "ar": "تم دمج 'محاكي الزلازل 3D' بالكامل داخل التطبيق، وإلغاء ملفات .jishin ودمج كل شيء في ملف .mask واحد لحفظ واستعادة الصور والإعدادات.",
+        "ko": "별도 페이지였던 '3D 지진 붕괴 시뮬레이터'를 앱 내 탭으로 완전히 통합하고, .jishin 파일을 폐기하며 .mask 파일 하나로 모든 이미지·설정·지진 데이터를 완벽히 보관 및 복원하도록 통합했습니다.",
+        "ch": "将原本独立的“3D地震模拟器”完全内置至应用内标签页，废弃旧的.jishin文件，实现仅凭单个.mask文件即可完整保存与恢复所有图像、编辑设置及地震仿真数据。"
+      },
+      {
+        "ja": "言語選択（日本語/英語/アラビア語/韓国語/中国語）をリロード後も記憶し、.maskファイルへも完全保存・同期できるよう対応しました",
+        "en": "Remember language selection (JA/EN/AR/KO/CH) across reloads and fully save/sync it within .mask files.",
+        "ar": "حفظ اختيار اللغة بعد إعادة التحميل وتزامنها بالكامل داخل ملف .mask.",
+        "ko": "언어 선택을 새로고침 후에도 기억하며, .mask 파일에도 완벽히 저장 및 동기화되도록 대응했습니다.",
+        "ch": "实现语言选择在页面刷新后自动记忆，并支持在.mask工程文件中进行完整保存与同步。"
+      },
+      {
+        "ja": "外部APIに依存せず完全ローカルで瞬時に切り替わる静的属性辞書エンジンへ移行し、外国語表記における「マス王」を「隠す王 (King of Hiding)」へと完全統一しました",
+        "en": "Migrated to a completely local static attribute dictionary engine, unifying the foreign translation of 'Mas-King' to 'King of Hiding'.",
+        "ar": "التحول إلى محرك قاموس محلي بالكامل وتوحيد تسمية 'ملك الإخفاء' باللغات الأجنبية.",
+        "ko": "외부 API에 의존하지 않는 정적 속성 사전 엔진으로 이전하고, 외국어 표기를 '숨기기 왕(King of Hiding)'으로 완전히 통일했습니다.",
+        "ch": "迁移至不依赖外部API的静态属性字典引擎，并将外文标识中的“マス王”统一规范为“隐藏之王 (King of Hiding)”。"
+      }
+    ]
+  },
+  {
+    "version": "v5.0.0",
+    "date": "2026-09-11 18:00",
+    "type": "fix",
+    "title": {
+      "ja": "連番Undo巻き戻し・ズーム時ダミー配置・変形後消しゴムの重要修正",
+      "en": "Important Fixes for Number Stamp Undo, Zoom Dummy Placement, and Eraser After Transform",
+      "ar": "إصلاحات هامة لختم الأرقام، موضع النصوص الوهمية عند التكبير، والممحاة بعد التحويل",
+      "ko": "연번 스탬프 Undo 되감기, 줌 시 더미 배치, 변형 후 지우개 중요 수정",
+      "ch": "修复序号图章撤销回退、缩放状态下虚假文本定位及变形后橡皮擦重要缺陷"
+    },
+    "items": [
+      {
+        "ja": "連番スタンプでUndoを実行した際、スタンプの番号カウンターが自動で1つ前に巻き戻るよう修正しました",
+        "en": "Fixed an issue where the stamp counter automatically rewinds by 1 when performing Undo on number stamps.",
+        "ar": "تم إرجاع عداد الختم تلقائياً خطوة للوراء عند تنفيذ التراجع لختم الأرقام.",
+        "ko": "연번 스탬프에서 Undo를 실행했을 때 스탬프 번호 카운터가 자동으로 하나 전으로 되감기도록 수정했습니다.",
+        "ch": "修复了执行序号图章的Undo（撤销）操作时，图章内部计数器未能同步向后回退1个数字的Bug。"
+      },
+      {
+        "ja": "画面を拡大・縮小ズームした状態でダミー置換文字を配置した際、プレビューと焼き付け位置・サイズのズレを完全に解消しました",
+        "en": "Completely resolved preview and baking misalignment of dummy replacement text when placed while zoomed in or out.",
+        "ar": "تم القضاء تماماً على أي إزاحة في موضع أو حجم النصوص الوهمية عند وضعها أثناء التكبير أو التصغير.",
+        "ko": "화면을 줌한 상태에서 더미 대체 텍스트를 배치할 때 프리뷰와 렌더링 위치·크기의 오차를 완전히 해소했습니다.",
+        "ch": "彻底消除了在缩放画布状态下放置虚假替换文本时，前端预览与实际最终像素渲染之间存在的位置和尺寸偏差。"
+      }
+    ]
+  },
+  {
+    "version": "v1.0.0",
+    "date": "2026-08-28 19:00",
+    "type": "other",
+    "title": {
+      "ja": "初期リリース",
+      "en": "Initial Release",
+      "ar": "الإصدار الأول",
+      "ko": "초기 릴리스",
+      "ch": "首次公开初始版本发布"
+    },
+    "items": [
+      {
+        "ja": "完全ローカル完結マスキングツールの初期公開",
+        "en": "Initial public release of the completely local offline masking tool.",
+        "ar: "الإصدار العام الأول لأداة الإخفاء والتمويه المحلية بالكامل.",
+        "ko": "완전 로컬 완결형 마스킹 툴 초기 공개",
+        "ch": "纯本地离线运行的网页端图像隐私打码工具正式上线公开。"
+      }
+    ]
+  }
+]
