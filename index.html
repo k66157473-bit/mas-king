@@ -1788,6 +1788,8 @@
 
 <!-- 🌍 3D地震倒壊シミュレーター画面 (index.html内統合版) -->
 <div id="jishin-view" class="view-panel">
+  <!-- 地震全画面時にヘッダーを復活させるボタン -->
+  <button id="btn-show-header" class="btn" style="position: absolute; top: 10px; left: 10px; z-index: 999; display: none; background: rgba(15,23,42,0.9); color: #00ff88; border: 1px solid #00ff88; font-size: 11px; padding: 4px 8px;" ja="👁️ ヘッダー表示" en="👁️ Show Header" ar="👁️ إظهار الرأس" ko="👁️ 헤더 표시" ch="👁️ 显示顶部栏">👁️ ヘッダー表示</button>
   <!-- 操作ヒント -->
   <div id="jishin-hint" class="jishin-ui-element" ja="🖱️ ドラッグで360°旋回 / スクロールでズーム / ← →キーで回転 / 【右クリック】で全UI非表示・復元" en="🖱️ Drag to rotate / Scroll to zoom / Arrow keys to turn / Right-click to toggle UI" ar="🖱️ اسحب للتدوير / مرر للتكبير / يمين الفأرة لإخفاء الواجهة" ko="🖱️ 드래그로 360° 회전 / 스크롤로 줌 / 우클릭으로 전체 UI 숨김·표시" ch="🖱️ 拖拽360°旋转 / 滚轮缩放 / 键盘方向键微调 / 【右键点击】一键隐显全部UI">
     🖱️ ドラッグで360°旋回 / スクロールでズーム / ← →キーで回転 / 【右クリック】で全UI非表示・復元
@@ -2956,33 +2958,46 @@
     let isDraggingText = false;
     let textDragOffset = { x: 0, y: 0 };
 
-   // 現在選択中のタブを保持するグローバル変数
-    let currentActiveTab = 'tool';
+ let currentActiveTab = 'tool';
 
-    // タブ切り替え（開いたタブを記録し、IndexedDBへ即時保存）
     function switchTab(tabId, skipSave = false) {
       currentActiveTab = tabId;
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
-      
+
       const targetView = document.getElementById(`${tabId}-view`);
       if (targetView) targetView.classList.add('active');
       const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(`'${tabId}'`));
       if (targetBtn) targetBtn.classList.add('active');
 
-      if (tabId === 'jishin' && typeof onJishinTabActivated === 'function') {
-        onJishinTabActivated();
-      }
-      if (tabId === 'changelog' && typeof renderChangelog === 'function') {
-        renderChangelog();
+      const header = document.querySelector('header');
+      const btnShowHeader = document.getElementById('btn-show-header');
+
+      // 🌍 3D地震シミュレーション時はヘッダーを非表示にして全画面化
+      if (tabId === 'jishin') {
+        if (header) header.style.display = 'none';
+        if (btnShowHeader) btnShowHeader.style.display = 'block';
+        if (typeof onJishinTabActivated === 'function') onJishinTabActivated();
+      } else {
+        if (header) header.style.display = 'flex';
+        if (btnShowHeader) btnShowHeader.style.display = 'none';
       }
 
-      // タブの切り替えを自動保存
+      if (tabId === 'changelog' && typeof renderChangelog === 'function') renderChangelog();
+      if (tabId === 'daifukucho' && typeof renderDaifukuchoTable === 'function') renderDaifukuchoTable();
+
       if (!skipSave && typeof debouncedSaveStateToLocal === 'function') {
         debouncedSaveStateToLocal();
       }
-    } 
+    }
 
+    // 地震画面の「ヘッダー表示」ボタンで再表示
+    document.getElementById('btn-show-header')?.addEventListener('click', () => {
+      const header = document.querySelector('header');
+      if (header) header.style.display = 'flex';
+      document.getElementById('btn-show-header').style.display = 'none';
+      if (typeof onJishinTabActivated === 'function') onJishinTabActivated();
+    });
 
     // ダークモード切替
     document.getElementById('dark-mode-btn').addEventListener('click', () => {
@@ -3286,7 +3301,7 @@ function generateFullProjectJSON() {
   };
 }
 
-// --- .mask プロジェクトの安全な読み込み & 即時永続化 ---
+// --- .mask プロジェクト読み込み & 即時IndexedDB同期 ---
 async function loadMaskProjectText(jsonText) {
   let rawData;
   try {
@@ -3295,34 +3310,108 @@ async function loadMaskProjectText(jsonText) {
     throw new Error('.mask ファイルの JSON 形式が破損しています。');
   }
 
-  const fileFormatVersion = Number(rawData.formatVersion || (rawData.app ? 5 : 1));
-  if (fileFormatVersion > CURRENT_MASK_FORMAT_VERSION) {
-    throw new Error(
-      `この .mask ファイルは新しいバージョン (V${fileFormatVersion}) で作成されています。\nマス王 R̄ を最新版に更新してください。`
-    );
-  }
-
   const migratedData = migrateMask(rawData);
   validateMask(migratedData);
 
   applyFullProjectState(migratedData);
 
-  // 👈 読み込んだ瞬間にIndexedDBへ確実に同期保存（リロード時の消滅を完全防止）
+  // 👈 読み込み直後にIndexedDBへ強制保存（リロード時のリセットを完全防止）
   await saveStateToLocal();
   return true;
 }
 
-function loadMaskProjectFile(file) {
-  const reader = new FileReader();
-  reader.onload = async (ev) => {
-    try {
-      await loadMaskProjectText(ev.target.result);
-      showAutoSaveToast('📦 .mask プロジェクトを読み込み、自動保存を更新しました！');
-    } catch (err) {
-      alert(`⚠️ .mask の読み込みに失敗しました:\n${err.message}`);
+function applyFullProjectState(data) {
+  if (!data) return false;
+
+  // 👈 正しい形式判定（旧形式・新形式どちらも許容）
+  if (data.format !== "mask" && data.app !== "Mas-King R̄" && data.app !== "Mas-King") {
+    alert('有効なマス王 (.mask) ファイルではありません。');
+    return false;
+  }
+
+  const project = data.project || {};
+
+  // 言語・フォント
+  const lang = data.language?.selected || data.language || 'ja';
+  const arFont = data.language?.arabicFont || data.arabicFont || 'Amiri';
+  if (typeof window.switchLang === 'function') window.switchLang(lang);
+  if (typeof window.setArabicFont === 'function') window.setArabicFont(arFont);
+
+  // テーマ・ダークモード
+  if (project.theme?.darkMode !== undefined) {
+    const isDark = project.theme.darkMode;
+    document.body.classList.toggle('dark-mode', isDark);
+    const darkBtn = document.getElementById('dark-mode-btn');
+    if (darkBtn) darkBtn.textContent = isDark ? '☀️' : '🌙';
+    localStorage.setItem('maskou_dark', isDark ? '1' : '0');
+  }
+
+  // スタミナ
+  if (project.stamina) {
+    currentStamina = Math.min(MAX_STAMINA, project.stamina.current || MAX_STAMINA);
+    totalUsedStamina = project.stamina.totalUsed || 0;
+    updateStaminaUI();
+  }
+
+  if (project.sparkle) applySparkleState(project.sparkle);
+
+  if (project.settings) {
+    const s = project.settings;
+    if (s.strength && document.getElementById('strength-slider')) document.getElementById('strength-slider').value = s.strength;
+    if (s.feather !== undefined && document.getElementById('feather-chk')) document.getElementById('feather-chk').checked = s.feather;
+    if (s.maskColor && maskColorPicker) maskColorPicker.value = s.maskColor;
+    if (s.stampCounter) stampCounter = s.stampCounter;
+    if (s.currentMode) {
+      currentMode = s.currentMode;
+      document.querySelectorAll('.mode-btn').forEach(b => b.classList.toggle('active', b.dataset.mode === currentMode));
     }
-  };
-  reader.readAsText(file);
+  }
+
+  if (project.anmomo && typeof anmomoData !== 'undefined') {
+    Object.assign(anmomoData, project.anmomo);
+    saveAnmomoDashboard();
+  }
+
+  if (data.earthquake && typeof applyImportConfig === 'function') applyImportConfig(data.earthquake);
+  if (data.mml && typeof applyMmlData === 'function') applyMmlData(data.mml);
+  if (data.daifukucho && typeof applyDaifukuchoData === 'function') applyDaifukuchoData(data.daifukucho);
+
+  if (data.git) {
+    gitCommits = data.git.commits || [];
+    currentCommitId = data.git.currentCommitId || null;
+    currentBranch = data.git.currentBranch || 'main';
+    branches = data.git.branches || { 'main': null };
+    renderGitTree();
+  }
+
+  if (Array.isArray(data.images) && data.images.length > 0) {
+    imageList = data.images.map((imgData, idx) => ({
+      name: imgData.name || `画像 ${idx + 1}`,
+      width: imgData.width || 0,
+      height: imgData.height || 0,
+      src: imgData.src || '',
+      originalSrc: imgData.originalSrc || imgData.src || '',
+      undo: [],
+      redo: [],
+      gitCommits: imgData.gitCommits || [],
+      currentCommitId: imgData.currentCommitId || null,
+      currentBranch: imgData.currentBranch || 'main',
+      branches: imgData.branches || { 'main': null }
+    }));
+
+    renderImageTabs();
+    const targetIdx = (typeof project.activeImageIndex === 'number' && imageList[project.activeImageIndex])
+      ? project.activeImageIndex
+      : 0;
+    selectImage(targetIdx);
+  }
+
+  // 👈 開いていたタブの自動復元
+  if (project.activeTab && typeof switchTab === 'function') {
+    switchTab(project.activeTab, true);
+  }
+
+  return true;
 }
 
 // --- アプリケーションStateへの完全反映 ---
@@ -3513,9 +3602,19 @@ function applyFullProjectState(data) {
         list.appendChild(tab);
       });
     }
-
-    function selectImage(idx, loadedImg = null) {
+function selectImage(idx, loadedImg = null) {
       if (!imageList[idx]) return;
+
+      // 👈 直前のアクティブ画像のGit状態・Undoを確実に退避（上書き破壊を防止）
+      if (activeImageIndex >= 0 && imageList[activeImageIndex]) {
+        imageList[activeImageIndex].undo = [...undoStack];
+        imageList[activeImageIndex].redo = [...redoStack];
+        imageList[activeImageIndex].gitCommits = [...gitCommits];
+        imageList[activeImageIndex].currentCommitId = currentCommitId;
+        imageList[activeImageIndex].currentBranch = currentBranch;
+        imageList[activeImageIndex].branches = { ...branches };
+      }
+
       activeImageIndex = idx;
       stampCounter = 1;
       renderImageTabs();
@@ -3524,10 +3623,11 @@ function applyFullProjectState(data) {
       dropzone.style.display = 'none';
       container.style.display = 'inline-block';
 
-      gitCommits = item.gitCommits || [];
+      // 切り替え先画像のGit状態を復元
+      gitCommits = item.gitCommits ? [...item.gitCommits] : [];
       currentCommitId = item.currentCommitId || null;
       currentBranch = item.currentBranch || 'main';
-      branches = item.branches || { 'main': null };
+      branches = item.branches ? { ...item.branches } : { 'main': null };
       renderGitTree();
 
       if (loadedImg) {
@@ -3551,15 +3651,15 @@ function applyFullProjectState(data) {
             ctx.drawImage(img, 0, 0);
             item.undo = [ctx.getImageData(0, 0, canvas.width, canvas.height)];
           }
-          item.redo = item.redo || [];
-          undoStack = item.undo;
-          redoStack = item.redo;
+          undoStack = item.undo || [];
+          redoStack = item.redo || [];
           updateZoom(getFitZoomScale());
           debouncedSaveStateToLocal();
         };
         img.src = item.src;
       }
     }
+   
 
     function getFitZoomScale() {
       const ws = document.getElementById('workspace');
@@ -4403,16 +4503,18 @@ function applyFullProjectState(data) {
       pushUndo('① 連番スタンプ');
     }
 
-    function applyDropper(x, y) {
+   function applyDropper(x, y) {
       const pixel = ctx.getImageData(Math.round(x), Math.round(y), 1, 1).data;
       const hex = "#" + ((1 << 24) + (pixel[0] << 16) + (pixel[1] << 8) + pixel[2]).toString(16).slice(1);
       dropperColor = hex;
       if (maskColorPicker) maskColorPicker.value = hex;
-      alert(`色を抽出してセットしました: ${hex}`);
+
+      // 👈 モードを color に切り替え、UIのボタン選択状態を完全に連動
       currentMode = 'color';
       document.querySelectorAll('.mode-btn').forEach(b => {
         b.classList.toggle('active', b.dataset.mode === 'color');
       });
+      showAutoSaveToast(`🧪 スポイト色を適用: ${hex}`);
     }
 
     function applyCrop(x, y, w, h) {

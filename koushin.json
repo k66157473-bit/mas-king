@@ -1,3 +1,45 @@
+{
+    "version": "v6.2.1",
+    "date": "2026-09-14 20:00",
+    "type": "fix",
+    "title": {
+      "ja": "3D地震全画面化、Git複数タブ破壊・スポイト・.mask読込後リロード消失バグの完全修正",
+      "en": "3D Quake Fullscreen & Complete Fixes for Git Multi-Tab, Eyedropper, and .mask Persistence on Reload",
+      "ar": "ملء شاشة الزلازل 3D، وإصلاحات شاملة لـ Git والقطارة ومنع فقدان بيانات .mask عند التحديث",
+      "ko": "3D 지진 전체화면화, Git 다중 탭 파괴·스포이트·.mask 불러오기 후 새로고침 소멸 버그 완벽 수정",
+      "ch": "3D地震沉浸式全屏化，彻底修复Git多图覆盖、吸管取色及.mask导入刷新丢失缺陷"
+    },
+    "items": [
+      {
+        "ja": "【🌍 3D地震全画面化】没入感向上のため、3D地震シミュレータ選択時にヘッダーを自動非表示にして画面を広く使えるようにし、画面上の「👁️ ヘッダー表示」ボタンでいつでも復元できるUIを新設しました",
+        "en": "[🌍 3D Quake Fullscreen] Automatically hides the header upon selecting the 3D Earthquake tab for maximum immersion, with a toggle button to restore the header anytime.",
+        "ar": "[🌍 ملء شاشة الزلازل 3D] إخفاء الرأس تلقائياً عند فتح محاكي الزلازل لتوسيع مساحة الرؤية، مع إضافة زر لإظهار الرأس في أي وقت.",
+        "ko": "[🌍 3D 지진 전체화면] 몰입감 향상을 위해 지진 탭 선택 시 헤더를 자동 숨김 처리하여 화면을 넓게 활용할 수 있도록 하고, 화면 내 '👁️ 헤더 표시' 버튼으로 언제든 복원할 수 있도록 개선했습니다.",
+        "ch": "【🌍 3D地震全屏化】切换至3D地震模拟器时自动隐藏顶部导航栏以提供全景大视野，并提供「👁️ 显示顶部栏」悬浮按钮可随时一键恢复。"
+      },
+      {
+        "ja": "【🌿 Gitツリー修正】複数画像タブを開いた状態でGit履歴を操作した際、直前画像のコミット履歴やUndoスタックが別画像に上書き破壊される不具合を完全解消しました",
+        "en": "[🌿 Git Tree Fix] Completely resolved an issue where commit histories and Undo stacks were overwritten and corrupted across multiple open image tabs.",
+        "ar": "[🌿 إصلاح شجرة Git] القضاء التام على مشكلة الكتابة فوق سجلات التراجع وتاريخ Git للصور الأخرى عند فتح عدة علامات تبويب للصور.",
+        "ko": "[🌿 Git 트리 수정] 여러 이미지 탭이 열린 상태에서 Git 히스토리를 조작할 때 이전 이미지의 커밋 기록과 Undo 스택이 덮어쓰여 파괴되던 결함을 완벽히 해결했습니다.",
+        "ch": "【🌿 Git历史树修复】重构图片切换时的状态深拷贝隔离机制，彻底杜绝了开启多张图片标签页时Git版本历史与撤销栈相互污染覆盖的严重缺陷。"
+      },
+      {
+        "ja": "【🧪 スポイト修正】スポイトで画面上の色を抽出した際、描画モードが自動的に「🎨 カラー塗り」へ切り替わり、ツールバーのボタン選択状態が正常に連動するよう修正しました",
+        "en": "[🧪 Eyedropper Fix] Fixed so that picking colors with the eyedropper instantly switches mode to '🎨 Color Fill' and accurately updates toolbar active button states.",
+        "ar": "[🧪 إصلاح القطارة] تصحيح التبديل التلقائي إلى وضع '🎨 تعبئة لون' ومزامنة حالة أزرار شريط الأدوات بدقة فور سحب اللون.",
+        "ko": "[🧪 스포이트 수정] 스포이트로 색상을 추출했을 때 그리기 모드가 자동으로 '🎨 컬러 채우기'로 전환되고 툴바 버튼 선택 상태가 완벽히 연동되도록 수정했습니다.",
+        "ch": "【🧪 吸管工具修复】修复吸管取色后未正确联动激活“🎨 颜色填充”模式的问题，确保工具栏选定高亮状态与色彩拾取器毫秒级同步。"
+      },
+      {
+        "ja": "【📦 .mask＆タブ復元修正】V6.2形式の読込判定（format確認）に対応し、.maskインポート直後にIndexedDBへ強制同期保存することでリロード後のデータ初期化を防止し、開いていたタブを自動復元するよう強化しました",
+        "en": "[📦 .mask & Tab Restore Fix] Enhanced V6.2 format validation, enforced immediate IndexedDB sync upon .mask import to prevent reload data resets, and enabled active tab auto-restoration.",
+        "ar": "[📦 إصلاح .mask واستعادة التبويب] دعم التحقق من تنسيق V6.2، وفرض الحفظ الفوري في IndexedDB لمنع فقدان البيانات عند التحديث، واستعادة التبويب المفتوح بدقة.",
+        "ko": "[📦 .mask 및 탭 복원 수정] V6.2 형식 검증에 완전 대응하고, .mask 불러오기 직후 IndexedDB로 즉시 동기 저장하여 새로고침 시 초기화를 방지하며 열려있던 탭을 자동 복원하도록 강화했습니다.",
+        "ch": "【📦 .mask与标签页复原修复】全面兼容V6.2格式验证，并在导入.mask后立即强制同步至IndexedDB以彻底解决刷新丢失问题，同时支持上次打开标签页的精准原位复原。"
+      }
+    ]
+  },
 [
   {
     "version": "v6.2.1",
