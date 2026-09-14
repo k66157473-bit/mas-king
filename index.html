@@ -4987,9 +4987,10 @@ function escapeHtml(value) {
     .replace(/'/g, '&#039;');
 }
 // ============================================================
-    // 🕒 更新履歴 (Changelog) - koushin.json 外部読み込みエンジン
+    // 🕒 更新履歴 (Changelog) - 完全外部JSON・非同期ローダー
     // ============================================================
-    let changelogData = [];
+    let changelogData = null; // まだ読み込まれていない状態
+    let changelogLoadingPromise = null;
     let clCurrentPage = 1;
     const clItemsPerPage = 10;
     let clSortDesc = true;
@@ -4997,7 +4998,7 @@ function escapeHtml(value) {
 
     const typeConfig = {
       feat:   { label: { ja: '✨ 追加', en: '✨ Added', ar: '✨ إضافة', ko: '✨ 추가', ch: '✨ 新增' }, className: 'cl-type-feat' },
-      fix:    { label: { ja: '🐛 バグ修正', en: '🐛 Bug Fix', ar: '🐛 إصلاح خطأ', ko: '🐛 버그 수정', ch: '🐛 修复' }, className: 'cl-type-fix' },
+      fix:    { label: { ja: '🐛 バグ修正', en: '🐛 Bug Fix', ar: '🐛 إصلاح خطأ', ko: '🐛 버グ 수정', ch: '🐛 修复' }, className: 'cl-type-fix' },
       remove: { label: { ja: '🗑️ 削除', en: '🗑️ Removed', ar: '🗑️ حذف', ko: '🗑️ 삭제', ch: '🗑️ 删除' }, className: 'cl-type-remove' },
       change: { label: { ja: '変更', en: 'Changed', ar: 'تغيير', ko: '변경', ch: '变更' }, className: 'cl-type-change' },
       other:  { label: { ja: '⚙️ その他', en: '⚙️ Other', ar: '⚙️ أخرى', ko: '⚙️ 기타', ch: '⚙️ 其他' }, className: 'cl-type-other' }
@@ -5027,45 +5028,45 @@ function escapeHtml(value) {
         .replace(/'/g, '&#039;');
     }
 
-    // koushin.json の非同期読み込み関数
+    // koushin.json の非同期読み込み（遅延があっても安全に待機する設計）
     async function loadChangelogData() {
-      const listEl = document.getElementById('changelog-list');
-      if (listEl) {
-        listEl.innerHTML = '<p style="color:#64748b; text-align:center; padding:2rem;">🕒 更新履歴を読み込み中...</p>';
-      }
+      if (changelogData) return changelogData; // すでに読み込み済みなら再利用
 
-      try {
-        const response = await fetch('koushin.json');
-        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-        changelogData = await response.json();
-      } catch (error) {
-        console.warn('koushin.json の fetch に失敗しました。フォールバック処理を実行します:', error);
-        // ローカル直接起動(file://)等のフォールバック
-        changelogData = [
-          {
-            version: 'v6.2.0',
-            date: '2026-09-14 10:00',
-            type: 'feat',
-            title: { ja: 'V6.2マイグレーション＆更新履歴外部JSON化', en: 'V6.2 Migration & External JSON Changelog' },
-            items: [
-              { ja: 'koushin.json から非同期で更新履歴を安全に取得・展開する仕様に移行しました。', en: 'Migrated to asynchronously loading changelog data safely from koushin.json.' }
-            ]
+      if (!changelogLoadingPromise) {
+        changelogLoadingPromise = (async () => {
+          try {
+            const response = await fetch('./koushin.json');
+            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+            changelogData = await response.json();
+          } catch (err) {
+            console.error('koushin.json の取得に失敗しました:', err);
+            changelogData = []; // 失敗時は空にしてエラー表示
           }
-        ];
+          return changelogData;
+        })();
       }
 
+      await changelogLoadingPromise;
       renderChangelog();
+      return changelogData;
     }
 
-    function renderChangelog() {
-      const searchInput = document.getElementById('cl-search-input');
-      const query = (searchInput ? searchInput.value : '').toLowerCase();
+    async function renderChangelog() {
       const listEl = document.getElementById('changelog-list');
       const selectEl = document.getElementById('cl-page-select');
       const lang = window.currentSelectedLang || 'ja';
 
-      if (!listEl || !selectEl) return;
+      if (!listEl) return;
 
+      // まだJSON取得中ならローディングを表示して待つ
+      if (changelogData === null) {
+        listEl.innerHTML = '<p style="color:#64748b; text-align:center; padding:2rem;">🕒 更新履歴を読み込み中...</p>';
+        await loadChangelogData();
+        return;
+      }
+
+      const searchInput = document.getElementById('cl-search-input');
+      const query = (searchInput ? searchInput.value : '').toLowerCase();
       const queries = query.split(/\s+/).filter(q => q.length > 0);
 
       let filtered = changelogData.filter(item => {
@@ -5081,10 +5082,7 @@ function escapeHtml(value) {
         return matchesCategory && matchesQuery;
       });
 
-      filtered.sort((a, b) => {
-        const diff = new Date(a.date) - new Date(b.date);
-        return clSortDesc ? -diff : diff;
-      });
+      filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
 
       const totalItems = filtered.length;
       const totalPages = Math.max(1, Math.ceil(totalItems / clItemsPerPage));
@@ -5092,13 +5090,15 @@ function escapeHtml(value) {
       if (clCurrentPage > totalPages) clCurrentPage = totalPages;
       if (clCurrentPage < 1) clCurrentPage = 1;
 
-      selectEl.innerHTML = '';
-      for (let i = 1; i <= totalPages; i++) {
-        const opt = document.createElement('option');
-        opt.value = i;
-        opt.textContent = i;
-        if (i === clCurrentPage) opt.selected = true;
-        selectEl.appendChild(opt);
+      if (selectEl) {
+        selectEl.innerHTML = '';
+        for (let i = 1; i <= totalPages; i++) {
+          const opt = document.createElement('option');
+          opt.value = i;
+          opt.textContent = i;
+          if (i === clCurrentPage) opt.selected = true;
+          selectEl.appendChild(opt);
+        }
       }
 
       const totalPagesEl = document.getElementById('cl-total-pages');
@@ -5112,14 +5112,14 @@ function escapeHtml(value) {
       if (nextBtn) nextBtn.disabled = (clCurrentPage === totalPages);
 
       if (totalItems === 0) {
-        const noResultText = {
-          ja: '該当する更新履歴が見つかりませんでした。',
+        const noResult = {
+          ja: '更新履歴が見つかりませんでした。',
           en: 'No changelog entries found.',
-          ar: 'لم يتم العثور على إدخالات في سجل التحديثات.',
-          ko: '해당하는 업데이트 기록을 찾을 수 없습니다.',
-          ch: '未找到符合条件的更新日志。'
+          ar: 'لم يتم العثور على سجلات.',
+          ko: '업데이트 기록이 없습니다.',
+          ch: '未找到更新日志。'
         };
-        listEl.innerHTML = `<p style="color:#64748b; text-align:center; padding:2rem;">${escapeHtml(noResultText[lang] || noResultText.ja)}</p>`;
+        listEl.innerHTML = `<p style="color:#64748b; text-align:center; padding:2rem;">${escapeHtml(noResult[lang] || noResult.ja)}</p>`;
         return;
       }
 
@@ -5148,7 +5148,7 @@ function escapeHtml(value) {
       }).join('');
     }
 
-    // イベントリスナーの登録
+    // イベント登録
     document.querySelectorAll('.cl-filter-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         document.querySelectorAll('.cl-filter-btn').forEach(b => b.classList.remove('active'));
@@ -5160,7 +5160,7 @@ function escapeHtml(value) {
     });
 
     document.getElementById('cl-prev-btn')?.addEventListener('click', () => { if (clCurrentPage > 1) { clCurrentPage--; renderChangelog(); } });
-    document.getElementById('cl-next-btn')?.addEventListener('click', () => { if (clCurrentPage < Math.ceil(changelogData.length / clItemsPerPage)) { clCurrentPage++; renderChangelog(); } });
+    document.getElementById('cl-next-btn')?.addEventListener('click', () => { if (clCurrentPage < Math.ceil((changelogData || []).length / clItemsPerPage)) { clCurrentPage++; renderChangelog(); } });
     document.getElementById('cl-page-select')?.addEventListener('change', (e) => { clCurrentPage = parseInt(e.target.value, 10); renderChangelog(); });
     document.getElementById('cl-search-input')?.addEventListener('input', () => { clCurrentPage = 1; renderChangelog(); });
     document.getElementById('cl-sort-btn')?.addEventListener('click', () => {
@@ -5170,20 +5170,8 @@ function escapeHtml(value) {
       renderChangelog();
     });
 
-    document.getElementById('cl-copy-btn')?.addEventListener('click', async () => {
-      const text = changelogData.map(i => `[${i.version}] (${getChangelogText(typeConfig[i.type]?.label) || 'その他'}) ${getChangelogText(i.title)} (${i.date})\n` + (i.items || []).map(li => `・ ${getChangelogText(li)}`).join('\n')).join('\n\n');
-      await navigator.clipboard.writeText(text);
-      alert('更新履歴テキストをコピーしました！');
-    });
-
-    document.getElementById('cl-download-txt-btn')?.addEventListener('click', () => {
-      const text = changelogData.map(i => `[${i.version}] (${getChangelogText(typeConfig[i.type]?.label) || 'その他'}) ${getChangelogText(i.title)} (${i.date})\n` + (i.items || []).map(li => `・ ${getChangelogText(li)}`).join('\n')).join('\n\n');
-      const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = `CHANGELOG_${new Date().toISOString().slice(0, 10)}.txt`;
-      a.click();
-    });
+    // 起動時にバックグラウンドで事前ロード
+    window.addEventListener('DOMContentLoaded', loadChangelogData);
 
     
 // --- 🌐 HTML inline onclick から確実に呼べるようにグローバル登録 ---
