@@ -2956,10 +2956,15 @@
     let isDraggingText = false;
     let textDragOffset = { x: 0, y: 0 };
 
-    // タブ切り替え（3D地震シミュレータ含む）
-    function switchTab(tabId) {
+   // 現在選択中のタブを保持するグローバル変数
+    let currentActiveTab = 'tool';
+
+    // タブ切り替え（開いたタブを記録し、IndexedDBへ即時保存）
+    function switchTab(tabId, skipSave = false) {
+      currentActiveTab = tabId;
       document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
       document.querySelectorAll('.view-panel').forEach(panel => panel.classList.remove('active'));
+      
       const targetView = document.getElementById(`${tabId}-view`);
       if (targetView) targetView.classList.add('active');
       const targetBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick')?.includes(`'${tabId}'`));
@@ -2968,11 +2973,16 @@
       if (tabId === 'jishin' && typeof onJishinTabActivated === 'function') {
         onJishinTabActivated();
       }
-            if (tabId === 'changelog' && typeof renderChangelog === 'function') {
+      if (tabId === 'changelog' && typeof renderChangelog === 'function') {
         renderChangelog();
       }
-    }
-    
+
+      // タブの切り替えを自動保存
+      if (!skipSave && typeof debouncedSaveStateToLocal === 'function') {
+        debouncedSaveStateToLocal();
+      }
+    } 
+
 
     // ダークモード切替
     document.getElementById('dark-mode-btn').addEventListener('click', () => {
@@ -3214,6 +3224,7 @@ function generateFullProjectJSON() {
 
     project: {
       activeImageIndex: activeImageIndex,
+      activeTab: currentActiveTab,
       theme: {
         darkMode: document.body.classList.contains('dark-mode'),
         uiLayoutMode: (typeof currentLayoutMode !== 'undefined') ? currentLayoutMode : 'category',
@@ -3275,8 +3286,8 @@ function generateFullProjectJSON() {
   };
 }
 
-// --- .mask プロジェクトの安全な読み込み & 内部展開 ---
-function loadMaskProjectText(jsonText) {
+// --- .mask プロジェクトの安全な読み込み & 即時永続化 ---
+async function loadMaskProjectText(jsonText) {
   let rawData;
   try {
     rawData = JSON.parse(jsonText);
@@ -3284,7 +3295,6 @@ function loadMaskProjectText(jsonText) {
     throw new Error('.mask ファイルの JSON 形式が破損しています。');
   }
 
-  // バージョンが新しすぎる場合の安全ガード
   const fileFormatVersion = Number(rawData.formatVersion || (rawData.app ? 5 : 1));
   if (fileFormatVersion > CURRENT_MASK_FORMAT_VERSION) {
     throw new Error(
@@ -3292,25 +3302,22 @@ function loadMaskProjectText(jsonText) {
     );
   }
 
-  // メモリ上で現行形式へ段階的マイグレーション
   const migratedData = migrateMask(rawData);
-
-  // 構造バリデーション
   validateMask(migratedData);
 
-  // アプリStateへ展開
   applyFullProjectState(migratedData);
 
+  // 👈 読み込んだ瞬間にIndexedDBへ確実に同期保存（リロード時の消滅を完全防止）
+  await saveStateToLocal();
   return true;
 }
 
 function loadMaskProjectFile(file) {
   const reader = new FileReader();
-  reader.onload = (ev) => {
+  reader.onload = async (ev) => {
     try {
-      loadMaskProjectText(ev.target.result);
-      saveStateToLocal();
-      showAutoSaveToast('📦 .mask プロジェクト（V6.2完全マイグレーション済み）を復元しました！');
+      await loadMaskProjectText(ev.target.result);
+      showAutoSaveToast('📦 .mask プロジェクトを読み込み、自動保存を更新しました！');
     } catch (err) {
       alert(`⚠️ .mask の読み込みに失敗しました:\n${err.message}`);
     }
@@ -3425,6 +3432,9 @@ function applyFullProjectState(data) {
     }
   }
 
+    if (project.activeTab && typeof switchTab === 'function') {
+    switchTab(project.activeTab, true);
+  }
   return true;
 }
     function debouncedSaveStateToLocal() {
@@ -5173,6 +5183,26 @@ function escapeHtml(value) {
     // 起動時にバックグラウンドで事前ロード
     window.addEventListener('DOMContentLoaded', loadChangelogData);
 
+    // 起動時の IndexedDB 完全自動復元
+    window.addEventListener('DOMContentLoaded', async () => {
+      try {
+        let data = await idbGet('maskou_project_autosave');
+        if (!data) {
+          const oldStorage = localStorage.getItem('maskou_project_autosave');
+          if (oldStorage) {
+            data = JSON.parse(oldStorage);
+            await idbSet('maskou_project_autosave', data);
+            localStorage.removeItem('maskou_project_autosave');
+          }
+        }
+        if (data) {
+          const migrated = migrateMask(data);
+          applyFullProjectState(migrated);
+        }
+      } catch(e) {
+        console.warn('起動時のIndexedDB復元に失敗しました:', e);
+      }
+    });
     
 // --- 🌐 HTML inline onclick から確実に呼べるようにグローバル登録 ---
     window.applyTemplate = applyTemplate;
