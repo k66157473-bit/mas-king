@@ -5035,7 +5035,7 @@ function escapeHtml(value) {
       }
 
       try {
-        const response = await fetch('./koushin.json');
+        const response = await fetch('koushin.json');
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         changelogData = await response.json();
       } catch (error) {
