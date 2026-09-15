@@ -6,6 +6,9 @@
   <title ja="【サーバー送信なし】ローカル完結の画像マスキングツール「マス王   R̄」| 写真のモザイク・個人情報保護に" en="[No Server Upload] Local Masking Tool 'King of Hiding   R̄' | Mosaic & Privacy Protection" ar="[بدون إرسال للسيرفر] أداة إخفاء محلية 'ملك الإخفاء   R̄' | فسيفساء وحماية الخصوصية" ko="[서버 전송 없음] 로컬 이미지 마스킹 툴 '숨기기 왕   R̄' | 모자이크·개인정보 보호" ch="[无需上传服务器] 本地图像遮盖工具 '隐藏之王   R̄' | 图片马赛克与隐私保护">【サーバー送信なし】ローカル完結の画像マスキングツール「マス王   R̄」| 写真のモザイク・個人情報保護に</title>
   <meta name="description" content="サーバーに画像を一切送信しない安全・超高機能な画像マスキング＆注釈ツールです。">
   <meta name="format-detection" content="telephone=no">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
 
   <!-- 1. マニフェストファイルの読み込み -->
   <link rel="manifest" href="./manifest.json">
@@ -23,8 +26,9 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js')
+        navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' })
           .then((registration) => {
+            registration.update();
             console.log('マス王 PWA: サービスワーカー登録成功！スコープ:', registration.scope);
           })
           .catch((error) => {
@@ -840,6 +844,14 @@
     }
 
     .jishin-slider-text-row input[type="range"] { flex: 1; }
+    #jishin-view input[type="range"] {
+      min-width: 0;
+      height: 28px;
+      cursor: grab;
+      touch-action: none;
+      accent-color: #00ff88;
+    }
+    #jishin-view input[type="range"]:active { cursor: grabbing; }
     .jishin-slider-text-row input[type="number"], .jishin-slider-text-row input[type="text"] {
       width: 85px;
       font-size: 11.5px;
@@ -1083,6 +1095,17 @@
     }
     #btn-toggle-status { top: 50px; right: 8px; }
     #btn-toggle-control { bottom: 45px; right: 8px; }
+    #reset-confirm-modal .modal-content { max-width: 360px; text-align: center; }
+    #reset-whiteout {
+      position: fixed;
+      inset: 0;
+      z-index: 1000000;
+      background: #fff;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.8s ease;
+    }
+    #reset-whiteout.active { opacity: 1; pointer-events: all; }
 
     #sticky-controls {
       position: fixed;
@@ -1126,7 +1149,11 @@
       }
       .jishin-view-btn { font-size: 9px; padding: 6px 1px; text-align: center; justify-content: center; border-radius: 5px; border: 1px solid rgba(0, 255, 136, 0.25); color: #b0c0d0; white-space: normal; line-height: 1.15; }
       #jishin-status-panel { position: fixed; top: 108px; right: 6px; left: auto; width: 185px; max-height: 25vh; padding: 6px 8px; border-left: 3px solid #00ff88; border-radius: 8px; background: rgba(10, 15, 25, 0.75); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5); overflow-y: auto; z-index: 15; }
-      #jishin-control-panel { position: fixed; bottom: 35px; left: 0; right: 0; width: 100%; max-height: 38vh; padding: 8px 12px 16px 12px; border-left: none; border-top: 2px solid #3399ff; border-radius: 16px 16px 0 0; background: rgba(10, 15, 25, 0.95); box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.85); overflow-y: auto; z-index: 25; }
+      #jishin-control-panel { position: fixed; bottom: 35px; left: 0; right: 0; width: 100%; max-height: 38vh; padding: 8px 12px calc(16px + env(safe-area-inset-bottom, 0px)); border-left: none; border-top: 2px solid #3399ff; border-radius: 16px 16px 0 0; background: rgba(10, 15, 25, 0.95); box-shadow: 0 -8px 25px rgba(0, 0, 0, 0.85); overflow-y: auto; z-index: 25; }
+      #jishin-view-toggle-bar, #jishin-eew-banner, #jishin-control-panel, #jishin-status-panel { margin-top: env(safe-area-inset-top, 0px); }
+    }
+    @media (min-width: 769px) {
+      #mobile-top-notice, #mobile-bottom-navigation { display: none !important; }
     }
   </style>
 </head>
@@ -1617,6 +1644,22 @@
           </div>
         </div>
 
+        <div class="changelog-item">
+          <div class="changelog-header">
+            <strong ja="🐙 GitHub公式リンク" en="🐙 Official GitHub Links" ar="🐙 روابط GitHub الرسمية" ko="🐙 공식 GitHub 링크" ch="🐙 GitHub官方链接">🐙 GitHub公式リンク</strong>
+          </div>
+          <ul style="padding-left: 1.2rem; font-size: 0.85rem; line-height: 1.8;">
+            <li>
+              <span ja="ユーザー名: " en="Account: " ar="الحساب: " ko="사용자명: " ch="用户名: ">ユーザー名: </span>
+              <a href="https://github.com/k66157473-bit" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: bold;">k66157473-bit</a>
+            </li>
+            <li>
+              <span ja="レポジトリ: " en="Repository: " ar="المستودع: " ko="저장소: " ch="仓库: ">レポジトリ: </span>
+              <a href="https://github.com/k66157473-bit/mas-king" target="_blank" rel="noopener noreferrer" style="color: var(--primary); font-weight: bold;">mas-king</a>
+            </li>
+          </ul>
+        </div>
+
         <!-- カテゴリ①：安全・完全ローカル神ツール -->
         <div class="changelog-item">
           <div class="changelog-header">
@@ -1792,6 +1835,18 @@
       <div style="font-size: 13px; color: #666666; margin-bottom: 8px; font-weight: bold;" ja="🌱 サイト開設からの歩み" en="🌱 Time Since Launch" ar="🌱 المسيرة منذ إطلاق الموقع" ko="🌱 사이트 개설 후 발자취" ch="🌱 网站上线至今的足迹">🌱 サイト開設からの歩み</div>
       <div style="font-size: 14px; margin-bottom: 5px; color: var(--text);">
         <span ja="経過日数:" en="Days:" ar="الأيام:" ko="경과 일수:" ch="历经天数:">経過日数:</span> <span id="count-days" style="font-weight: bold; color: #0076df; font-variant-numeric: tabular-nums;">0</span> <span ja="日" en="days" ar="يوم" ko="일" ch="天">日</span>
+      </div>
+      <div style="font-size: 13px; margin-bottom: 5px; color: var(--text);">
+        <span ja="ソースコード行数:" en="Source Lines:" ar="أسطر المصدر:" ko="소스 코드 줄 수:" ch="源代码行数:">ソースコード行数:</span>
+        <span id="source-line-counts" style="font-weight: bold; color: #0076df; font-variant-numeric: tabular-nums;">HTML 0 / CSS 0 / JS 0 / koushin.json 0 / 合計 0</span>
+      </div>
+      <div style="font-size: 13px; margin-bottom: 5px; color: var(--text);">
+        <span ja="GitHubユーザー名:" en="GitHub Account:" ar="اسم مستخدم GitHub:" ko="GitHub 사용자명:" ch="GitHub用户名:">GitHubユーザー名:</span>
+        <a href="https://github.com/k66157473-bit" target="_blank" rel="noopener noreferrer" style="font-weight: bold; color: #0076df;">k66157473-bit</a>
+      </div>
+      <div style="font-size: 13px; color: var(--text);">
+        <span ja="GitHubレポジトリ:" en="GitHub Repository:" ar="مستودع GitHub:" ko="GitHub 저장소:" ch="GitHub仓库:">GitHubレポジトリ:</span>
+        <a href="https://github.com/k66157473-bit/mas-king" target="_blank" rel="noopener noreferrer" style="font-weight: bold; color: #0076df;">mas-king</a>
       </div>
       <div style="font-size: 14px; margin-bottom: 5px; color: var(--text);">
         <span ja="経過分数:" en="Minutes:" ar="الدقائق:" ko="경과 분:" ch="历经分钟:">経過分数:</span> <span id="count-minutes" style="font-weight: bold; color: #0076df; font-variant-numeric: tabular-nums;">0</span> <span ja="分" en="mins" ar="دقيقة" ko="분" ch="分">分</span>
@@ -2392,6 +2447,17 @@
       </div>
     </div>
   </div>
+  <div class="modal-overlay" id="reset-confirm-modal">
+    <div class="modal-content">
+      <h3 ja="⚠️ 初期化の確認" en="⚠️ Reset Confirmation" ar="⚠️ تأكيد إعادة الضبط" ko="⚠️ 초기화 확인" ch="⚠️ 确认重置">⚠️ 初期化の確認</h3>
+      <p id="reset-confirm-message" style="margin: 1rem 0;" ja="すべてのデータを初期化しますか？" en="Reset all local data?" ar="هل تريد إعادة ضبط جميع البيانات المحلية؟" ko="모든 로컬 데이터를 초기화할까요?" ch="是否重置所有本地数据？">すべてのデータを初期化しますか？</p>
+      <div style="display: flex; gap: 0.5rem; justify-content: center;">
+        <button type="button" class="btn" id="reset-confirm-cancel" ja="キャンセル" en="Cancel" ar="إلغاء" ko="취소" ch="取消">キャンセル</button>
+        <button type="button" class="btn btn-primary" id="reset-confirm-ok" ja="OK" en="OK" ar="موافق" ko="확인" ch="确定">OK</button>
+      </div>
+    </div>
+  </div>
+  <div id="reset-whiteout" aria-hidden="true"></div>
 </div>
 
 
@@ -3132,6 +3198,7 @@ function migrateV5ToV6(data) {
 
     project: {
       activeImageIndex: (typeof data.activeImageIndex === 'number') ? data.activeImageIndex : 0,
+      activeTab: data.activeTab || data.project?.activeTab || 'tool',
       theme: data.theme || { darkMode: false, uiLayoutMode: 'category', activeCategoryTab: 'process' },
       settings: data.settings || {
         currentMode: 'black',
@@ -3337,7 +3404,7 @@ async function loadMaskProjectText(jsonText) {
   return true;
 }
 
-function applyFullProjectState(data) {
+function applyFullProjectState(data, preferLocalFont = false) {
   if (!data) return false;
 
   // 👈 正しい形式判定（旧形式・新形式どちらも許容）
@@ -3350,7 +3417,9 @@ function applyFullProjectState(data) {
 
   // 言語・フォント
   const lang = data.language?.selected || data.language || 'ja';
-  const arFont = data.language?.arabicFont || data.arabicFont || 'Amiri';
+  const arFont = preferLocalFont
+    ? (localStorage.getItem('maskou_arabic_font') || data.language?.arabicFont || data.arabicFont || 'Amiri')
+    : (data.language?.arabicFont || data.arabicFont || 'Amiri');
   if (typeof window.switchLang === 'function') window.switchLang(lang);
   if (typeof window.setArabicFont === 'function') window.setArabicFont(arFont);
 
@@ -5097,7 +5166,7 @@ function escapeHtml(value) {
         }
         if (data) {
           const migrated = migrateMask(data);
-          applyFullProjectState(migrated);
+          applyFullProjectState(migrated, true);
         }
       } catch(e) {
         console.warn('起動時のIndexedDB復元に失敗しました:', e);
@@ -5722,6 +5791,34 @@ function escapeHtml(value) {
       }
       updateCounter();
       setInterval(updateCounter, 1000);
+    })();
+
+    (function updateSourceLineCounts() {
+      const output = document.getElementById('source-line-counts');
+      if (!output) return;
+      const countLines = (text) => text ? text.split(/\r?\n/).length : 0;
+      const update = (htmlText, changelogText) => {
+        const styleText = [...htmlText.matchAll(/<style[\s\S]*?>([\s\S]*?)<\/style>/gi)].map(match => match[1]).join('\n');
+        const scriptStart = '<' + 'script';
+        const scriptEnd = '<' + '/script>';
+        const scriptParts = htmlText.split(scriptStart).slice(1);
+        const scriptText = scriptParts.map(part => part.slice(part.indexOf('>') + 1, part.indexOf(scriptEnd))).join('\n');
+        const htmlWithoutScripts = htmlText.split(scriptStart).map((part, index) => index === 0 ? part : part.slice(part.indexOf(scriptEnd) + scriptEnd.length)).join('');
+        const htmlOnlyText = htmlWithoutScripts.replace(/<style[\s\S]*?<\/style>/gi, '');
+        const counts = {
+          html: countLines(htmlOnlyText),
+          css: countLines(styleText),
+          js: countLines(scriptText),
+          changelog: countLines(changelogText)
+        };
+        const total = counts.html + counts.css + counts.js + counts.changelog;
+        output.textContent = `HTML ${counts.html.toLocaleString()} / CSS ${counts.css.toLocaleString()} / JS ${counts.js.toLocaleString()} / koushin.json ${counts.changelog.toLocaleString()} / 合計 ${total.toLocaleString()}`;
+      };
+
+      Promise.all([
+        fetch(window.location.href, { cache: 'no-store' }).then(response => response.text()),
+        fetch('./koushin.json', { cache: 'no-store' }).then(response => response.text()).catch(() => '')
+      ]).then(([htmlText, changelogText]) => update(htmlText, changelogText)).catch(() => {});
     })();
 
     // --- R̄ 数値参照置換 ---
@@ -7585,7 +7682,11 @@ function updateStructureType(type) {
         splitView: jishinState.splitView,
         stressHeatmap: jishinState.stressHeatmap,
         bulletTime: jishinState.bulletTime,
-        jalertVoice: jishinState.jalertVoice
+        jalertVoice: jishinState.jalertVoice,
+        faultRupture: jishinState.faultRupture,
+        macroFire: jishinState.macroFire,
+        mobileShake: jishinState.mobileShake,
+        gyroVr: jishinState.gyroVr
       };
     }
 
@@ -7618,6 +7719,10 @@ function updateStructureType(type) {
       const rngManualIntensity = document.getElementById('rng-manual-intensity'), txtManualIntensity = document.getElementById('txt-manual-intensity');
       const chkTimelineIntensity = document.getElementById('chk-timeline-intensity'), timelineContainer = document.getElementById('timeline-container');
       const chkJalertVoice = document.getElementById('chk-jalert-voice');
+      const chkFaultRupture = document.getElementById('chk-fault-rupture');
+      const chkMacroFire = document.getElementById('chk-macro-fire');
+      const chkMobileShake = document.getElementById('chk-mobile-shake');
+      const chkGyroVr = document.getElementById('chk-gyro-vr');
 
       if (config.M !== undefined && rngM && txtM) { rngM.value = config.M; txtM.value = config.M; }
       if (config.d !== undefined && rngD && txtD) { rngD.value = config.d; txtD.value = config.d; }
@@ -7724,6 +7829,22 @@ function updateStructureType(type) {
       if (config.jalertVoice !== undefined && chkJalertVoice) {
         jishinState.jalertVoice = config.jalertVoice;
         chkJalertVoice.checked = config.jalertVoice;
+      }
+      if (config.faultRupture !== undefined && chkFaultRupture) {
+        jishinState.faultRupture = config.faultRupture;
+        chkFaultRupture.checked = config.faultRupture;
+      }
+      if (config.macroFire !== undefined && chkMacroFire) {
+        jishinState.macroFire = config.macroFire;
+        chkMacroFire.checked = config.macroFire;
+      }
+      if (config.mobileShake !== undefined && chkMobileShake) {
+        jishinState.mobileShake = config.mobileShake;
+        chkMobileShake.checked = config.mobileShake;
+      }
+      if (config.gyroVr !== undefined && chkGyroVr) {
+        jishinState.gyroVr = config.gyroVr;
+        chkGyroVr.checked = config.gyroVr;
       }
 
       renderTimelineTable();
@@ -8351,7 +8472,59 @@ function updateStructureType(type) {
       if (jAudioModal) jAudioModal.style.display = "none";
     });
 
-    document.getElementById('btn-jishin-reset')?.addEventListener('click', resetSimulation);
+    let fullResetConfirmCount = 0;
+    let fullResetInProgress = false;
+
+    function requestFullReset() {
+      if (fullResetInProgress) return;
+      fullResetConfirmCount = 0;
+      const modal = document.getElementById('reset-confirm-modal');
+      if (modal) modal.style.display = 'flex';
+    }
+
+    async function completeFullReset() {
+      fullResetInProgress = true;
+      const modal = document.getElementById('reset-confirm-modal');
+      const whiteout = document.getElementById('reset-whiteout');
+      if (modal) modal.style.display = 'none';
+      if (whiteout) whiteout.classList.add('active');
+
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      localStorage.clear();
+      sessionStorage.clear();
+      if (window.indexedDB) {
+        await new Promise(resolve => {
+          const request = indexedDB.deleteDatabase('MasKingDB');
+          request.onsuccess = resolve;
+          request.onerror = resolve;
+          request.onblocked = resolve;
+        });
+      }
+      if (window.caches) {
+        const cacheNames = await caches.keys();
+        await Promise.all(cacheNames.map(name => caches.delete(name)));
+      }
+      if (navigator.serviceWorker) {
+        const registrations = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(registrations.map(registration => registration.unregister()));
+      }
+      window.location.reload();
+    }
+
+    document.getElementById('reset-confirm-ok')?.addEventListener('click', () => {
+      fullResetConfirmCount += 1;
+      if (fullResetConfirmCount >= 5) {
+        completeFullReset();
+        return;
+      }
+      const message = document.getElementById('reset-confirm-message');
+      if (message) message.textContent = `初期化の確認 (${fullResetConfirmCount + 1}/5)`;
+    });
+    document.getElementById('reset-confirm-cancel')?.addEventListener('click', () => {
+      fullResetConfirmCount = 0;
+      document.getElementById('reset-confirm-modal').style.display = 'none';
+    });
+    document.getElementById('btn-jishin-reset')?.addEventListener('click', requestFullReset);
 
     let statusVisible = true, controlVisible = true;
     document.getElementById('btn-toggle-status')?.addEventListener('click', () => {
@@ -8414,7 +8587,7 @@ function updateStructureType(type) {
 
     document.getElementById('btn-trigger-sticky')?.addEventListener('click', () => document.getElementById('btn-jishin-trigger')?.click());
     document.getElementById('btn-resume-sticky')?.addEventListener('click', () => document.getElementById('btn-jishin-trigger')?.click());
-    document.getElementById('btn-reset-sticky')?.addEventListener('click', () => document.getElementById('btn-jishin-reset')?.click());
+    document.getElementById('btn-reset-sticky')?.addEventListener('click', requestFullReset);
 
     window.addEventListener('resize', () => {
       if (jContainer && jRenderer && jCamera) {

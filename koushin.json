@@ -1,4 +1,66 @@
-[
+{
+  "version": "v6.2.3",
+  "date": "2026-09-15 00:00",
+  "type": "fix",
+  "title": {
+    "ja": "3D地震スライダー、完全初期化、アラビア語フォント復元、.mask保存範囲を修正",
+    "en": "Fix Earthquake Sliders, Full Reset, Arabic Font Restore, and .mask Coverage",
+    "ar": "إصلاح أشرطة محاكي الزلازل وإعادة الضبط واستعادة الخط العربي وتكامل .mask",
+    "ko": "3D 지진 슬라이더, 전체 초기화, 아랍어 글꼴 복원 및 .mask 저장 범위 수정",
+    "ch": "修复3D地震滑块、完整初始化、阿拉伯字体恢复及.mask保存范围"
+  },
+  "items": [
+    {
+      "ja": "【🌍 3D地震スライダー修正】マウスやタッチ操作でスライダーの丸いノブを長押しして、自由方向へ確実にドラッグできるよう操作性を改善しました",
+      "en": "[🌍 Earthquake Slider Fix] Improved mouse and touch controls so the slider thumb can be pressed and dragged reliably.",
+      "ar": "[🌍 إصلاح أشرطة الزلازل] تحسين التحكم بالماوس واللمس للسماح بسحب مقبض الشريط بحرية وبشكل موثوق.",
+      "ko": "[🌍 지진 슬라이더 수정] 마우스와 터치에서 슬라이더 원형 노브를 길게 눌러 자유롭게 드래그할 수 있도록 개선했습니다.",
+      "ch": "【🌍 地震滑块修复】优化鼠标与触摸操作，确保可以长按滑块圆形按钮并自由拖动调节。"
+    },
+    {
+      "ja": "【⚠️ 完全初期化機能】リセットボタンを5回確認式に変更し、5回目のOK後に画面をホワイトアウトして3秒後にlocalStorage・sessionStorage・IndexedDB・Cache・Service Workerを削除する機能を追加しました",
+      "en": "[⚠️ Full Reset] Added a five-step confirmation reset that whites out the screen and clears localStorage, sessionStorage, IndexedDB, caches, and service workers after three seconds.",
+      "ar": "[⚠️ إعادة الضبط الكاملة] إضافة تأكيد من خمس خطوات مع تبييض الشاشة وحذف localStorage وsessionStorage وIndexedDB وذاكرة التخزين وService Worker بعد ثلاث ثوانٍ.",
+      "ko": "[⚠️ 전체 초기화] 5단계 확인 기능을 추가하고, 5번째 확인 후 화면을 흰색으로 전환한 다음 3초 뒤 localStorage, sessionStorage, IndexedDB, Cache, Service Worker를 삭제하도록 수정했습니다.",
+      "ch": "【⚠️ 完整初始化】新增五次确认机制，第五次确认后画面白屏淡出，3秒后清除localStorage、sessionStorage、IndexedDB、缓存及Service Worker。"
+    },
+    {
+      "ja": "【🔤 アラビア語フォント復元修正】IndexedDBの古い自動保存データが初回リロード時にlocalStorageの選択フォントを上書きしないよう修正しました",
+      "en": "[🔤 Arabic Font Restore Fix] Prevented older IndexedDB autosave data from overwriting the selected Arabic font on the first reload.",
+      "ar": "[🔤 إصلاح استعادة الخط العربي] منع بيانات IndexedDB القديمة من الكتابة فوق الخط العربي المختار عند أول تحديث.",
+      "ko": "[🔤 아랍어 글꼴 복원 수정] 이전 IndexedDB 자동 저장 데이터가 첫 새로고침에서 선택한 아랍어 글꼴을 덮어쓰지 않도록 수정했습니다.",
+      "ch": "【🔤 阿拉伯字体恢复修复】防止旧版IndexedDB自动保存数据在首次刷新时覆盖用户选择的阿拉伯字体。"
+    },
+    {
+      "ja": "【📦 .mask保存範囲拡張】断層破裂・広域火災・スマホ振動・ジャイロVRなど、3D地震シミュレーターの不足していた設定も.maskへ保存・復元するよう追加しました",
+      "en": "[📦 .mask Coverage] Added fault rupture, urban fire, mobile shake, gyroscope VR, and other previously missing earthquake settings to .mask export and restore.",
+      "ar": "[📦 تكامل .mask] إضافة إعدادات تمزق الصدع والحرائق والاهتزاز المحمول وVR الجيروسكوب وغيرها إلى الحفظ والاستعادة داخل .mask.",
+      "ko": "[📦 .mask 저장 범위 확장] 단층 파괴, 광역 화재, 스마트폰 진동, 자이로 VR 등 누락되었던 3D 지진 설정을 .mask에 저장하고 복원하도록 추가했습니다.",
+      "ch": "【📦 扩展.mask保存范围】将断层破裂、城市火灾、手机震动、陀螺仪VR等原先遗漏的3D地震设置加入.mask保存与恢复。"
+    },
+    {
+      "ja": "【📱 スマホ表示改善】通知バーや下部操作パネルが安全領域に重ならないよう、端末のsafe-area-insetに対応して余白を自動調整しました",
+      "en": "[📱 Mobile Layout] Added safe-area inset handling so notification bars and bottom controls avoid overlapping device UI.",
+      "ar": "[📱 تحسين الهاتف] دعم safe-area-inset لمنع تداخل أشرطة الإشعارات وعناصر التحكم السفلية مع واجهة الجهاز.",
+      "ko": "[📱 모바일 레이아웃 개선] safe-area-inset을 적용하여 알림 영역과 하단 조작 패널이 기기 UI와 겹치지 않도록 했습니다.",
+      "ch": "【📱 移动端布局改善】支持safe-area-inset，自动调整通知栏与底部操作面板的间距，避免与设备界面重叠。"
+    },
+    {
+      "ja": "【📊 ソースコード行数表示】プロフィール画面にHTML・CSS・JS・koushin.json別および総合のソースコード行数をリアルタイム表示する機能を追加しました",
+      "en": "[📊 Source Line Counts] Added live HTML, CSS, JavaScript, koushin.json, and total source line counts to the profile section.",
+      "ar": "[📊 عدد أسطر المصدر] إضافة عرض مباشر لعدد أسطر HTML وCSS وJavaScript وkoushin.json والإجمالي في الملف الشخصي.",
+      "ko": "[📊 소스 코드 줄 수] 프로필 화면에 HTML, CSS, JavaScript, koushin.json 및 전체 소스 코드 줄 수를 실시간으로 표시하도록 추가했습니다.",
+      "ch": "【📊 源代码行数】在个人资料区域新增HTML、CSS、JavaScript、koushin.json及总行数的实时统计显示。"
+    },
+    {
+      "ja": "【🧹 キャッシュ対策】HTMLのno-cache指定とService Workerの更新設定を追加し、古い保存内容が残り続ける問題を軽減しました",
+      "en": "[🧹 Cache Control] Added no-cache directives and Service Worker update settings to reduce stale content issues.",
+      "ar": "[🧹 التحكم بالتخزين المؤقت] إضافة إعدادات no-cache وتحديث Service Worker لتقليل مشاكل المحتوى القديم.",
+      "ko": "[🧹 캐시 제어] no-cache 설정과 Service Worker 업데이트 설정을 추가하여 오래된 콘텐츠 문제를 줄였습니다.",
+      "ch": "【🧹 缓存控制】新增no-cache指令与Service Worker更新设置，减少旧内容持续残留的问题。"
+    }
+  ]
+},
     {
     "version": "v6.2.2",
     "date": "2026-09-14 20:00",
