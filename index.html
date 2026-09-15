@@ -2890,8 +2890,9 @@
         const tx = db.transaction(STORE_NAME, 'readonly');
         const store = tx.objectStore(STORE_NAME);
         const req = store.get(key);
-        req.onsuccess = () => { db.close(); resolve(req.result); };
-        req.onerror = () => { db.close(); reject(req.error); };
+        tx.oncomplete = () => { db.close(); resolve(req.result); };
+        tx.onerror = () => { db.close(); reject(tx.error); };
+        tx.onabort = () => { db.close(); reject(tx.error); };
       });
     }
 
@@ -3472,7 +3473,7 @@ function applyFullProjectState(data, preferLocalFont = false) {
     renderGitTree();
   }
 
-  if (Array.isArray(data.images) && data.images.length > 0) {
+  if (Array.isArray(data.images)) {
     imageList = data.images.map((imgData, idx) => ({
       name: imgData.name || `画像 ${idx + 1}`,
       width: imgData.width || 0,
@@ -3488,10 +3489,20 @@ function applyFullProjectState(data, preferLocalFont = false) {
     }));
 
     renderImageTabs();
-    const targetIdx = (typeof project.activeImageIndex === 'number' && imageList[project.activeImageIndex])
-      ? project.activeImageIndex
-      : 0;
-    selectImage(targetIdx);
+    if (imageList.length > 0) {
+      const targetIdx = (typeof project.activeImageIndex === 'number' && imageList[project.activeImageIndex])
+        ? project.activeImageIndex
+        : 0;
+      selectImage(targetIdx);
+    } else {
+      activeImageIndex = -1;
+      undoStack = [];
+      redoStack = [];
+      canvas.width = 0;
+      canvas.height = 0;
+      container.style.display = 'none';
+      dropzone.style.display = 'flex';
+    }
   }
 
   // 👈 開いていたタブの自動復元
@@ -8542,25 +8553,30 @@ function updateStructureType(type) {
       if (whiteout) whiteout.classList.add('active');
 
       await new Promise(resolve => setTimeout(resolve, 3000));
-      localStorage.clear();
-      sessionStorage.clear();
-      if (window.indexedDB) {
-        await new Promise(resolve => {
-          const request = indexedDB.deleteDatabase('MasKingDB');
-          request.onsuccess = resolve;
-          request.onerror = resolve;
-          request.onblocked = resolve;
-        });
+      try {
+        localStorage.clear();
+        sessionStorage.clear();
+        if (navigator.serviceWorker) {
+          const registrations = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(registrations.map(registration => registration.unregister()));
+        }
+        if (window.caches) {
+          const cacheNames = await caches.keys();
+          await Promise.all(cacheNames.map(name => caches.delete(name)));
+        }
+        if (window.indexedDB) {
+          await new Promise(resolve => {
+            const request = indexedDB.deleteDatabase('MasKingDB');
+            request.onsuccess = resolve;
+            request.onerror = resolve;
+            request.onblocked = resolve;
+          });
+        }
+      } catch (error) {
+        console.warn('完全初期化中の一部データ削除に失敗しました:', error);
+      } finally {
+        window.location.reload();
       }
-      if (window.caches) {
-        const cacheNames = await caches.keys();
-        await Promise.all(cacheNames.map(name => caches.delete(name)));
-      }
-      if (navigator.serviceWorker) {
-        const registrations = await navigator.serviceWorker.getRegistrations();
-        await Promise.all(registrations.map(registration => registration.unregister()));
-      }
-      window.location.reload();
     }
 
     document.getElementById('reset-confirm-ok')?.addEventListener('click', () => {
