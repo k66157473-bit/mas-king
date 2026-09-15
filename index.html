@@ -540,6 +540,8 @@
 
     .sparkle-toggle-container {
       position: fixed;
+      right: 15px;
+      bottom: 45px;
       z-index: 2147483647;
       background: rgba(255, 255, 255, 0.85);
       padding: 5px 10px;
@@ -5026,10 +5028,24 @@ function escapeHtml(value) {
 
       if (!changelogLoadingPromise) {
         changelogLoadingPromise = (async () => {
+          let lastError = null;
           try {
-            const response = await fetch('./koushin.json');
-            if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
-            changelogData = await response.json();
+            const changelogUrl = new URL('./koushin.json', document.baseURI);
+            changelogUrl.searchParams.set('v', Date.now().toString());
+            for (let attempt = 0; attempt < 3; attempt++) {
+              try {
+                const response = await fetch(changelogUrl.href, { cache: 'no-store' });
+                if (!response.ok) throw new Error(`HTTP error: ${response.status}`);
+                const parsed = await response.json();
+                if (!Array.isArray(parsed)) throw new Error('koushin.jsonのルートが配列ではありません。');
+                changelogData = parsed;
+                break;
+              } catch (error) {
+                lastError = error;
+                if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 250));
+              }
+            }
+            if (!changelogData) throw lastError || new Error('更新履歴を取得できませんでした。');
           } catch (err) {
             console.error('koushin.json の取得に失敗しました:', err);
             changelogData = []; // 失敗時は空にしてエラー表示
