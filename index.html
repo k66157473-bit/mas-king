@@ -2878,8 +2878,9 @@
         const tx = db.transaction(STORE_NAME, 'readwrite');
         const store = tx.objectStore(STORE_NAME);
         const req = store.put(value, key);
-        req.onsuccess = () => resolve();
-        req.onerror = () => reject(req.error);
+        tx.oncomplete = () => { db.close(); resolve(); };
+        tx.onerror = () => { db.close(); reject(tx.error); };
+        tx.onabort = () => { db.close(); reject(tx.error); };
       });
     }
 
@@ -2889,8 +2890,8 @@
         const tx = db.transaction(STORE_NAME, 'readonly');
         const store = tx.objectStore(STORE_NAME);
         const req = store.get(key);
-        req.onsuccess = () => resolve(req.result);
-        req.onerror = () => reject(req.error);
+        req.onsuccess = () => { db.close(); resolve(req.result); };
+        req.onerror = () => { db.close(); reject(req.error); };
       });
     }
 
@@ -2900,8 +2901,9 @@
         const tx = db.transaction(STORE_NAME, 'readwrite');
         const store = tx.objectStore(STORE_NAME);
         const req = store.delete(key);
-        req.onsuccess = () => resolve();
-        req.onerror = () => reject(req.error);
+        tx.oncomplete = () => { db.close(); resolve(); };
+        tx.onerror = () => { db.close(); reject(tx.error); };
+        tx.onabort = () => { db.close(); reject(tx.error); };
       });
     }
 
@@ -5815,10 +5817,12 @@ function escapeHtml(value) {
         output.textContent = `HTML ${counts.html.toLocaleString()} / CSS ${counts.css.toLocaleString()} / JS ${counts.js.toLocaleString()} / koushin.json ${counts.changelog.toLocaleString()} / 合計 ${total.toLocaleString()}`;
       };
 
-      Promise.all([
+      const refresh = () => Promise.all([
         fetch(window.location.href, { cache: 'no-store' }).then(response => response.text()),
         fetch('./koushin.json', { cache: 'no-store' }).then(response => response.text()).catch(() => '')
       ]).then(([htmlText, changelogText]) => update(htmlText, changelogText)).catch(() => {});
+      refresh();
+      setInterval(refresh, 5000);
     })();
 
     // --- R̄ 数値参照置換 ---
@@ -8519,6 +8523,13 @@ function updateStructureType(type) {
       }
       const message = document.getElementById('reset-confirm-message');
       if (message) message.textContent = `初期化の確認 (${fullResetConfirmCount + 1}/5)`;
+      const modal = document.getElementById('reset-confirm-modal');
+      if (modal) {
+        modal.style.display = 'none';
+        setTimeout(() => {
+          if (!fullResetInProgress) modal.style.display = 'flex';
+        }, 120);
+      }
     });
     document.getElementById('reset-confirm-cancel')?.addEventListener('click', () => {
       fullResetConfirmCount = 0;

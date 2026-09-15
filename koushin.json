@@ -1,4 +1,40 @@
-{
+[
+  {
+  "version": "v6.2.4",
+  "date": "2026-09-15 00:30",
+  "type": "fix",
+  "title": {
+    "ja": "完全初期化、行数リアルタイム更新、IndexedDB削除安定性を修正",
+    "en": "Fix Full Reset, Live Line Counts, and IndexedDB Deletion Stability",
+    "ar": "إصلاح إعادة الضبط الكاملة وتحديث عدد الأسطر واستقرار حذف IndexedDB",
+    "ko": "전체 초기화, 실시간 줄 수 갱신 및 IndexedDB 삭제 안정성 수정",
+    "ch": "修复完整初始化、实时行数更新与IndexedDB删除稳定性"
+  },
+  "items": [
+    {
+      "ja": "リセット確認モーダルを5回連続で再表示し、5回目のOK後にホワイトアウトして3秒後に保存データ・キャッシュ・Service Workerを削除する処理を安定化しました",
+      "en": "Stabilized the five-step reset confirmation flow, whiteout, and deletion of saved data, caches, and service workers after the fifth confirmation.",
+      "ar": "تحسين تدفق تأكيد إعادة الضبط لخمس مرات مع تبييض الشاشة وحذف البيانات المحفوظة وذاكرة التخزين وService Worker بعد التأكيد الخامس.",
+      "ko": "5회 연속 초기화 확인 모달과 5번째 확인 후 화이트아웃 및 저장 데이터·캐시·Service Worker 삭제 처리를 안정화했습니다.",
+      "ch": "稳定五次连续确认、第五次确认后的白屏效果，以及保存数据、缓存和Service Worker的删除流程。"
+    },
+    {
+      "ja": "IndexedDBの接続を各処理完了後に閉じるよう修正し、完全初期化時のデータベース削除がブロックされる可能性を解消しました",
+      "en": "Closed IndexedDB connections after each operation to prevent database deletion from being blocked during full reset.",
+      "ar": "إغلاق اتصالات IndexedDB بعد كل عملية لمنع تعطل حذف قاعدة البيانات أثناء إعادة الضبط الكاملة.",
+      "ko": "각 IndexedDB 작업 완료 후 연결을 닫아 전체 초기화 시 데이터베이스 삭제가 차단될 가능성을 제거했습니다.",
+      "ch": "每次IndexedDB操作完成后关闭连接，避免完整初始化时数据库删除被阻塞。"
+    },
+    {
+      "ja": "ソースコード行数を5秒ごとに再取得して更新するよう変更し、HTML・CSS・JS・koushin.jsonの表示を実質的なリアルタイム更新にしました",
+      "en": "Updated source line counts every five seconds for near-real-time HTML, CSS, JavaScript, and koushin.json statistics.",
+      "ar": "تحديث عدد أسطر HTML وCSS وJavaScript وkoushin.json كل خمس ثوانٍ لتوفير عرض شبه فوري.",
+      "ko": "소스 코드 줄 수를 5초마다 다시 가져와 HTML·CSS·JS·koushin.json 통계를 준실시간으로 갱신합니다.",
+      "ch": "每五秒重新获取并更新HTML、CSS、JS和koushin.json行数，实现近实时统计。"
+    }
+  ]
+},
+  {
   "version": "v6.2.3",
   "date": "2026-09-15 00:00",
   "type": "fix",
