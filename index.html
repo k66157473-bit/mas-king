@@ -1286,7 +1286,7 @@
       <div class="tool-group">
         <button type="button" class="btn" id="undo-btn" title="元に戻す (Ctrl+Z)">↩</button>
         <button type="button" class="btn" id="redo-btn" title="やり直す (Ctrl+Y)">↪</button>
-        <button type="button" class="btn" id="clear-btn" ja="🔄 リセット" en="🔄 Reset" ar="🔄 إعادة تعيين" ko="🔄 초기화" ch="🔄 重置">🔄 リセット</button>
+        <button type="button" class="btn" id="clear-btn" ja="🧨 全データ初期化" en="🧨 Reset All Data" ar="🧨 تهيئة كل البيانات" ko="🧨 전체 데이터 초기화" ch="🧨 初始化全部数据">🧨 全データ初期化</button>
         <button type="button" class="btn" id="git-tree-btn" title="GitHub風コミット履歴・ブランチ分岐ツリーを開く" style="color:var(--primary); font-weight:bold;" ja="🌿 Git履歴ツリー" en="🌿 Git Tree" ar="🌿 شجرة Git" ko="🌿 Git 히스토리 트리" ch="🌿 Git历史树">🌿 Git履歴ツリー</button>
       </div>
 
@@ -4849,7 +4849,7 @@ function selectImage(idx, loadedImg = null) {
     
     document.getElementById('undo-btn')?.addEventListener('click', undo);
     document.getElementById('redo-btn')?.addEventListener('click', redo);
-    document.getElementById('clear-btn')?.addEventListener('click', resetImage);
+    document.getElementById('clear-btn')?.addEventListener('click', requestFullReset);
 
     window.addEventListener('keydown', (e) => {
       const typingOverlay = document.getElementById('welcome-typing-overlay');
@@ -7644,6 +7644,36 @@ function updateStructureType(type) {
       updateJishinUI("待機中", "#8fa0b5");
     }
 
+    function resetEarthquakeSettings() {
+      intensityTimeline = [
+        { start: 0, end: 8, intensity: 3.2 },
+        { start: 8, end: 18, intensity: 5.4 },
+        { start: 18, end: 45, intensity: 7.1 },
+        { start: 45, end: 70, intensity: 4.5 }
+      ];
+      aftershockList = [
+        { delaySec: 25, m: 7.2, d: 140, h: 20 },
+        { delaySec: 55, m: 6.8, d: 110, h: 25 }
+      ];
+      customCsvWave = null;
+      applyImportConfig({
+        M: 9.0, d: 130.0, h: 24.0, customDuration: 70.0, playbackSpeed: 1.0,
+        buildingAge: 89, houseAngle: 0, shakeType: 'horizontal', earthquakeType: 'trench',
+        cameraView: 'outside', envTime: 'day', audioMode: 'indoor', masterVolume: 1.0,
+        structureType: 'standard', buildingFloors: 30, multiHouse: false, multiHouseCount: 12,
+        seismicRate: 100.0, furnitureFixed: true, evacuationAction: 'table', shelfX: -1.0,
+        liquefaction: false, secondaryFire: true, secondaryTsunami: false, tsunamiHeight: 10.0,
+        soilFactor: 1.0, preset: 'tohoku', epicenter: 'off_sanriku', location: 'sendai',
+        epiLat: 38.30, epiLon: 142.37, locLat: 38.27, locLon: 140.87,
+        manualIntensityEnabled: false, manualIntensityVal: 6.5, timelineIntensityEnabled: false,
+        intensityTimeline, aftershockList, splitView: false, stressHeatmap: false,
+        bulletTime: true, jalertVoice: true, faultRupture: true, macroFire: false,
+        mobileShake: false, gyroVr: false
+      });
+      resetSimulation();
+      debouncedSaveStateToLocal();
+    }
+
     // 地震設定の統合エクスポート＆インポート（.jishin廃止・.mask完全同梱）
     function getExportConfig() {
       return {
@@ -7849,6 +7879,24 @@ function updateStructureType(type) {
       if (config.gyroVr !== undefined && chkGyroVr) {
         jishinState.gyroVr = config.gyroVr;
         chkGyroVr.checked = config.gyroVr;
+      }
+      const chkSplitView = document.getElementById('chk-split-view');
+      const chkStressHeatmap = document.getElementById('chk-stress-heatmap');
+      const chkBulletTime = document.getElementById('chk-bullet-time');
+      if (config.splitView !== undefined && chkSplitView) {
+        jishinState.splitView = config.splitView;
+        chkSplitView.checked = config.splitView;
+        if (splitDivider) splitDivider.style.display = config.splitView ? 'block' : 'none';
+        if (splitLeftLbl) splitLeftLbl.style.display = config.splitView ? 'block' : 'none';
+        if (splitRightLbl) splitRightLbl.style.display = config.splitView ? 'block' : 'none';
+      }
+      if (config.stressHeatmap !== undefined && chkStressHeatmap) {
+        jishinState.stressHeatmap = config.stressHeatmap;
+        chkStressHeatmap.checked = config.stressHeatmap;
+      }
+      if (config.bulletTime !== undefined && chkBulletTime) {
+        jishinState.bulletTime = config.bulletTime;
+        chkBulletTime.checked = config.bulletTime;
       }
 
       renderTimelineTable();
@@ -8535,7 +8583,7 @@ function updateStructureType(type) {
       fullResetConfirmCount = 0;
       document.getElementById('reset-confirm-modal').style.display = 'none';
     });
-    document.getElementById('btn-jishin-reset')?.addEventListener('click', requestFullReset);
+    document.getElementById('btn-jishin-reset')?.addEventListener('click', resetEarthquakeSettings);
 
     let statusVisible = true, controlVisible = true;
     document.getElementById('btn-toggle-status')?.addEventListener('click', () => {
@@ -8598,7 +8646,7 @@ function updateStructureType(type) {
 
     document.getElementById('btn-trigger-sticky')?.addEventListener('click', () => document.getElementById('btn-jishin-trigger')?.click());
     document.getElementById('btn-resume-sticky')?.addEventListener('click', () => document.getElementById('btn-jishin-trigger')?.click());
-    document.getElementById('btn-reset-sticky')?.addEventListener('click', requestFullReset);
+    document.getElementById('btn-reset-sticky')?.addEventListener('click', resetEarthquakeSettings);
 
     window.addEventListener('resize', () => {
       if (jContainer && jRenderer && jCamera) {
